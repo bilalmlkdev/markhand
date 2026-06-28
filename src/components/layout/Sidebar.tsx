@@ -3,15 +3,12 @@ import { CanvasControls } from '../controls/CanvasControls';
 import { GuideControls } from '../controls/GuideControls';
 import { ExportPanel } from '../exports/ExportPanel';
 import { useDraw } from '../../hooks/useDraw';
-import type { GuideType } from '../../types';
 
 interface SidebarProps {
   drawHook: ReturnType<typeof useDraw>;
-  guideType: GuideType;
-  onGuideChange: (guide: GuideType) => void;
 }
 
-export function Sidebar({ drawHook, guideType, onGuideChange }: SidebarProps) {
+export function Sidebar({ drawHook }: SidebarProps) {
   const {
     currentColor,
     currentWidth,
@@ -25,7 +22,6 @@ export function Sidebar({ drawHook, guideType, onGuideChange }: SidebarProps) {
   } = drawHook;
 
   const canUndo = strokes.length > 0;
-  const canRedo = false; // redo stack managed internally in useDraw for now
 
   const handleExportPNG = () => {
     const canvas = document.querySelector('canvas');
@@ -51,7 +47,7 @@ export function Sidebar({ drawHook, guideType, onGuideChange }: SidebarProps) {
       />
       <CanvasControls
         canUndo={canUndo}
-        canRedo={canRedo}
+        canRedo={false}
         isEmpty={isEmpty}
         onUndo={undo}
         onRedo={redo}

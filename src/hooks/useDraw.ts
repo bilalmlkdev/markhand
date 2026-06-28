@@ -1,4 +1,5 @@
-import { useState, useCallback, RefObject } from 'react';
+import { useState, useCallback } from 'react';
+import type { RefObject } from 'react';
 import type { Point, Stroke } from '../types';
 
 interface UseDrawReturn {
