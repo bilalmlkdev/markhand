@@ -43,10 +43,14 @@ export function useDraw(canvasRef: RefObject<HTMLCanvasElement | null>): UseDraw
   const drawStroke = useCallback(
     (ctx: CanvasRenderingContext2D, points: Point[], color: string, width: number) => {
       if (points.length < 2) return;
+      const first = points[0];
+      if (!first) return;
       ctx.beginPath();
-      ctx.moveTo(points[0].x, points[0].y);
+      ctx.moveTo(first.x, first.y);
       for (let i = 1; i < points.length; i++) {
-        ctx.lineTo(points[i].x, points[i].y);
+        const p = points[i];
+        if (!p) continue;
+        ctx.lineTo(p.x, p.y);
       }
       ctx.strokeStyle = color;
       ctx.lineWidth = width;
@@ -124,22 +128,21 @@ export function useDraw(canvasRef: RefObject<HTMLCanvasElement | null>): UseDraw
   }, [isDrawing, currentPoints, currentColor, currentWidth, strokes]);
 
   const undo = useCallback(() => {
-    if (strokes.length === 0) return;
+    if (undoStack.length === 0) return;
     setUndoStack(prev => {
       const updated = [...prev];
       const last = updated.pop();
       setRedoStack(redoPrev => [...redoPrev, strokes]);
       if (last !== undefined) {
         setStrokes(last);
-      } else {
-        setStrokes([]);
+        setIsEmpty(last.length === 0);
       }
-      if (last && last.length === 0) setIsEmpty(true);
       return updated;
     });
-  }, [strokes]);
+  }, [strokes, undoStack]);
 
   const redo = useCallback(() => {
+    if (redoStack.length === 0) return;
     setRedoStack(prev => {
       const updated = [...prev];
       const next = updated.pop();
@@ -150,7 +153,7 @@ export function useDraw(canvasRef: RefObject<HTMLCanvasElement | null>): UseDraw
       }
       return updated;
     });
-  }, [strokes]);
+  }, [strokes, redoStack]);
 
   const clear = useCallback(() => {
     if (strokes.length === 0) return;

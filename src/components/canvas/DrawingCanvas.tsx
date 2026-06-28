@@ -1,6 +1,6 @@
 import { useRef, useEffect, useCallback } from 'react';
 import { useDraw } from '../../hooks/useDraw';
-import { drawDotGrid } from '../../lib/canvas';
+import { drawDotGrid, drawLineGrid } from '../../lib/canvas';
 import type { GuideType } from '../../types';
 
 interface DrawingCanvasProps {
@@ -11,17 +11,8 @@ export function DrawingCanvas({ guideType = 'dots' }: DrawingCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  const {
-    strokes,
-    isEmpty,
-    // currentColor,
-    // currentWidth,
-    startDrawing,
-    draw,
-    stopDrawing,
-    redraw,
-    resizeCanvas,
-  } = useDraw(canvasRef);
+  const { strokes, isEmpty, startDrawing, draw, stopDrawing, redraw, resizeCanvas } =
+    useDraw(canvasRef);
 
   const fullRedraw = useCallback(() => {
     const canvas = canvasRef.current;
@@ -33,6 +24,8 @@ export function DrawingCanvas({ guideType = 'dots' }: DrawingCanvasProps) {
 
     if (guideType === 'dots') {
       drawDotGrid(ctx, width, height);
+    } else if (guideType === 'grid') {
+      drawLineGrid(ctx, width, height);
     }
 
     redraw(ctx);
@@ -49,7 +42,7 @@ export function DrawingCanvas({ guideType = 'dots' }: DrawingCanvasProps) {
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
-    // const dpr = window.devicePixelRatio || 1;
+    const dpr = window.devicePixelRatio || 1;
     ctx.save();
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     fullRedraw();
@@ -74,7 +67,6 @@ export function DrawingCanvas({ guideType = 'dots' }: DrawingCanvasProps) {
           <p className="text-stone-300 text-sm select-none">Start drawing your mark</p>
         </div>
       )}
-      {/* Stroke count badge */}
       {!isEmpty && (
         <div className="absolute bottom-3 right-3 bg-white/80 backdrop-blur-sm px-2 py-1 rounded-md text-xs text-stone-400 border border-stone-200">
           {strokes.length} stroke{strokes.length !== 1 ? 's' : ''}
