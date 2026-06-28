@@ -1,6 +1,7 @@
-import Header from './components/layout/Header';
-import Sidebar from './components/layout/Sidebar';
-import Whiteboard from './components/canvas/Whiteboard';
+import { Header } from './components/layout/Header';
+import { Sidebar } from './components/layout/Sidebar';
+import { DrawingCanvas } from './components/canvas/DrawingCanvas';
+import { Footer } from './components/layout/Footer';
 
 function App() {
   return (
@@ -8,8 +9,9 @@ function App() {
       <Header />
       <div className="flex flex-1 overflow-hidden">
         <Sidebar />
-        <Whiteboard />
+        <DrawingCanvas />
       </div>
+      <Footer />
     </div>
   );
 }
