@@ -43,16 +43,15 @@ export function FloatingPanel({ drawHook }: FloatingPanelProps) {
     setPosition({ ...savedPosition });
   };
 
-  // Collapsed state — fixed to bottom-right
   if (collapsed) {
     return (
-      <div className="absolute z-40 bottom-4 right-4">
+      <div className="absolute z-40 bottom-4 right-4 animate-in fade-in zoom-in">
         <button
           onClick={handleExpand}
-          className="w-10 h-10 bg-white rounded-full shadow-lg border border-stone-200 flex items-center justify-center hover:bg-stone-50 hover:shadow-xl transition-all cursor-pointer"
+          className="w-10 h-10 bg-white rounded-2xl shadow-lg border border-stone-200/60 flex items-center justify-center hover:shadow-xl hover:scale-105 transition-all duration-200 cursor-pointer"
           title="Open pen settings"
         >
-          <Palette className="w-4 h-4 text-stone-600" />
+          <Palette className="w-4 h-4 text-stone-500" />
         </button>
       </div>
     );
@@ -60,30 +59,33 @@ export function FloatingPanel({ drawHook }: FloatingPanelProps) {
 
   return (
     <div
-      className="absolute z-40 bg-white rounded-xl shadow-xl border border-stone-200 overflow-hidden w-[190px] select-none"
+      className="absolute z-40 bg-white/95 backdrop-blur-md rounded-2xl shadow-xl border border-stone-200/60 overflow-hidden w-[190px] select-none transition-shadow duration-200 hover:shadow-2xl"
       style={{ left: position.x, top: position.y }}
       onMouseMove={handleDrag}
       onMouseUp={handleDragEnd}
       onMouseLeave={handleDragEnd}
     >
-      {/* Drag handle */}
+      {/* Handle */}
       <div
-        className="flex items-center justify-between px-3 py-2 bg-stone-50 border-b border-stone-100 cursor-grab active:cursor-grabbing"
+        className="flex items-center justify-between px-3 py-2.5 cursor-grab active:cursor-grabbing"
         onMouseDown={handleDragStart}
       >
-        <div className="flex items-center gap-1.5">
-          <GripHorizontal className="w-3.5 h-3.5 text-stone-400" />
-          <span className="text-[10px] font-semibold text-stone-400 uppercase tracking-widest">
+        <div className="flex items-center gap-2">
+          <GripHorizontal className="w-3 h-3 text-stone-300" />
+          <span className="text-[10px] font-semibold text-stone-400 uppercase tracking-wider">
             Pen
           </span>
         </div>
         <button
           onClick={handleCollapse}
-          className="w-5 h-5 flex items-center justify-center rounded hover:bg-stone-200 transition-colors cursor-pointer"
+          className="w-5 h-5 flex items-center justify-center rounded-md hover:bg-stone-100 transition-colors cursor-pointer"
         >
           <X className="w-3 h-3 text-stone-400" />
         </button>
       </div>
+
+      {/* Divider */}
+      <div className="mx-3 h-px bg-stone-100" />
 
       {/* Content */}
       <div className="p-3">

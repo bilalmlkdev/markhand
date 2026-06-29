@@ -13,7 +13,7 @@ export function ColorPicker({ color, onChange }: ColorPickerProps) {
     <>
       <button
         onClick={() => inputRef.current?.click()}
-        className="w-6 h-6 rounded-md border-2 border-dashed border-stone-300 flex items-center justify-center hover:border-stone-500 transition-colors cursor-pointer"
+        className="w-7 h-7 rounded-lg border-2 border-dashed border-stone-300 flex items-center justify-center hover:border-stone-400 transition-colors cursor-pointer"
       >
         <Plus className="w-3 h-3 text-stone-400" />
       </button>
