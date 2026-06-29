@@ -85,7 +85,7 @@ export function DrawingCanvas({ drawHook, guideType }: DrawingCanvasProps) {
         </div>
       )}
       {!isEmpty && (
-        <div className="absolute bottom-3 right-3 bg-white/80 backdrop-blur-sm px-2 py-1 rounded-md text-xs text-stone-400 border border-stone-200 pointer-events-none">
+        <div className="absolute bottom-3 left-3 bg-white/80 backdrop-blur-sm px-2 py-1 rounded-md text-xs text-stone-400 border border-stone-200 pointer-events-none">
           {strokes.length} stroke{strokes.length !== 1 ? 's' : ''}
         </div>
       )}
