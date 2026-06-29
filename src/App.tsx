@@ -3,7 +3,6 @@ import { Header } from './components/layout/Header';
 import { DrawingCanvas } from './components/canvas/DrawingCanvas';
 import { FloatingPanel } from './components/layout/FloatingPanel';
 import { GuidePills } from './components/canvas/GuidePills';
-import { Footer } from './components/layout/Footer';
 import { useDraw } from './hooks/useDraw';
 import type { GuideType } from './types';
 
@@ -19,7 +18,6 @@ function App() {
         <GuidePills activeGuide={guideType} onChange={setGuideType} />
         <FloatingPanel drawHook={drawHook} />
       </div>
-      <Footer />
     </div>
   );
 }
