@@ -11,17 +11,19 @@ import {
   Coffee,
   Heart,
 } from 'lucide-react';
-import GithubIcon from '/github.svg';
 import { Button } from '../ui/Button';
 import { ExportModal } from '../exports/ExportModal';
 import { ProjectModal } from './ProjectModal';
 import type { UseDrawReturn } from '../../hooks/useDraw';
+import type { CanvasTheme } from '../../types';
+import { FiGithub } from 'react-icons/fi';
 
 interface HeaderProps {
   drawHook: UseDrawReturn;
+  theme: CanvasTheme;
 }
 
-export function Header({ drawHook }: HeaderProps) {
+export function Header({ drawHook, theme }: HeaderProps) {
   const [exportOpen, setExportOpen] = useState(false);
   const [projectOpen, setProjectOpen] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -147,7 +149,7 @@ export function Header({ drawHook }: HeaderProps) {
             title="View on GitHub"
             className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-stone-100 text-stone-400 hover:text-stone-700 transition-colors"
           >
-            <img src={GithubIcon} className="w-4 h-4" />
+            <FiGithub className="w-4 h-4" />
           </a>
           <div className="w-px h-5 bg-stone-200 mx-1" />
           <Button
@@ -167,6 +169,7 @@ export function Header({ drawHook }: HeaderProps) {
         strokes={strokes}
         width={canvasWidth}
         height={canvasHeight}
+        theme={theme}
       />
 
       <ProjectModal open={projectOpen} onClose={() => setProjectOpen(false)} />

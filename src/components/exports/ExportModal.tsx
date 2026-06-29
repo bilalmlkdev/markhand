@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { X, Download, Copy, Check, Printer } from 'lucide-react';
 import { Button } from '../ui/Button';
-import type { Stroke } from '../../types';
+import { themes } from '../../lib/canvas';
+import type { Stroke, CanvasTheme } from '../../types';
 
 interface ExportModalProps {
   open: boolean;
@@ -9,26 +10,35 @@ interface ExportModalProps {
   strokes: Stroke[];
   width: number;
   height: number;
+  theme: CanvasTheme;
 }
 
 type Format = 'png' | 'svg';
-type Background = 'transparent' | 'white' | 'warm';
+type Background = 'theme' | 'transparent' | 'white';
 
-const backgrounds: { label: string; value: Background; hex: string }[] = [
-  { label: 'Transparent', value: 'transparent', hex: 'transparent' },
+const backgrounds: { label: string; value: Background; hex?: string }[] = [
+  { label: 'Theme', value: 'theme' },
+  { label: 'Transparent', value: 'transparent' },
   { label: 'White', value: 'white', hex: '#ffffff' },
-  { label: 'Warm', value: 'warm', hex: '#faf7f2' },
 ];
 
-export function ExportModal({ open, onClose, strokes, width, height }: ExportModalProps) {
+export function ExportModal({ open, onClose, strokes, width, height, theme }: ExportModalProps) {
   const previewRef = useRef<HTMLCanvasElement>(null);
   const [format, setFormat] = useState<Format>('png');
-  const [background, setBackground] = useState<Background>('white');
+  const [background, setBackground] = useState<Background>('theme');
   const [copied, setCopied] = useState(false);
 
-  const bgHex = backgrounds.find(b => b.value === background)?.hex ?? 'transparent';
+  // Fallback to default theme if undefined
+  const themeConfig = themes[theme] ?? themes.default;
 
-  // Calculate bounds of all strokes to fit preview properly
+  const getBgHex = useCallback(() => {
+    if (background === 'transparent') return 'transparent';
+    if (background === 'white') return '#ffffff';
+    return themeConfig.bg;
+  }, [background, themeConfig.bg]);
+
+  const bgHex = getBgHex();
+
   const getStrokeBounds = useCallback(() => {
     let minX = Infinity,
       minY = Infinity,
@@ -48,7 +58,6 @@ export function ExportModal({ open, onClose, strokes, width, height }: ExportMod
       return { x: 0, y: 0, w: width, h: height };
     }
 
-    // Add padding
     const padding = 20;
     return {
       x: Math.max(0, minX - padding),
@@ -66,10 +75,9 @@ export function ExportModal({ open, onClose, strokes, width, height }: ExportMod
     const maxPreviewWidth = 320;
     const maxPreviewHeight = 200;
 
-    // Calculate scale to fit the bounds within preview
     const scaleX = maxPreviewWidth / bounds.w;
     const scaleY = maxPreviewHeight / bounds.h;
-    const scale = Math.min(scaleX, scaleY, 1); // Don't upscale
+    const scale = Math.min(scaleX, scaleY, 1);
 
     const previewW = Math.round(bounds.w * scale);
     const previewH = Math.round(bounds.h * scale);
@@ -91,7 +99,7 @@ export function ExportModal({ open, onClose, strokes, width, height }: ExportMod
       ctx.fillRect(0, 0, previewW, previewH);
     }
 
-    // Draw strokes offset by bounds
+    // Draw strokes
     ctx.save();
     ctx.translate(-bounds.x * scale, -bounds.y * scale);
 
@@ -175,7 +183,8 @@ export function ExportModal({ open, onClose, strokes, width, height }: ExportMod
         paths += `<path d="${d}" stroke="${s.color}" stroke-width="${s.width}" fill="none" stroke-linecap="round" stroke-linejoin="round"/>\n`;
       });
 
-      const svg = `<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">\n  <rect width="${width}" height="${height}" fill="${bgHex}"/>\n  ${paths}</svg>`;
+      const svgBg = background === 'transparent' ? 'transparent' : bgHex;
+      const svg = `<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">\n  <rect width="${width}" height="${height}" fill="${svgBg}"/>\n  ${paths}</svg>`;
 
       const blob = new Blob([svg], { type: 'image/svg+xml;charset=utf-8' });
       const url = URL.createObjectURL(blob);
@@ -239,11 +248,7 @@ export function ExportModal({ open, onClose, strokes, width, height }: ExportMod
       </html>
     `);
     printWindow.document.close();
-
-    // Wait for image to load then print
-    printWindow.onload = () => {
-      printWindow.print();
-    };
+    printWindow.onload = () => printWindow.print();
   };
 
   if (!open) return null;
@@ -272,6 +277,12 @@ export function ExportModal({ open, onClose, strokes, width, height }: ExportMod
                 background === 'transparent'
                   ? 'repeating-conic-gradient(#e7e5e4 0% 25%, transparent 0% 50%) 50% / 16px 16px'
                   : undefined,
+              backgroundColor:
+                background === 'theme'
+                  ? themeConfig.bg
+                  : background === 'white'
+                    ? '#ffffff'
+                    : undefined,
             }}
           >
             <canvas ref={previewRef} className="block" />

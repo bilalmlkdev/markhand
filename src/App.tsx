@@ -13,7 +13,7 @@ function App() {
 
   return (
     <div className="h-screen flex flex-col bg-stone-50 text-stone-900 overflow-hidden">
-      <Header drawHook={drawHook} />
+      <Header drawHook={drawHook} theme={theme} />
       <div className="flex-1 relative overflow-hidden">
         <DrawingCanvas drawHook={drawHook} guideType={guideType} theme={theme} />
         <GuidePills activeGuide={guideType} onChange={setGuideType} />
