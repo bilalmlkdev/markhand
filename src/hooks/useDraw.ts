@@ -19,11 +19,13 @@ export interface UseDrawReturn {
   fullRedraw: () => void;
   resizeCanvas: () => void;
   getCanvas: () => HTMLCanvasElement | null;
+  hasDrawn: boolean;
 }
 
 const STORAGE_KEY = 'markhand_strokes';
 const COLOR_KEY = 'markhand_color';
 const WIDTH_KEY = 'markhand_width';
+const HAS_DRAWN_KEY = 'markhand_has_drawn';
 
 function loadStrokes(): Stroke[] {
   try {
@@ -37,9 +39,7 @@ function loadStrokes(): Stroke[] {
 function saveStrokes(strokes: Stroke[]) {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(strokes));
-  } catch {
-    // Storage full or unavailable
-  }
+  } catch {}
 }
 
 function loadColor(): string {
@@ -59,6 +59,14 @@ function saveWidth(width: number) {
   localStorage.setItem(WIDTH_KEY, String(width));
 }
 
+function loadHasDrawn(): boolean {
+  return localStorage.getItem(HAS_DRAWN_KEY) === 'true';
+}
+
+function saveHasDrawn(val: boolean) {
+  localStorage.setItem(HAS_DRAWN_KEY, String(val));
+}
+
 export function useDraw(): UseDrawReturn {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [strokes, setStrokes] = useState<Stroke[]>(loadStrokes);
@@ -67,14 +75,18 @@ export function useDraw(): UseDrawReturn {
   const [isDrawing, setIsDrawing] = useState(false);
   const [currentColor, setCurrentColorState] = useState(loadColor);
   const [currentWidth, setCurrentWidthState] = useState(loadWidth);
+  const [hasDrawn, setHasDrawn] = useState(loadHasDrawn);
 
   const currentPointsRef = useRef<Point[]>([]);
   const isEmpty = strokes.length === 0;
 
-  // Persist strokes
   useEffect(() => {
-    saveStrokes(strokes);
-  }, [strokes]);
+    if (hasDrawn) saveStrokes(strokes);
+  }, [strokes, hasDrawn]);
+
+  useEffect(() => {
+    saveHasDrawn(hasDrawn);
+  }, [hasDrawn]);
 
   const setCanvas = useCallback((canvas: HTMLCanvasElement | null) => {
     canvasRef.current = canvas;
@@ -200,17 +212,19 @@ export function useDraw(): UseDrawReturn {
         width: currentWidth,
       };
       setStrokes(prev => [...prev, newStroke]);
+      if (!hasDrawn) setHasDrawn(true);
     }
     currentPointsRef.current = [];
-  }, [isDrawing, currentColor, currentWidth, strokes]);
+  }, [isDrawing, currentColor, currentWidth, strokes, hasDrawn]);
 
   const undo = useCallback(() => {
-    if (undoStack.length === 0) return;
+    if (undoStack.length === 0 && strokes.length === 0) return;
     setUndoStack(prev => {
       const updated = [...prev];
       const last = updated.pop();
       setRedoStack(redoPrev => [...redoPrev, strokes]);
       if (last !== undefined) setStrokes(last);
+      else setStrokes([]);
       return updated;
     });
   }, [strokes, undoStack]);
@@ -258,5 +272,6 @@ export function useDraw(): UseDrawReturn {
     fullRedraw,
     resizeCanvas,
     getCanvas,
+    hasDrawn,
   };
 }
