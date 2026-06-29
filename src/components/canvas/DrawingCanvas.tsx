@@ -1,21 +1,24 @@
 import { useRef, useEffect, useCallback } from 'react';
 import { drawDotGrid, drawLineGrid, themes } from '../../lib/canvas';
-import type { GuideType, CanvasTheme } from '../../types';
+import { cursors } from '../../lib/cursors';
+import type { GuideType, CanvasTheme, CursorStyle } from '../../types';
 import type { UseDrawReturn } from '../../hooks/useDraw';
 
 interface DrawingCanvasProps {
   drawHook: UseDrawReturn;
   guideType: GuideType;
   theme: CanvasTheme;
+  cursorStyle: CursorStyle;
 }
 
-export function DrawingCanvas({ drawHook, guideType, theme }: DrawingCanvasProps) {
+export function DrawingCanvas({ drawHook, guideType, theme, cursorStyle }: DrawingCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const { strokes, isEmpty, isDrawing, setCanvas, startDrawing, draw, stopDrawing, resizeCanvas } =
     drawHook;
 
   const themeConfig = themes[theme];
+  const cursorCss = cursors[cursorStyle]?.css ?? 'crosshair';
 
   useEffect(() => {
     setCanvas(canvasRef.current);
@@ -30,7 +33,6 @@ export function DrawingCanvas({ drawHook, guideType, theme }: DrawingCanvasProps
     const { width, height } = canvas;
     ctx.clearRect(0, 0, width, height);
 
-    // Background fill
     ctx.fillStyle = themeConfig.bg;
     ctx.fillRect(0, 0, width, height);
 
@@ -79,7 +81,8 @@ export function DrawingCanvas({ drawHook, guideType, theme }: DrawingCanvasProps
     >
       <canvas
         ref={canvasRef}
-        className="absolute inset-0 cursor-crosshair touch-none"
+        className="absolute inset-0 touch-none"
+        style={{ cursor: cursorCss }}
         onMouseDown={startDrawing}
         onMouseMove={draw}
         onMouseUp={stopDrawing}

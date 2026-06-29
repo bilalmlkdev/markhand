@@ -23,6 +23,8 @@ export type GuideType = 'none' | 'dots' | 'grid' | 'lines';
 
 export type CanvasTheme = 'default' | 'warm' | 'cool' | 'dark';
 
+export type CursorStyle = 'crosshair' | 'pencil' | 'dot' | 'brush' | 'pen';
+
 export interface ThemeConfig {
   name: string;
   bg: string;
