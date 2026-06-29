@@ -15,10 +15,10 @@ const guides: { type: GuideType; label: string; icon: React.ReactNode }[] = [
 
 export function GuideOverlay({ activeGuide, onChange }: GuideOverlayProps) {
   return (
-    <div className="p-3 border-b border-stone-100">
-      <p className="text-[10px] font-semibold text-stone-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+    <div className="space-y-2">
+      <p className="text-[10px] font-semibold text-stone-400 uppercase tracking-widest flex items-center gap-1.5">
         <Grid3X3 className="w-3 h-3" />
-        Guides
+        Guide Type
       </p>
       <div className="space-y-0.5">
         {guides.map(guide => (

@@ -23,7 +23,7 @@ const backgrounds: { label: string; value: Background; hex: string }[] = [
 export function ExportModal({ open, onClose, strokes, width, height }: ExportModalProps) {
   const previewRef = useRef<HTMLCanvasElement>(null);
   const [format, setFormat] = useState<Format>('png');
-  const [background, setBackground] = useState<Background>('transparent');
+  const [background, setBackground] = useState<Background>('white');
   const [copied, setCopied] = useState(false);
 
   const bgHex = backgrounds.find(b => b.value === background)?.hex ?? 'transparent';

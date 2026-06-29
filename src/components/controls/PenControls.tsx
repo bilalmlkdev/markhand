@@ -29,14 +29,13 @@ export function PenControls({
   onWidthChange,
 }: PenControlsProps) {
   return (
-    <div className="p-3 border-b border-stone-100">
-      <p className="text-[10px] font-semibold text-stone-400 uppercase tracking-widest mb-3 flex items-center gap-1.5">
+    <div className="space-y-3">
+      <p className="text-[10px] font-semibold text-stone-400 uppercase tracking-widest flex items-center gap-1.5">
         <Palette className="w-3 h-3" />
-        Pen
+        Color
       </p>
 
-      {/* Color swatches */}
-      <div className="grid grid-cols-5 gap-1.5 mb-4">
+      <div className="grid grid-cols-5 gap-1.5">
         {colors.map(color => (
           <button
             key={color}
@@ -52,26 +51,30 @@ export function PenControls({
         <ColorPicker color={activeColor} onChange={onColorChange} />
       </div>
 
-      {/* Stroke widths */}
-      <div className="space-y-1">
-        {strokeWidths.map(width => (
-          <button
-            key={width}
-            onClick={() => onWidthChange(width)}
-            className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-md transition-colors cursor-pointer ${
-              activeWidth === width ? 'bg-stone-100' : 'hover:bg-stone-50'
-            }`}
-          >
-            <div
-              className="rounded-full bg-current"
-              style={{
-                width: Math.min(width * 3, 24),
-                height: Math.min(width * 3, 24),
-              }}
-            />
-            <span className="text-xs text-stone-500">{width}px</span>
-          </button>
-        ))}
+      <div>
+        <p className="text-[10px] font-semibold text-stone-400 uppercase tracking-widest mb-2">
+          Width
+        </p>
+        <div className="space-y-1">
+          {strokeWidths.map(width => (
+            <button
+              key={width}
+              onClick={() => onWidthChange(width)}
+              className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-md transition-colors cursor-pointer ${
+                activeWidth === width ? 'bg-stone-100' : 'hover:bg-stone-50'
+              }`}
+            >
+              <div
+                className="rounded-full bg-current"
+                style={{
+                  width: Math.min(width * 3, 24),
+                  height: Math.min(width * 3, 24),
+                }}
+              />
+              <span className="text-xs text-stone-500">{width}px</span>
+            </button>
+          ))}
+        </div>
       </div>
     </div>
   );
