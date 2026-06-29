@@ -7,28 +7,27 @@ interface GuidePillsProps {
 }
 
 const guides: { type: GuideType; label: string; icon: React.ReactNode }[] = [
-  { type: 'none', label: 'None', icon: <EyeOff className="w-3 h-3" /> },
-  { type: 'dots', label: 'Dots', icon: <Grid3X3 className="w-3 h-3" /> },
-  { type: 'grid', label: 'Grid', icon: <LayoutGrid className="w-3 h-3" /> },
-  { type: 'lines', label: 'Lines', icon: <Rows3 className="w-3 h-3" /> },
+  { type: 'none', label: 'No guide', icon: <EyeOff className="w-3.5 h-3.5" /> },
+  { type: 'dots', label: 'Dot grid', icon: <Grid3X3 className="w-3.5 h-3.5" /> },
+  { type: 'grid', label: 'Line grid', icon: <LayoutGrid className="w-3.5 h-3.5" /> },
+  { type: 'lines', label: 'Lines', icon: <Rows3 className="w-3.5 h-3.5" /> },
 ];
 
 export function GuidePills({ activeGuide, onChange }: GuidePillsProps) {
   return (
-    <div className="absolute top-3 right-3 z-30 flex gap-1 bg-white/90 backdrop-blur-sm rounded-full px-1 py-1 border border-stone-200 shadow-sm">
+    <div className="absolute top-3 right-3 z-30 flex flex-col gap-0.5 bg-white/90 backdrop-blur-md rounded-2xl p-1 border border-stone-200/60 shadow-lg">
       {guides.map(guide => (
         <button
           key={guide.type}
           onClick={() => onChange(guide.type)}
           title={guide.label}
-          className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium transition-all cursor-pointer ${
+          className={`w-8 h-8 flex items-center justify-center rounded-4xl transition-all duration-150 cursor-pointer ${
             activeGuide === guide.type
               ? 'bg-stone-900 text-white shadow-sm'
-              : 'text-stone-500 hover:text-stone-700 hover:bg-stone-100'
+              : 'text-stone-400 hover:text-stone-600 hover:bg-stone-100'
           }`}
         >
           {guide.icon}
-          <span className="hidden sm:inline">{guide.label}</span>
         </button>
       ))}
     </div>

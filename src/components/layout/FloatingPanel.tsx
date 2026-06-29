@@ -48,7 +48,7 @@ export function FloatingPanel({ drawHook }: FloatingPanelProps) {
       <div className="absolute z-40 bottom-4 right-4 animate-in fade-in zoom-in">
         <button
           onClick={handleExpand}
-          className="w-10 h-10 bg-white rounded-2xl shadow-lg border border-stone-200/60 flex items-center justify-center hover:shadow-xl hover:scale-105 transition-all duration-200 cursor-pointer"
+          className="w-10 h-10 bg-white rounded-full shadow-lg border border-stone-200/60 flex items-center justify-center hover:shadow-xl hover:scale-105 transition-all duration-200 cursor-pointer"
           title="Open pen settings"
         >
           <Palette className="w-4 h-4 text-stone-500" />
