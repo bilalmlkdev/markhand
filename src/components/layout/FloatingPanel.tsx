@@ -12,6 +12,29 @@ interface FloatingPanelProps {
   onThemeChange: (theme: CanvasTheme) => void;
 }
 
+const PANEL_COLLAPSED_KEY = 'markhand_panel_collapsed';
+const PANEL_X_KEY = 'markhand_panel_x';
+const PANEL_Y_KEY = 'markhand_panel_y';
+
+function loadCollapsed(): boolean {
+  return localStorage.getItem(PANEL_COLLAPSED_KEY) === 'true';
+}
+
+function saveCollapsed(collapsed: boolean) {
+  localStorage.setItem(PANEL_COLLAPSED_KEY, String(collapsed));
+}
+
+function loadPosition(): { x: number; y: number } {
+  const x = Number(localStorage.getItem(PANEL_X_KEY)) || 16;
+  const y = Number(localStorage.getItem(PANEL_Y_KEY)) || 60;
+  return { x, y };
+}
+
+function savePosition(x: number, y: number) {
+  localStorage.setItem(PANEL_X_KEY, String(Math.round(x)));
+  localStorage.setItem(PANEL_Y_KEY, String(Math.round(y)));
+}
+
 function isLight(hex: string): boolean {
   const c = hex.replace('#', '');
   if (c.length < 6) return true;
@@ -43,12 +66,13 @@ const lightInkColors = [
 ];
 
 export function FloatingPanel({ drawHook, activeTheme, onThemeChange }: FloatingPanelProps) {
-  const [collapsed, setCollapsed] = useState(false);
+  const savedPos = loadPosition();
+  const [collapsed, setCollapsed] = useState(loadCollapsed);
   const [activeTab, setActiveTab] = useState<'pen' | 'theme'>('pen');
-  const [position, setPosition] = useState({ x: 16, y: 60 });
+  const [position, setPosition] = useState(savedPos);
+  const [savedPosition, setSavedPosition] = useState(savedPos);
   const [dragging, setDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
-  const [savedPosition, setSavedPosition] = useState({ x: 16, y: 60 });
   const [mounted, setMounted] = useState(false);
   const [prevTheme, setPrevTheme] = useState(activeTheme);
   const panelRef = useRef<HTMLDivElement>(null);
@@ -58,6 +82,16 @@ export function FloatingPanel({ drawHook, activeTheme, onThemeChange }: Floating
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  // Persist collapsed state
+  useEffect(() => {
+    saveCollapsed(collapsed);
+  }, [collapsed]);
+
+  // Persist saved position
+  useEffect(() => {
+    savePosition(savedPosition.x, savedPosition.y);
+  }, [savedPosition]);
 
   // Auto-switch pen color when theme changes
   useEffect(() => {
@@ -70,12 +104,10 @@ export function FloatingPanel({ drawHook, activeTheme, onThemeChange }: Floating
     const light = isLight(themeConfig.bg);
 
     if (light) {
-      // Light theme — switch to dark ink if currently using a light-ink color
       if (lightInkColors.includes(currentColor)) {
         setCurrentColor('#1c1917');
       }
     } else {
-      // Dark theme — switch to light ink if currently using a dark-ink color
       if (darkInkColors.includes(currentColor)) {
         setCurrentColor('#ffffff');
       }
@@ -107,7 +139,10 @@ export function FloatingPanel({ drawHook, activeTheme, onThemeChange }: Floating
   const handleDragEnd = () => {
     if (!dragging) return;
     setDragging(false);
-    setSavedPosition({ ...position });
+    const clamped = clamp(position.x, position.y);
+    setPosition(clamped);
+    setSavedPosition(clamped);
+    savePosition(clamped.x, clamped.y);
   };
 
   const handleCollapse = (e: React.MouseEvent) => {
