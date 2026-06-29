@@ -1,7 +1,20 @@
 import { useState } from 'react';
-import { PenLine, Undo2, Redo2, Trash2, Download, Copy, Check } from 'lucide-react';
+import {
+  PenLine,
+  Undo2,
+  Redo2,
+  Trash2,
+  Download,
+  Copy,
+  Check,
+  Info,
+  Coffee,
+  Heart,
+} from 'lucide-react';
+import GithubIcon from '/github.svg';
 import { Button } from '../ui/Button';
 import { ExportModal } from '../exports/ExportModal';
+import { ProjectModal } from './ProjectModal';
 import type { UseDrawReturn } from '../../hooks/useDraw';
 
 interface HeaderProps {
@@ -10,6 +23,7 @@ interface HeaderProps {
 
 export function Header({ drawHook }: HeaderProps) {
   const [exportOpen, setExportOpen] = useState(false);
+  const [projectOpen, setProjectOpen] = useState(false);
   const [copied, setCopied] = useState(false);
 
   const { strokes, isEmpty, undo, redo, clear, getCanvas } = drawHook;
@@ -69,27 +83,13 @@ export function Header({ drawHook }: HeaderProps) {
 
         {/* Center: Actions */}
         <div className="flex items-center gap-0.5">
-          <Button
-            variant="ghost"
-            size="icon"
-            disabled={!canUndo}
-            onClick={undo}
-            title="Undo (Ctrl+Z)"
-          >
+          <Button variant="ghost" size="icon" disabled={!canUndo} onClick={undo} title="Undo">
             <Undo2 className="w-4 h-4" />
           </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            disabled={!canRedo}
-            onClick={redo}
-            title="Redo (Ctrl+Y)"
-          >
+          <Button variant="ghost" size="icon" disabled={!canRedo} onClick={redo} title="Redo">
             <Redo2 className="w-4 h-4" />
           </Button>
-
           <div className="w-px h-5 bg-stone-200 mx-1" />
-
           <Button
             variant="ghost"
             size="icon"
@@ -99,9 +99,7 @@ export function Header({ drawHook }: HeaderProps) {
           >
             <Trash2 className="w-4 h-4" />
           </Button>
-
           <div className="w-px h-5 bg-stone-200 mx-1" />
-
           <Button
             variant="ghost"
             size="icon"
@@ -116,14 +114,51 @@ export function Header({ drawHook }: HeaderProps) {
             size="icon"
             disabled={isEmpty}
             onClick={() => setExportOpen(true)}
-            title="Export signature"
+            title="Export"
           >
             <Download className="w-4 h-4" />
           </Button>
         </div>
 
-        {/* Right: Version */}
-        <span className="text-xs text-stone-400 w-[60px] text-right">v1.0.0</span>
+        {/* Right: Support + Info */}
+        <div className="flex items-center gap-0.5">
+          <a
+            href="https://www.buymeacoffee.com/byllzz"
+            target="_blank"
+            rel="noopener noreferrer"
+            title="Buy me a coffee"
+            className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-amber-50 text-stone-400 hover:text-amber-600 transition-colors"
+          >
+            <Coffee className="w-4 h-4" />
+          </a>
+          <a
+            href="https://github.com/sponsors/byllzz"
+            target="_blank"
+            rel="noopener noreferrer"
+            title="Sponsor on GitHub"
+            className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-pink-50 text-stone-400 hover:text-pink-500 transition-colors"
+          >
+            <Heart className="w-4 h-4" />
+          </a>
+          <a
+            href="https://github.com/byllzz/markhand"
+            target="_blank"
+            rel="noopener noreferrer"
+            title="View on GitHub"
+            className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-stone-100 text-stone-400 hover:text-stone-700 transition-colors"
+          >
+            <img src={GithubIcon} className="w-4 h-4" />
+          </a>
+          <div className="w-px h-5 bg-stone-200 mx-1" />
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setProjectOpen(true)}
+            title="About Markhand"
+          >
+            <Info className="w-4 h-4" />
+          </Button>
+        </div>
       </header>
 
       <ExportModal
@@ -133,6 +168,8 @@ export function Header({ drawHook }: HeaderProps) {
         width={canvasWidth}
         height={canvasHeight}
       />
+
+      <ProjectModal open={projectOpen} onClose={() => setProjectOpen(false)} />
     </>
   );
 }
