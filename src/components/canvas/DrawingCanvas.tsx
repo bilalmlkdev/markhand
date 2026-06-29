@@ -1,20 +1,22 @@
 import { useRef, useEffect, useCallback } from 'react';
-import { drawDotGrid, drawLineGrid } from '../../lib/canvas';
-import type { GuideType } from '../../types';
+import { drawDotGrid, drawLineGrid, themes } from '../../lib/canvas';
+import type { GuideType, CanvasTheme } from '../../types';
 import type { UseDrawReturn } from '../../hooks/useDraw';
 
 interface DrawingCanvasProps {
   drawHook: UseDrawReturn;
   guideType: GuideType;
+  theme: CanvasTheme;
 }
 
-export function DrawingCanvas({ drawHook, guideType }: DrawingCanvasProps) {
+export function DrawingCanvas({ drawHook, guideType, theme }: DrawingCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const { strokes, isEmpty, isDrawing, setCanvas, startDrawing, draw, stopDrawing, resizeCanvas } =
     drawHook;
 
-  // Register canvas
+  const themeConfig = themes[theme];
+
   useEffect(() => {
     setCanvas(canvasRef.current);
   }, [setCanvas]);
@@ -28,10 +30,14 @@ export function DrawingCanvas({ drawHook, guideType }: DrawingCanvasProps) {
     const { width, height } = canvas;
     ctx.clearRect(0, 0, width, height);
 
+    // Background fill
+    ctx.fillStyle = themeConfig.bg;
+    ctx.fillRect(0, 0, width, height);
+
     if (guideType === 'dots') {
-      drawDotGrid(ctx, width, height);
+      drawDotGrid(ctx, width, height, themeConfig.dot);
     } else if (guideType === 'grid' || guideType === 'lines') {
-      drawLineGrid(ctx, width, height);
+      drawLineGrid(ctx, width, height, 32, themeConfig.dot);
     }
 
     strokes.forEach(s => {
@@ -47,7 +53,7 @@ export function DrawingCanvas({ drawHook, guideType }: DrawingCanvasProps) {
       ctx.lineJoin = 'round';
       ctx.stroke();
     });
-  }, [strokes, guideType]);
+  }, [strokes, guideType, themeConfig]);
 
   useEffect(() => {
     renderWithGuides();
@@ -67,7 +73,10 @@ export function DrawingCanvas({ drawHook, guideType }: DrawingCanvasProps) {
   }, [resizeCanvas, renderWithGuides]);
 
   return (
-    <div className="w-full h-full overflow-hidden bg-stone-100 relative">
+    <div
+      className="w-full h-full overflow-hidden relative"
+      style={{ backgroundColor: themeConfig.bg }}
+    >
       <canvas
         ref={canvasRef}
         className="absolute inset-0 cursor-crosshair touch-none"
