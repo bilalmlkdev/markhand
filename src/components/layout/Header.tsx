@@ -123,7 +123,7 @@ export function Header({ drawHook }: HeaderProps) {
         {/* Right: Support + Info */}
         <div className="flex items-center gap-0.5">
           <a
-            href="https://www.buymeacoffee.com/byllzz"
+            href="https://www.buymeacoffee.com/bilalmlkdev"
             target="_blank"
             rel="noopener noreferrer"
             title="Buy me a coffee"
