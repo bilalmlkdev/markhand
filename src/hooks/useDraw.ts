@@ -1,26 +1,27 @@
-import { useState, useCallback } from 'react';
-import type { RefObject } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import type { Point, Stroke } from '../types';
 
 interface UseDrawReturn {
   strokes: Stroke[];
-  isDrawing: boolean;
   isEmpty: boolean;
   currentColor: string;
   currentWidth: number;
   setCurrentColor: (color: string) => void;
   setCurrentWidth: (width: number) => void;
+  setCanvas: (canvas: HTMLCanvasElement | null) => void;
   startDrawing: (e: React.MouseEvent | React.TouchEvent) => void;
   draw: (e: React.MouseEvent | React.TouchEvent) => void;
   stopDrawing: () => void;
   undo: () => void;
   redo: () => void;
   clear: () => void;
-  redraw: (ctx: CanvasRenderingContext2D) => void;
+  redrawAll: (ctx: CanvasRenderingContext2D) => void;
   resizeCanvas: () => void;
+  getCanvas: () => HTMLCanvasElement | null;
 }
 
-export function useDraw(canvasRef: RefObject<HTMLCanvasElement | null>): UseDrawReturn {
+export function useDraw(): UseDrawReturn {
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [strokes, setStrokes] = useState<Stroke[]>([]);
   const [undoStack, setUndoStack] = useState<Stroke[][]>([]);
   const [redoStack, setRedoStack] = useState<Stroke[][]>([]);
@@ -28,20 +29,30 @@ export function useDraw(canvasRef: RefObject<HTMLCanvasElement | null>): UseDraw
   const [currentPoints, setCurrentPoints] = useState<Point[]>([]);
   const [currentColor, setCurrentColor] = useState('#1c1917');
   const [currentWidth, setCurrentWidth] = useState(3);
-  const [isEmpty, setIsEmpty] = useState(true);
 
-  const getPoint = useCallback(
-    (e: React.MouseEvent | React.TouchEvent): Point => {
-      const canvas = canvasRef.current!;
-      const rect = canvas.getBoundingClientRect();
-      const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
-      const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
-      return { x: clientX - rect.left, y: clientY - rect.top };
-    },
-    [canvasRef],
-  );
+  const isEmpty = strokes.length === 0;
 
-  const drawStroke = useCallback(
+  const setCanvas = useCallback((canvas: HTMLCanvasElement | null) => {
+    canvasRef.current = canvas;
+  }, []);
+
+  const getCanvas = useCallback(() => canvasRef.current, []);
+
+  const getPoint = useCallback((e: React.MouseEvent | React.TouchEvent): Point => {
+    const canvas = canvasRef.current;
+    if (!canvas) return { x: 0, y: 0 };
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+    return {
+      x: (clientX - rect.left) * scaleX,
+      y: (clientY - rect.top) * scaleY,
+    };
+  }, []);
+
+  const drawStrokeOnContext = useCallback(
     (ctx: CanvasRenderingContext2D, points: Point[], color: string, width: number) => {
       if (points.length < 2) return;
       const first = points[0];
@@ -62,11 +73,11 @@ export function useDraw(canvasRef: RefObject<HTMLCanvasElement | null>): UseDraw
     [],
   );
 
-  const redraw = useCallback(
+  const redrawAll = useCallback(
     (ctx: CanvasRenderingContext2D) => {
-      strokes.forEach(s => drawStroke(ctx, s.points, s.color, s.width));
+      strokes.forEach(s => drawStrokeOnContext(ctx, s.points, s.color, s.width));
     },
-    [strokes, drawStroke],
+    [strokes, drawStrokeOnContext],
   );
 
   const resizeCanvas = useCallback(() => {
@@ -80,9 +91,7 @@ export function useDraw(canvasRef: RefObject<HTMLCanvasElement | null>): UseDraw
     canvas.height = height * dpr;
     canvas.style.width = `${width}px`;
     canvas.style.height = `${height}px`;
-    const ctx = canvas.getContext('2d');
-    if (ctx) ctx.scale(dpr, dpr);
-  }, [canvasRef]);
+  }, []);
 
   const startDrawing = useCallback(
     (e: React.MouseEvent | React.TouchEvent) => {
@@ -101,13 +110,18 @@ export function useDraw(canvasRef: RefObject<HTMLCanvasElement | null>): UseDraw
       const point = getPoint(e);
       setCurrentPoints(prev => {
         const updated = [...prev, point];
-        const canvas = canvasRef.current!;
-        const ctx = canvas.getContext('2d')!;
-        drawStroke(ctx, updated, currentColor, currentWidth);
+        // Draw the latest segment directly for responsiveness
+        const canvas = canvasRef.current;
+        if (canvas) {
+          const ctx = canvas.getContext('2d');
+          if (ctx) {
+            drawStrokeOnContext(ctx, updated, currentColor, currentWidth);
+          }
+        }
         return updated;
       });
     },
-    [isDrawing, getPoint, drawStroke, currentColor, currentWidth, canvasRef],
+    [isDrawing, getPoint, currentColor, currentWidth, drawStrokeOnContext],
   );
 
   const stopDrawing = useCallback(() => {
@@ -124,7 +138,6 @@ export function useDraw(canvasRef: RefObject<HTMLCanvasElement | null>): UseDraw
       };
       setStrokes(prev => [...prev, newStroke]);
       setCurrentPoints([]);
-      setIsEmpty(false);
     }
   }, [isDrawing, currentPoints, currentColor, currentWidth, strokes]);
 
@@ -134,10 +147,7 @@ export function useDraw(canvasRef: RefObject<HTMLCanvasElement | null>): UseDraw
       const updated = [...prev];
       const last = updated.pop();
       setRedoStack(redoPrev => [...redoPrev, strokes]);
-      if (last !== undefined) {
-        setStrokes(last);
-        setIsEmpty(last.length === 0);
-      }
+      if (last !== undefined) setStrokes(last);
       return updated;
     });
   }, [strokes, undoStack]);
@@ -150,7 +160,6 @@ export function useDraw(canvasRef: RefObject<HTMLCanvasElement | null>): UseDraw
       if (next !== undefined) {
         setUndoStack(undoPrev => [...undoPrev, strokes]);
         setStrokes(next);
-        setIsEmpty(next.length === 0);
       }
       return updated;
     });
@@ -161,24 +170,24 @@ export function useDraw(canvasRef: RefObject<HTMLCanvasElement | null>): UseDraw
     setUndoStack(prev => [...prev, strokes]);
     setRedoStack([]);
     setStrokes([]);
-    setIsEmpty(true);
   }, [strokes]);
 
   return {
     strokes,
-    isDrawing,
     isEmpty,
     currentColor,
     currentWidth,
     setCurrentColor,
     setCurrentWidth,
+    setCanvas,
     startDrawing,
     draw,
     stopDrawing,
     undo,
     redo,
     clear,
-    redraw,
+    redrawAll,
     resizeCanvas,
+    getCanvas,
   };
 }

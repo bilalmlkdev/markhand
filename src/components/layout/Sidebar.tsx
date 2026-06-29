@@ -1,4 +1,3 @@
-import type { RefObject } from 'react';
 import { PenControls } from '../controls/PenControls';
 import { CanvasControls } from '../controls/CanvasControls';
 import { GuideOverlay } from '../canvas/GuideOverlay';
@@ -11,10 +10,9 @@ interface SidebarProps {
   drawHook: ReturnType<typeof useDraw>;
   guideType: GuideType;
   onGuideChange: (guide: GuideType) => void;
-  canvasRef: RefObject<HTMLCanvasElement | null>;
 }
 
-export function Sidebar({ drawHook, guideType, onGuideChange, canvasRef }: SidebarProps) {
+export function Sidebar({ drawHook, guideType, onGuideChange }: SidebarProps) {
   const {
     currentColor,
     currentWidth,
@@ -25,13 +23,14 @@ export function Sidebar({ drawHook, guideType, onGuideChange, canvasRef }: Sideb
     undo,
     redo,
     clear,
+    getCanvas,
   } = drawHook;
 
   const canUndo = strokes.length > 0;
-  const canRedo = false; // Redo stack will be exposed from useDraw later
+  const canRedo = false;
 
   const handleExportPNG = () => {
-    const canvas = canvasRef.current;
+    const canvas = getCanvas();
     if (!canvas) return;
     const link = document.createElement('a');
     link.download = 'markhand-signature.png';
@@ -40,7 +39,7 @@ export function Sidebar({ drawHook, guideType, onGuideChange, canvasRef }: Sideb
   };
 
   const handleExportSVG = () => {
-    const canvas = canvasRef.current;
+    const canvas = getCanvas();
     if (!canvas || strokes.length === 0) return;
     const { width, height } = canvas.getBoundingClientRect();
     const svg = generateSVG(strokes, width, height);

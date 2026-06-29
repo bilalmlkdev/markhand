@@ -1,23 +1,31 @@
-import { useEffect, useCallback, type RefObject } from 'react';
+import { useRef, useEffect, useCallback } from 'react';
 import { drawDotGrid, drawLineGrid } from '../../lib/canvas';
 import type { GuideType } from '../../types';
 import type { useDraw } from '../../hooks/useDraw';
 
 interface DrawingCanvasProps {
-  canvasRef: RefObject<HTMLCanvasElement | null>;
   drawHook: ReturnType<typeof useDraw>;
   guideType: GuideType;
 }
 
-export function DrawingCanvas({ canvasRef, drawHook, guideType }: DrawingCanvasProps) {
-  const { strokes, isEmpty, startDrawing, draw, stopDrawing, redraw, resizeCanvas } = drawHook;
+export function DrawingCanvas({ drawHook, guideType }: DrawingCanvasProps) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  const fullRedraw = useCallback(() => {
+  const { strokes, isEmpty, setCanvas, startDrawing, draw, stopDrawing, redrawAll, resizeCanvas } =
+    drawHook;
+
+  // Register canvas with hook on mount
+  useEffect(() => {
+    setCanvas(canvasRef.current);
+  }, [setCanvas]);
+
+  const renderFrame = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
-    const { width, height } = canvas.getBoundingClientRect();
+    const { width, height } = canvas;
+
     ctx.clearRect(0, 0, width, height);
 
     if (guideType === 'dots') {
@@ -26,25 +34,25 @@ export function DrawingCanvas({ canvasRef, drawHook, guideType }: DrawingCanvasP
       drawLineGrid(ctx, width, height);
     }
 
-    redraw(ctx);
-  }, [canvasRef, redraw, guideType]);
+    redrawAll(ctx);
+  }, [guideType, redrawAll]);
 
+  // Resize on mount
   useEffect(() => {
     resizeCanvas();
-    window.addEventListener('resize', resizeCanvas);
-    return () => window.removeEventListener('resize', resizeCanvas);
-  }, [resizeCanvas]);
+    renderFrame();
+    const handleResize = () => {
+      resizeCanvas();
+      renderFrame();
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [resizeCanvas, renderFrame]);
 
+  // Redraw on stroke change
   useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-    ctx.save();
-    ctx.setTransform(1, 0, 0, 1, 0, 0);
-    fullRedraw();
-    ctx.restore();
-  }, [strokes, fullRedraw, canvasRef]);
+    renderFrame();
+  }, [strokes, renderFrame]);
 
   return (
     <div className="flex-1 overflow-hidden bg-stone-100 relative">
