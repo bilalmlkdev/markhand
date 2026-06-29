@@ -12,7 +12,7 @@ function App() {
 
   return (
     <div className="h-screen flex flex-col bg-stone-50 text-stone-900 overflow-hidden">
-      <Header />
+      <Header drawHook={drawHook} />
       <div className="flex-1 relative overflow-hidden">
         <DrawingCanvas drawHook={drawHook} guideType={guideType} />
         <FloatingPanel drawHook={drawHook} guideType={guideType} onGuideChange={setGuideType} />
