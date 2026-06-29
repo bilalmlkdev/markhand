@@ -1,9 +1,10 @@
 import { useState, useCallback, useRef } from 'react';
 import type { Point, Stroke } from '../types';
 
-interface UseDrawReturn {
+export interface UseDrawReturn {
   strokes: Stroke[];
   isEmpty: boolean;
+  isDrawing: boolean;
   currentColor: string;
   currentWidth: number;
   setCurrentColor: (color: string) => void;
@@ -76,8 +77,12 @@ export function useDraw(): UseDrawReturn {
   const redrawAll = useCallback(
     (ctx: CanvasRenderingContext2D) => {
       strokes.forEach(s => drawStrokeOnContext(ctx, s.points, s.color, s.width));
+      // Also draw current in-progress stroke
+      if (currentPoints.length >= 2) {
+        drawStrokeOnContext(ctx, currentPoints, currentColor, currentWidth);
+      }
     },
-    [strokes, drawStrokeOnContext],
+    [strokes, currentPoints, currentColor, currentWidth, drawStrokeOnContext],
   );
 
   const resizeCanvas = useCallback(() => {
@@ -87,10 +92,12 @@ export function useDraw(): UseDrawReturn {
     if (!parent) return;
     const { width, height } = parent.getBoundingClientRect();
     const dpr = window.devicePixelRatio || 1;
-    canvas.width = width * dpr;
-    canvas.height = height * dpr;
-    canvas.style.width = `${width}px`;
-    canvas.style.height = `${height}px`;
+    if (canvas.width !== width * dpr || canvas.height !== height * dpr) {
+      canvas.width = width * dpr;
+      canvas.height = height * dpr;
+      canvas.style.width = `${width}px`;
+      canvas.style.height = `${height}px`;
+    }
   }, []);
 
   const startDrawing = useCallback(
@@ -108,26 +115,15 @@ export function useDraw(): UseDrawReturn {
       e.preventDefault();
       if (!isDrawing) return;
       const point = getPoint(e);
-      setCurrentPoints(prev => {
-        const updated = [...prev, point];
-        // Draw the latest segment directly for responsiveness
-        const canvas = canvasRef.current;
-        if (canvas) {
-          const ctx = canvas.getContext('2d');
-          if (ctx) {
-            drawStrokeOnContext(ctx, updated, currentColor, currentWidth);
-          }
-        }
-        return updated;
-      });
+      setCurrentPoints(prev => [...prev, point]);
     },
-    [isDrawing, getPoint, currentColor, currentWidth, drawStrokeOnContext],
+    [isDrawing, getPoint],
   );
 
   const stopDrawing = useCallback(() => {
     if (!isDrawing) return;
     setIsDrawing(false);
-    if (currentPoints.length > 0) {
+    if (currentPoints.length > 1) {
       setUndoStack(prev => [...prev, strokes]);
       setRedoStack([]);
       const newStroke: Stroke = {
@@ -137,8 +133,8 @@ export function useDraw(): UseDrawReturn {
         width: currentWidth,
       };
       setStrokes(prev => [...prev, newStroke]);
-      setCurrentPoints([]);
     }
+    setCurrentPoints([]);
   }, [isDrawing, currentPoints, currentColor, currentWidth, strokes]);
 
   const undo = useCallback(() => {
@@ -170,11 +166,13 @@ export function useDraw(): UseDrawReturn {
     setUndoStack(prev => [...prev, strokes]);
     setRedoStack([]);
     setStrokes([]);
+    setCurrentPoints([]);
   }, [strokes]);
 
   return {
     strokes,
     isEmpty,
+    isDrawing,
     currentColor,
     currentWidth,
     setCurrentColor,
