@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { X, GripHorizontal, Palette } from 'lucide-react';
 import { PenControls } from '../controls/PenControls';
 import type { UseDrawReturn } from '../../hooks/useDraw';
@@ -12,6 +12,7 @@ export function FloatingPanel({ drawHook }: FloatingPanelProps) {
   const [position, setPosition] = useState({ x: 16, y: 60 });
   const [dragging, setDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [savedPosition, setSavedPosition] = useState({ x: 16, y: 60 });
 
   const { currentColor, currentWidth, setCurrentColor, setCurrentWidth } = drawHook;
 
@@ -28,14 +29,27 @@ export function FloatingPanel({ drawHook }: FloatingPanelProps) {
 
   const handleDragEnd = () => {
     setDragging(false);
+    setSavedPosition({ ...position });
   };
 
+  const handleCollapse = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setSavedPosition({ ...position });
+    setCollapsed(true);
+  };
+
+  const handleExpand = () => {
+    setCollapsed(false);
+    setPosition({ ...savedPosition });
+  };
+
+  // Collapsed state — fixed to bottom-right
   if (collapsed) {
     return (
-      <div className="absolute z-40" style={{ left: position.x, top: position.y }}>
+      <div className="absolute z-40 bottom-4 right-4">
         <button
-          onClick={() => setCollapsed(false)}
-          className="w-9 h-9 bg-white rounded-full shadow-lg border border-stone-200 flex items-center justify-center hover:bg-stone-50 transition-colors cursor-pointer"
+          onClick={handleExpand}
+          className="w-10 h-10 bg-white rounded-full shadow-lg border border-stone-200 flex items-center justify-center hover:bg-stone-50 hover:shadow-xl transition-all cursor-pointer"
           title="Open pen settings"
         >
           <Palette className="w-4 h-4 text-stone-600" />
@@ -64,10 +78,7 @@ export function FloatingPanel({ drawHook }: FloatingPanelProps) {
           </span>
         </div>
         <button
-          onClick={e => {
-            e.stopPropagation();
-            setCollapsed(true);
-          }}
+          onClick={handleCollapse}
           className="w-5 h-5 flex items-center justify-center rounded hover:bg-stone-200 transition-colors cursor-pointer"
         >
           <X className="w-3 h-3 text-stone-400" />
