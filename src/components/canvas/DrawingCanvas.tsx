@@ -11,17 +11,8 @@ interface DrawingCanvasProps {
 export function DrawingCanvas({ drawHook, guideType }: DrawingCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  const {
-    strokes,
-    isEmpty,
-    isDrawing,
-    setCanvas,
-    startDrawing,
-    draw,
-    stopDrawing,
-    fullRedraw,
-    resizeCanvas,
-  } = drawHook;
+  const { strokes, isEmpty, isDrawing, setCanvas, startDrawing, draw, stopDrawing, resizeCanvas } =
+    drawHook;
 
   // Register canvas
   useEffect(() => {
@@ -43,7 +34,6 @@ export function DrawingCanvas({ drawHook, guideType }: DrawingCanvasProps) {
       drawLineGrid(ctx, width, height);
     }
 
-    // Redraw all completed strokes
     strokes.forEach(s => {
       if (s.points.length < 2) return;
       ctx.beginPath();
@@ -59,12 +49,10 @@ export function DrawingCanvas({ drawHook, guideType }: DrawingCanvasProps) {
     });
   }, [strokes, guideType]);
 
-  // Full redraw when strokes or guideType change
   useEffect(() => {
     renderWithGuides();
   }, [renderWithGuides]);
 
-  // Initial setup
   useEffect(() => {
     resizeCanvas();
     renderWithGuides();
