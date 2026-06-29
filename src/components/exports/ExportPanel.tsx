@@ -1,13 +1,12 @@
-import { Download } from 'lucide-react';
+import { Download, Copy } from 'lucide-react';
 import { Button } from '../ui/Button';
 
 interface ExportPanelProps {
   isEmpty: boolean;
-  onExportPNG: () => void;
-  onExportSVG: () => void;
+  onOpenModal: (action: 'download' | 'copy') => void;
 }
 
-export function ExportPanel({ isEmpty, onExportPNG, onExportSVG }: ExportPanelProps) {
+export function ExportPanel({ isEmpty, onOpenModal }: ExportPanelProps) {
   return (
     <div className="p-3">
       <p className="text-[10px] font-semibold text-stone-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
@@ -20,18 +19,20 @@ export function ExportPanel({ isEmpty, onExportPNG, onExportSVG }: ExportPanelPr
           size="sm"
           className="w-full justify-start"
           disabled={isEmpty}
-          onClick={onExportPNG}
+          onClick={() => onOpenModal('download')}
         >
-          <span className="text-xs">PNG</span>
+          <Download className="w-3.5 h-3.5" />
+          <span className="text-xs">Export</span>
         </Button>
         <Button
           variant="ghost"
           size="sm"
           className="w-full justify-start"
           disabled={isEmpty}
-          onClick={onExportSVG}
+          onClick={() => onOpenModal('copy')}
         >
-          <span className="text-xs">SVG</span>
+          <Copy className="w-3.5 h-3.5" />
+          <span className="text-xs">Copy</span>
         </Button>
       </div>
     </div>
