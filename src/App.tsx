@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Header } from './components/layout/Header';
 import { DrawingCanvas } from './components/canvas/DrawingCanvas';
 import { FloatingPanel } from './components/layout/FloatingPanel';
+import { GuidePills } from './components/canvas/GuidePills';
 import { Footer } from './components/layout/Footer';
 import { useDraw } from './hooks/useDraw';
 import type { GuideType } from './types';
@@ -15,7 +16,8 @@ function App() {
       <Header drawHook={drawHook} />
       <div className="flex-1 relative overflow-hidden">
         <DrawingCanvas drawHook={drawHook} guideType={guideType} />
-        <FloatingPanel drawHook={drawHook} guideType={guideType} onGuideChange={setGuideType} />
+        <GuidePills activeGuide={guideType} onChange={setGuideType} />
+        <FloatingPanel drawHook={drawHook} />
       </div>
       <Footer />
     </div>

@@ -1,20 +1,15 @@
 import { useState } from 'react';
-import { X, GripHorizontal, Palette, Grid3X3 } from 'lucide-react';
+import { X, GripHorizontal, Palette } from 'lucide-react';
 import { PenControls } from '../controls/PenControls';
-import { GuideOverlay } from '../canvas/GuideOverlay';
 import type { UseDrawReturn } from '../../hooks/useDraw';
-import type { GuideType } from '../../types';
 
 interface FloatingPanelProps {
   drawHook: UseDrawReturn;
-  guideType: GuideType;
-  onGuideChange: (guide: GuideType) => void;
 }
 
-export function FloatingPanel({ drawHook, guideType, onGuideChange }: FloatingPanelProps) {
+export function FloatingPanel({ drawHook }: FloatingPanelProps) {
   const [collapsed, setCollapsed] = useState(false);
-  const [activeTab, setActiveTab] = useState<'pen' | 'guides'>('pen');
-  const [position, setPosition] = useState({ x: 16, y: 16 });
+  const [position, setPosition] = useState({ x: 16, y: 60 });
   const [dragging, setDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
 
@@ -41,7 +36,7 @@ export function FloatingPanel({ drawHook, guideType, onGuideChange }: FloatingPa
         <button
           onClick={() => setCollapsed(false)}
           className="w-9 h-9 bg-white rounded-full shadow-lg border border-stone-200 flex items-center justify-center hover:bg-stone-50 transition-colors cursor-pointer"
-          title="Open tools"
+          title="Open pen settings"
         >
           <Palette className="w-4 h-4 text-stone-600" />
         </button>
@@ -51,7 +46,7 @@ export function FloatingPanel({ drawHook, guideType, onGuideChange }: FloatingPa
 
   return (
     <div
-      className="absolute z-40 bg-white rounded-xl shadow-xl border border-stone-200 overflow-hidden w-[200px] select-none"
+      className="absolute z-40 bg-white rounded-xl shadow-xl border border-stone-200 overflow-hidden w-[190px] select-none"
       style={{ left: position.x, top: position.y }}
       onMouseMove={handleDrag}
       onMouseUp={handleDragEnd}
@@ -65,7 +60,7 @@ export function FloatingPanel({ drawHook, guideType, onGuideChange }: FloatingPa
         <div className="flex items-center gap-1.5">
           <GripHorizontal className="w-3.5 h-3.5 text-stone-400" />
           <span className="text-[10px] font-semibold text-stone-400 uppercase tracking-widest">
-            Tools
+            Pen
           </span>
         </div>
         <button
@@ -79,50 +74,14 @@ export function FloatingPanel({ drawHook, guideType, onGuideChange }: FloatingPa
         </button>
       </div>
 
-      {/* Tabs */}
-      <div className="flex border-b border-stone-100">
-        {(
-          [
-            { id: 'pen', label: 'Pen', icon: <Palette className="w-3 h-3" /> },
-            { id: 'guides', label: 'Guides', icon: <Grid3X3 className="w-3 h-3" /> },
-          ] as const
-        ).map(tab => (
-          <button
-            key={tab.id}
-            onClick={e => {
-              e.stopPropagation();
-              setActiveTab(tab.id);
-            }}
-            className={`flex-1 flex items-center justify-center gap-1 py-2 text-[10px] font-medium transition-colors cursor-pointer ${
-              activeTab === tab.id
-                ? 'bg-white text-stone-900 border-b-2 border-stone-900'
-                : 'text-stone-400 hover:text-stone-600 hover:bg-stone-50'
-            }`}
-          >
-            {tab.icon}
-            {tab.label}
-          </button>
-        ))}
-      </div>
-
       {/* Content */}
-      <div className="max-h-[240px] overflow-y-auto">
-        {activeTab === 'pen' && (
-          <div className="p-3">
-            <PenControls
-              activeColor={currentColor}
-              activeWidth={currentWidth}
-              onColorChange={setCurrentColor}
-              onWidthChange={setCurrentWidth}
-            />
-          </div>
-        )}
-
-        {activeTab === 'guides' && (
-          <div className="p-3">
-            <GuideOverlay activeGuide={guideType} onChange={onGuideChange} />
-          </div>
-        )}
+      <div className="p-3">
+        <PenControls
+          activeColor={currentColor}
+          activeWidth={currentWidth}
+          onColorChange={setCurrentColor}
+          onWidthChange={setCurrentWidth}
+        />
       </div>
     </div>
   );
