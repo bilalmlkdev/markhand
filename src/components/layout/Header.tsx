@@ -21,9 +21,10 @@ import { FiGithub } from 'react-icons/fi';
 interface HeaderProps {
   drawHook: UseDrawReturn;
   theme: CanvasTheme;
+  guideType: GuideType;
 }
 
-export function Header({ drawHook, theme }: HeaderProps) {
+export function Header({ drawHook, theme, guideType }: HeaderProps) {
   const [exportOpen, setExportOpen] = useState(false);
   const [projectOpen, setProjectOpen] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -170,6 +171,7 @@ export function Header({ drawHook, theme }: HeaderProps) {
         width={canvasWidth}
         height={canvasHeight}
         theme={theme}
+        guideType={guideType}
       />
 
       <ProjectModal open={projectOpen} onClose={() => setProjectOpen(false)} />

@@ -1,8 +1,8 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { X, Download, Copy, Check, Printer } from 'lucide-react';
 import { Button } from '../ui/Button';
-import { themes } from '../../lib/canvas';
-import type { Stroke, CanvasTheme } from '../../types';
+import { themes, drawDotGrid, drawLineGrid } from '../../lib/canvas';
+import type { Stroke, CanvasTheme, GuideType } from '../../types';
 
 interface ExportModalProps {
   open: boolean;
@@ -11,24 +11,33 @@ interface ExportModalProps {
   width: number;
   height: number;
   theme: CanvasTheme;
+  guideType: GuideType;
 }
 
 type Format = 'png' | 'svg';
 type Background = 'theme' | 'transparent' | 'white';
 
-const backgrounds: { label: string; value: Background; hex?: string }[] = [
+const backgrounds: { label: string; value: Background }[] = [
   { label: 'Theme', value: 'theme' },
   { label: 'Transparent', value: 'transparent' },
-  { label: 'White', value: 'white', hex: '#ffffff' },
+  { label: 'White', value: 'white' },
 ];
 
-export function ExportModal({ open, onClose, strokes, width, height, theme }: ExportModalProps) {
+export function ExportModal({
+  open,
+  onClose,
+  strokes,
+  width,
+  height,
+  theme,
+  guideType,
+}: ExportModalProps) {
   const previewRef = useRef<HTMLCanvasElement>(null);
   const [format, setFormat] = useState<Format>('png');
   const [background, setBackground] = useState<Background>('theme');
+  const [showGuides, setShowGuides] = useState(true);
   const [copied, setCopied] = useState(false);
 
-  // Fallback to default theme if undefined
   const themeConfig = themes[theme] ?? themes.default;
 
   const getBgHex = useCallback(() => {
@@ -67,6 +76,17 @@ export function ExportModal({ open, onClose, strokes, width, height, theme }: Ex
     };
   }, [strokes, width, height]);
 
+  const drawGuidesOnContext = useCallback(
+    (ctx: CanvasRenderingContext2D, w: number, h: number, color: string) => {
+      if (guideType === 'dots') {
+        drawDotGrid(ctx, w, h, color);
+      } else if (guideType === 'grid' || guideType === 'lines') {
+        drawLineGrid(ctx, w, h, 32, color);
+      }
+    },
+    [guideType],
+  );
+
   const drawPreview = useCallback(() => {
     const canvas = previewRef.current;
     if (!canvas) return;
@@ -99,6 +119,14 @@ export function ExportModal({ open, onClose, strokes, width, height, theme }: Ex
       ctx.fillRect(0, 0, previewW, previewH);
     }
 
+    // Draw guides if enabled
+    if (showGuides && background !== 'transparent') {
+      ctx.save();
+      ctx.translate(-bounds.x * scale, -bounds.y * scale);
+      drawGuidesOnContext(ctx, width, height, themeConfig.dot);
+      ctx.restore();
+    }
+
     // Draw strokes
     ctx.save();
     ctx.translate(-bounds.x * scale, -bounds.y * scale);
@@ -118,7 +146,17 @@ export function ExportModal({ open, onClose, strokes, width, height, theme }: Ex
     });
 
     ctx.restore();
-  }, [strokes, width, height, background, bgHex, getStrokeBounds]);
+  }, [
+    strokes,
+    width,
+    height,
+    background,
+    bgHex,
+    showGuides,
+    themeConfig,
+    getStrokeBounds,
+    drawGuidesOnContext,
+  ]);
 
   useEffect(() => {
     if (open) drawPreview();
@@ -148,6 +186,11 @@ export function ExportModal({ open, onClose, strokes, width, height, theme }: Ex
       ctx.fillRect(0, 0, width, height);
     }
 
+    // Draw guides if enabled
+    if (showGuides && background !== 'transparent') {
+      drawGuidesOnContext(ctx, width, height, themeConfig.dot);
+    }
+
     strokes.forEach(s => {
       if (s.points.length < 2) return;
       ctx.beginPath();
@@ -163,7 +206,7 @@ export function ExportModal({ open, onClose, strokes, width, height, theme }: Ex
     });
 
     return exportCanvas;
-  }, [strokes, width, height, background, bgHex]);
+  }, [strokes, width, height, background, bgHex, showGuides, themeConfig, drawGuidesOnContext]);
 
   const handleDownload = () => {
     if (format === 'png') {
@@ -331,6 +374,25 @@ export function ExportModal({ open, onClose, strokes, width, height, theme }: Ex
                 </button>
               ))}
             </div>
+          </div>
+
+          {/* Guides toggle */}
+          <div className="flex items-center justify-between">
+            <p className="text-[10px] font-semibold text-stone-400 uppercase tracking-widest">
+              Show Guides
+            </p>
+            <button
+              onClick={() => setShowGuides(!showGuides)}
+              className={`relative w-9 h-5 rounded-full transition-colors cursor-pointer ${
+                showGuides ? 'bg-stone-900' : 'bg-stone-200'
+              }`}
+            >
+              <div
+                className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow-sm transition-all ${
+                  showGuides ? 'left-4' : 'left-0.5'
+                }`}
+              />
+            </button>
           </div>
         </div>
 
