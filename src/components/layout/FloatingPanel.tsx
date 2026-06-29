@@ -1,14 +1,19 @@
 import { useState } from 'react';
-import { X, GripHorizontal, Palette } from 'lucide-react';
+import { X, GripHorizontal, Palette, SwatchBook } from 'lucide-react';
 import { PenControls } from '../controls/PenControls';
+import { ThemeControls } from '../controls/ThemeControls';
 import type { UseDrawReturn } from '../../hooks/useDraw';
+import type { CanvasTheme } from '../../types';
 
 interface FloatingPanelProps {
   drawHook: UseDrawReturn;
+  activeTheme: CanvasTheme;
+  onThemeChange: (theme: CanvasTheme) => void;
 }
 
-export function FloatingPanel({ drawHook }: FloatingPanelProps) {
+export function FloatingPanel({ drawHook, activeTheme, onThemeChange }: FloatingPanelProps) {
   const [collapsed, setCollapsed] = useState(false);
+  const [activeTab, setActiveTab] = useState<'pen' | 'theme'>('pen');
   const [position, setPosition] = useState({ x: 16, y: 60 });
   const [dragging, setDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
@@ -45,11 +50,11 @@ export function FloatingPanel({ drawHook }: FloatingPanelProps) {
 
   if (collapsed) {
     return (
-      <div className="absolute z-40 bottom-4 right-4 animate-in fade-in zoom-in">
+      <div className="absolute z-40 bottom-4 right-4">
         <button
           onClick={handleExpand}
-          className="w-10 h-10 bg-white rounded-full shadow-lg border border-stone-200/60 flex items-center justify-center hover:shadow-xl hover:scale-105 transition-all duration-200 cursor-pointer"
-          title="Open pen settings"
+          className="w-10 h-10 bg-white rounded-2xl shadow-lg border border-stone-200/60 flex items-center justify-center hover:shadow-xl hover:scale-105 transition-all duration-200 cursor-pointer"
+          title="Open settings"
         >
           <Palette className="w-4 h-4 text-stone-500" />
         </button>
@@ -73,7 +78,7 @@ export function FloatingPanel({ drawHook }: FloatingPanelProps) {
         <div className="flex items-center gap-2">
           <GripHorizontal className="w-3 h-3 text-stone-300" />
           <span className="text-[10px] font-semibold text-stone-400 uppercase tracking-wider">
-            Pen
+            Settings
           </span>
         </div>
         <button
@@ -84,17 +89,49 @@ export function FloatingPanel({ drawHook }: FloatingPanelProps) {
         </button>
       </div>
 
-      {/* Divider */}
-      <div className="mx-3 h-px bg-stone-100" />
+      {/* Tabs */}
+      <div className="flex border-b border-stone-100">
+        <button
+          onClick={() => setActiveTab('pen')}
+          className={`flex-1 flex items-center justify-center gap-1.5 py-2 text-[10px] font-medium transition-colors cursor-pointer ${
+            activeTab === 'pen'
+              ? 'text-stone-900 border-b-2 border-stone-900'
+              : 'text-stone-400 hover:text-stone-600'
+          }`}
+        >
+          <Palette className="w-3 h-3" />
+          Pen
+        </button>
+        <button
+          onClick={() => setActiveTab('theme')}
+          className={`flex-1 flex items-center justify-center gap-1.5 py-2 text-[10px] font-medium transition-colors cursor-pointer ${
+            activeTab === 'theme'
+              ? 'text-stone-900 border-b-2 border-stone-900'
+              : 'text-stone-400 hover:text-stone-600'
+          }`}
+        >
+          <SwatchBook className="w-3 h-3" />
+          Theme
+        </button>
+      </div>
 
       {/* Content */}
-      <div className="p-3">
-        <PenControls
-          activeColor={currentColor}
-          activeWidth={currentWidth}
-          onColorChange={setCurrentColor}
-          onWidthChange={setCurrentWidth}
-        />
+      <div className="max-h-[280px] overflow-y-auto">
+        {activeTab === 'pen' && (
+          <div className="p-3">
+            <PenControls
+              activeColor={currentColor}
+              activeWidth={currentWidth}
+              onColorChange={setCurrentColor}
+              onWidthChange={setCurrentWidth}
+            />
+          </div>
+        )}
+        {activeTab === 'theme' && (
+          <div className="p-3">
+            <ThemeControls activeTheme={activeTheme} onChange={onThemeChange} />
+          </div>
+        )}
       </div>
     </div>
   );

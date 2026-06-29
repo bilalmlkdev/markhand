@@ -3,7 +3,6 @@ import { Header } from './components/layout/Header';
 import { DrawingCanvas } from './components/canvas/DrawingCanvas';
 import { FloatingPanel } from './components/layout/FloatingPanel';
 import { GuidePills } from './components/canvas/GuidePills';
-import { ThemeSwitcher } from './components/canvas/ThemeSwitcher';
 import { useDraw } from './hooks/useDraw';
 import type { GuideType, CanvasTheme } from './types';
 
@@ -18,8 +17,7 @@ function App() {
       <div className="flex-1 relative overflow-hidden">
         <DrawingCanvas drawHook={drawHook} guideType={guideType} theme={theme} />
         <GuidePills activeGuide={guideType} onChange={setGuideType} />
-        <ThemeSwitcher activeTheme={theme} onChange={setTheme} />
-        <FloatingPanel drawHook={drawHook} />
+        <FloatingPanel drawHook={drawHook} activeTheme={theme} onThemeChange={setTheme} />
       </div>
     </div>
   );
