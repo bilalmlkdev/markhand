@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import type { Point, Stroke } from '../types';
 
 export interface UseDrawReturn {
@@ -21,24 +21,76 @@ export interface UseDrawReturn {
   getCanvas: () => HTMLCanvasElement | null;
 }
 
+const STORAGE_KEY = 'markhand_strokes';
+const COLOR_KEY = 'markhand_color';
+const WIDTH_KEY = 'markhand_width';
+
+function loadStrokes(): Stroke[] {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? (JSON.parse(raw) as Stroke[]) : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveStrokes(strokes: Stroke[]) {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(strokes));
+  } catch {
+    // Storage full or unavailable
+  }
+}
+
+function loadColor(): string {
+  return localStorage.getItem(COLOR_KEY) ?? '#1c1917';
+}
+
+function saveColor(color: string) {
+  localStorage.setItem(COLOR_KEY, color);
+}
+
+function loadWidth(): number {
+  const w = localStorage.getItem(WIDTH_KEY);
+  return w ? Number(w) : 3;
+}
+
+function saveWidth(width: number) {
+  localStorage.setItem(WIDTH_KEY, String(width));
+}
+
 export function useDraw(): UseDrawReturn {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const [strokes, setStrokes] = useState<Stroke[]>([]);
+  const [strokes, setStrokes] = useState<Stroke[]>(loadStrokes);
   const [undoStack, setUndoStack] = useState<Stroke[][]>([]);
   const [redoStack, setRedoStack] = useState<Stroke[][]>([]);
   const [isDrawing, setIsDrawing] = useState(false);
-  const [currentColor, setCurrentColor] = useState('#1c1917');
-  const [currentWidth, setCurrentWidth] = useState(3);
+  const [currentColor, setCurrentColorState] = useState(loadColor);
+  const [currentWidth, setCurrentWidthState] = useState(loadWidth);
 
-  // Use a ref for currentPoints to avoid re-renders during drawing
   const currentPointsRef = useRef<Point[]>([]);
   const isEmpty = strokes.length === 0;
+
+  // Persist strokes
+  useEffect(() => {
+    saveStrokes(strokes);
+  }, [strokes]);
 
   const setCanvas = useCallback((canvas: HTMLCanvasElement | null) => {
     canvasRef.current = canvas;
   }, []);
 
   const getCanvas = useCallback(() => canvasRef.current, []);
+
+  const setCurrentColor = useCallback((color: string) => {
+    setCurrentColorState(color);
+    saveColor(color);
+  }, []);
+
+  const setCurrentWidth = useCallback((width: number) => {
+    setCurrentWidthState(width);
+    saveWidth(width);
+  }, []);
 
   const getPoint = useCallback((e: React.MouseEvent | React.TouchEvent): Point => {
     const canvas = canvasRef.current;
@@ -118,7 +170,6 @@ export function useDraw(): UseDrawReturn {
       const prev = currentPointsRef.current;
       prev.push(point);
 
-      // Only draw the segment from last point to current point — fast!
       if (prev.length >= 2) {
         const secondLast = prev[prev.length - 2]!;
         ctx.beginPath();
