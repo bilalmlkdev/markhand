@@ -17,6 +17,7 @@ import { ProjectModal } from './ProjectModal';
 import type { UseDrawReturn } from '../../hooks/useDraw';
 import type { CanvasTheme } from '../../types';
 import { FiGithub } from 'react-icons/fi';
+import type { GuideType } from '../../types';
 
 interface HeaderProps {
   drawHook: UseDrawReturn;
