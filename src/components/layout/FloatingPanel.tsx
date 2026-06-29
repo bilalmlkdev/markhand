@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { X, GripHorizontal, Palette } from 'lucide-react';
 import { PenControls } from '../controls/PenControls';
 import type { UseDrawReturn } from '../../hooks/useDraw';
