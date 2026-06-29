@@ -1,18 +1,16 @@
-import { useRef, useEffect, useCallback } from 'react';
-import { useDraw } from '../../hooks/useDraw';
+import { useEffect, useCallback, type RefObject } from 'react';
 import { drawDotGrid, drawLineGrid } from '../../lib/canvas';
 import type { GuideType } from '../../types';
+import type { useDraw } from '../../hooks/useDraw';
 
 interface DrawingCanvasProps {
-  guideType?: GuideType;
+  canvasRef: RefObject<HTMLCanvasElement | null>;
+  drawHook: ReturnType<typeof useDraw>;
+  guideType: GuideType;
 }
 
-export function DrawingCanvas({ guideType = 'dots' }: DrawingCanvasProps) {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-
-  const { strokes, isEmpty, startDrawing, draw, stopDrawing, redraw, resizeCanvas } =
-    useDraw(canvasRef);
+export function DrawingCanvas({ canvasRef, drawHook, guideType }: DrawingCanvasProps) {
+  const { strokes, isEmpty, startDrawing, draw, stopDrawing, redraw, resizeCanvas } = drawHook;
 
   const fullRedraw = useCallback(() => {
     const canvas = canvasRef.current;
@@ -24,12 +22,12 @@ export function DrawingCanvas({ guideType = 'dots' }: DrawingCanvasProps) {
 
     if (guideType === 'dots') {
       drawDotGrid(ctx, width, height);
-    } else if (guideType === 'grid') {
+    } else if (guideType === 'grid' || guideType === 'lines') {
       drawLineGrid(ctx, width, height);
     }
 
     redraw(ctx);
-  }, [redraw, guideType]);
+  }, [canvasRef, redraw, guideType]);
 
   useEffect(() => {
     resizeCanvas();
@@ -46,10 +44,10 @@ export function DrawingCanvas({ guideType = 'dots' }: DrawingCanvasProps) {
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     fullRedraw();
     ctx.restore();
-  }, [strokes, fullRedraw]);
+  }, [strokes, fullRedraw, canvasRef]);
 
   return (
-    <div ref={containerRef} className="flex-1 overflow-hidden bg-stone-100 relative">
+    <div className="flex-1 overflow-hidden bg-stone-100 relative">
       <canvas
         ref={canvasRef}
         className="absolute inset-0 cursor-crosshair touch-none"

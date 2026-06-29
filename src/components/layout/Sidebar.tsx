@@ -1,40 +1,56 @@
+import type { RefObject } from 'react';
 import { PenControls } from '../controls/PenControls';
 import { CanvasControls } from '../controls/CanvasControls';
-import { GuideControls } from '../controls/GuideControls';
+import { GuideOverlay } from '../canvas/GuideOverlay';
 import { ExportPanel } from '../exports/ExportPanel';
-import { useDraw } from '../../hooks/useDraw';
+import type { useDraw } from '../../hooks/useDraw';
+import type { GuideType } from '../../types';
+import { generateSVG } from '../../lib/export';
 
 interface SidebarProps {
   drawHook: ReturnType<typeof useDraw>;
+  guideType: GuideType;
+  onGuideChange: (guide: GuideType) => void;
+  canvasRef: RefObject<HTMLCanvasElement | null>;
 }
 
-export function Sidebar({ drawHook }: SidebarProps) {
+export function Sidebar({ drawHook, guideType, onGuideChange, canvasRef }: SidebarProps) {
   const {
     currentColor,
     currentWidth,
     setCurrentColor,
     setCurrentWidth,
+    strokes,
     isEmpty,
     undo,
     redo,
     clear,
-    strokes,
   } = drawHook;
 
   const canUndo = strokes.length > 0;
+  const canRedo = false; // Redo stack will be exposed from useDraw later
 
   const handleExportPNG = () => {
-    const canvas = document.querySelector('canvas');
-    if (canvas) {
-      const link = document.createElement('a');
-      link.download = 'signature.png';
-      link.href = canvas.toDataURL('image/png');
-      link.click();
-    }
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const link = document.createElement('a');
+    link.download = 'markhand-signature.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
   };
 
   const handleExportSVG = () => {
-    // SVG export will be wired later
+    const canvas = canvasRef.current;
+    if (!canvas || strokes.length === 0) return;
+    const { width, height } = canvas.getBoundingClientRect();
+    const svg = generateSVG(strokes, width, height);
+    const blob = new Blob([svg], { type: 'image/svg+xml' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.download = 'markhand-signature.svg';
+    link.href = url;
+    link.click();
+    URL.revokeObjectURL(url);
   };
 
   return (
@@ -47,13 +63,13 @@ export function Sidebar({ drawHook }: SidebarProps) {
       />
       <CanvasControls
         canUndo={canUndo}
-        canRedo={false}
+        canRedo={canRedo}
         isEmpty={isEmpty}
         onUndo={undo}
         onRedo={redo}
         onClear={clear}
       />
-      <GuideControls />
+      <GuideOverlay activeGuide={guideType} onChange={onGuideChange} />
       <ExportPanel isEmpty={isEmpty} onExportPNG={handleExportPNG} onExportSVG={handleExportSVG} />
     </aside>
   );
