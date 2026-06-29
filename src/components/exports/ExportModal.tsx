@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { X, Download, Copy, Check } from 'lucide-react';
+import { X, Download, Copy, Check, Printer } from 'lucide-react';
 import { Button } from '../ui/Button';
 import type { Stroke } from '../../types';
 
@@ -28,32 +28,73 @@ export function ExportModal({ open, onClose, strokes, width, height }: ExportMod
 
   const bgHex = backgrounds.find(b => b.value === background)?.hex ?? 'transparent';
 
+  // Calculate bounds of all strokes to fit preview properly
+  const getStrokeBounds = useCallback(() => {
+    let minX = Infinity,
+      minY = Infinity,
+      maxX = -Infinity,
+      maxY = -Infinity;
+
+    strokes.forEach(s => {
+      s.points.forEach(p => {
+        if (p.x < minX) minX = p.x;
+        if (p.y < minY) minY = p.y;
+        if (p.x > maxX) maxX = p.x;
+        if (p.y > maxY) maxY = p.y;
+      });
+    });
+
+    if (!isFinite(minX)) {
+      return { x: 0, y: 0, w: width, h: height };
+    }
+
+    // Add padding
+    const padding = 20;
+    return {
+      x: Math.max(0, minX - padding),
+      y: Math.max(0, minY - padding),
+      w: Math.min(width, maxX - minX + padding * 2),
+      h: Math.min(height, maxY - minY + padding * 2),
+    };
+  }, [strokes, width, height]);
+
   const drawPreview = useCallback(() => {
     const canvas = previewRef.current;
     if (!canvas) return;
 
-    const scale = Math.min(280 / width, 180 / height);
-    const previewWidth = width * scale;
-    const previewHeight = height * scale;
+    const bounds = getStrokeBounds();
+    const maxPreviewWidth = 320;
+    const maxPreviewHeight = 200;
 
-    canvas.width = previewWidth * 2;
-    canvas.height = previewHeight * 2;
-    canvas.style.width = `${previewWidth}px`;
-    canvas.style.height = `${previewHeight}px`;
+    // Calculate scale to fit the bounds within preview
+    const scaleX = maxPreviewWidth / bounds.w;
+    const scaleY = maxPreviewHeight / bounds.h;
+    const scale = Math.min(scaleX, scaleY, 1); // Don't upscale
+
+    const previewW = Math.round(bounds.w * scale);
+    const previewH = Math.round(bounds.h * scale);
+
+    const dpr = 2;
+    canvas.width = previewW * dpr;
+    canvas.height = previewH * dpr;
+    canvas.style.width = `${previewW}px`;
+    canvas.style.height = `${previewH}px`;
 
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    ctx.scale(2, 2);
-    ctx.clearRect(0, 0, previewWidth, previewHeight);
+    ctx.scale(dpr, dpr);
 
     // Background
     if (background !== 'transparent') {
       ctx.fillStyle = bgHex;
-      ctx.fillRect(0, 0, previewWidth, previewHeight);
+      ctx.fillRect(0, 0, previewW, previewH);
     }
 
-    // Draw strokes scaled
+    // Draw strokes offset by bounds
+    ctx.save();
+    ctx.translate(-bounds.x * scale, -bounds.y * scale);
+
     strokes.forEach(s => {
       if (s.points.length < 2) return;
       ctx.beginPath();
@@ -62,18 +103,19 @@ export function ExportModal({ open, onClose, strokes, width, height }: ExportMod
         ctx.lineTo(s.points[i]!.x * scale, s.points[i]!.y * scale);
       }
       ctx.strokeStyle = s.color;
-      ctx.lineWidth = s.width * scale;
+      ctx.lineWidth = Math.max(1, s.width * scale);
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
       ctx.stroke();
     });
-  }, [strokes, width, height, background, bgHex]);
+
+    ctx.restore();
+  }, [strokes, width, height, background, bgHex, getStrokeBounds]);
 
   useEffect(() => {
     if (open) drawPreview();
   }, [open, drawPreview]);
 
-  // Close on Escape
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
@@ -82,44 +124,47 @@ export function ExportModal({ open, onClose, strokes, width, height }: ExportMod
     return () => window.removeEventListener('keydown', handleKey);
   }, [open, onClose]);
 
+  const generateExportCanvas = useCallback((): HTMLCanvasElement => {
+    const dpr = 2;
+    const exportCanvas = document.createElement('canvas');
+    exportCanvas.width = width * dpr;
+    exportCanvas.height = height * dpr;
+
+    const ctx = exportCanvas.getContext('2d');
+    if (!ctx) return exportCanvas;
+
+    ctx.scale(dpr, dpr);
+
+    if (background !== 'transparent') {
+      ctx.fillStyle = bgHex;
+      ctx.fillRect(0, 0, width, height);
+    }
+
+    strokes.forEach(s => {
+      if (s.points.length < 2) return;
+      ctx.beginPath();
+      ctx.moveTo(s.points[0]!.x, s.points[0]!.y);
+      for (let i = 1; i < s.points.length; i++) {
+        ctx.lineTo(s.points[i]!.x, s.points[i]!.y);
+      }
+      ctx.strokeStyle = s.color;
+      ctx.lineWidth = s.width;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.stroke();
+    });
+
+    return exportCanvas;
+  }, [strokes, width, height, background, bgHex]);
+
   const handleDownload = () => {
     if (format === 'png') {
-      const canvas = previewRef.current;
-      if (!canvas) return;
-      // Generate full-res export
-      const exportCanvas = document.createElement('canvas');
-      exportCanvas.width = width * 2;
-      exportCanvas.height = height * 2;
-      const ctx = exportCanvas.getContext('2d');
-      if (!ctx) return;
-
-      ctx.scale(2, 2);
-
-      if (background !== 'transparent') {
-        ctx.fillStyle = bgHex;
-        ctx.fillRect(0, 0, width, height);
-      }
-
-      strokes.forEach(s => {
-        if (s.points.length < 2) return;
-        ctx.beginPath();
-        ctx.moveTo(s.points[0]!.x, s.points[0]!.y);
-        for (let i = 1; i < s.points.length; i++) {
-          ctx.lineTo(s.points[i]!.x, s.points[i]!.y);
-        }
-        ctx.strokeStyle = s.color;
-        ctx.lineWidth = s.width;
-        ctx.lineCap = 'round';
-        ctx.lineJoin = 'round';
-        ctx.stroke();
-      });
-
+      const exportCanvas = generateExportCanvas();
       const link = document.createElement('a');
       link.download = `markhand.${format}`;
       link.href = exportCanvas.toDataURL('image/png');
       link.click();
     } else {
-      // SVG
       let paths = '';
       strokes.forEach(s => {
         if (s.points.length < 2) return;
@@ -143,28 +188,7 @@ export function ExportModal({ open, onClose, strokes, width, height }: ExportMod
   };
 
   const handleCopy = async () => {
-    const exportCanvas = document.createElement('canvas');
-    exportCanvas.width = width * 2;
-    exportCanvas.height = height * 2;
-    const ctx = exportCanvas.getContext('2d');
-    if (!ctx) return;
-
-    ctx.scale(2, 2);
-
-    strokes.forEach(s => {
-      if (s.points.length < 2) return;
-      ctx.beginPath();
-      ctx.moveTo(s.points[0]!.x, s.points[0]!.y);
-      for (let i = 1; i < s.points.length; i++) {
-        ctx.lineTo(s.points[i]!.x, s.points[i]!.y);
-      }
-      ctx.strokeStyle = s.color;
-      ctx.lineWidth = s.width;
-      ctx.lineCap = 'round';
-      ctx.lineJoin = 'round';
-      ctx.stroke();
-    });
-
+    const exportCanvas = generateExportCanvas();
     exportCanvas.toBlob(async blob => {
       if (!blob) return;
       try {
@@ -172,19 +196,61 @@ export function ExportModal({ open, onClose, strokes, width, height }: ExportMod
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
       } catch {
-        // Clipboard might not be supported
+        // Fallback
       }
     }, 'image/png');
+  };
+
+  const handlePrint = () => {
+    const exportCanvas = generateExportCanvas();
+    const dataUrl = exportCanvas.toDataURL('image/png');
+
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) return;
+
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Markhand - Print</title>
+          <style>
+            * { margin: 0; padding: 0; box-sizing: border-box; }
+            body {
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              min-height: 100vh;
+              background: white;
+            }
+            img {
+              max-width: 100%;
+              max-height: 100vh;
+              object-fit: contain;
+            }
+            @media print {
+              body { margin: 0; }
+              img { max-width: 100%; max-height: 100vh; }
+            }
+          </style>
+        </head>
+        <body>
+          <img src="${dataUrl}" alt="Signature" />
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
+
+    // Wait for image to load then print
+    printWindow.onload = () => {
+      printWindow.print();
+    };
   };
 
   if (!open) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
-      {/* Backdrop */}
       <div className="absolute inset-0 bg-black/20 backdrop-blur-sm" onClick={onClose} />
-
-      {/* Modal */}
       <div className="relative bg-white rounded-xl shadow-2xl border border-stone-200 w-[400px] overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-stone-100">
@@ -198,9 +264,9 @@ export function ExportModal({ open, onClose, strokes, width, height }: ExportMod
         </div>
 
         {/* Preview */}
-        <div className="p-4 flex justify-center bg-stone-50 border-b border-stone-100">
+        <div className="p-4 flex justify-center bg-stone-50 border-b border-stone-100 min-h-[180px] items-center">
           <div
-            className="rounded-lg overflow-hidden border border-stone-200 bg-white"
+            className="rounded-lg overflow-hidden border border-stone-200 flex items-center justify-center"
             style={{
               backgroundImage:
                 background === 'transparent'
@@ -214,7 +280,6 @@ export function ExportModal({ open, onClose, strokes, width, height }: ExportMod
 
         {/* Options */}
         <div className="p-4 space-y-3">
-          {/* Format */}
           <div>
             <p className="text-[10px] font-semibold text-stone-400 uppercase tracking-widest mb-2">
               Format
@@ -236,7 +301,6 @@ export function ExportModal({ open, onClose, strokes, width, height }: ExportMod
             </div>
           </div>
 
-          {/* Background */}
           <div>
             <p className="text-[10px] font-semibold text-stone-400 uppercase tracking-widest mb-2">
               Background
@@ -265,9 +329,11 @@ export function ExportModal({ open, onClose, strokes, width, height }: ExportMod
             <Download className="w-4 h-4" />
             Download
           </Button>
+          <Button variant="ghost" onClick={handlePrint}>
+            <Printer className="w-4 h-4" />
+          </Button>
           <Button variant="ghost" onClick={handleCopy} disabled={copied}>
             {copied ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
-            {copied ? 'Copied' : 'Copy'}
           </Button>
         </div>
       </div>
