@@ -15,7 +15,7 @@ const guides: { type: GuideType; label: string; icon: React.ReactNode }[] = [
 
 export function GuidePills({ activeGuide, onChange }: GuidePillsProps) {
   return (
-    <div className="absolute top-3 right-3 z-30 flex flex-col gap-0.5 bg-white/90 backdrop-blur-md rounded-2xl p-1 border border-stone-200/60 shadow-lg">
+    <div className="absolute top-1/2 -translate-y-1/2 right-3 z-30 flex flex-col gap-0.5 bg-white/90 backdrop-blur-md rounded-2xl p-1 border border-stone-200/60 shadow-lg">
       {guides.map(guide => (
         <button
           key={guide.type}
