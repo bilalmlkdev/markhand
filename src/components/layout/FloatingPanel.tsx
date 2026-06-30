@@ -19,22 +19,18 @@ const PANEL_Y_KEY = 'markhand_panel_y';
 function loadCollapsed(): boolean {
   return localStorage.getItem(PANEL_COLLAPSED_KEY) === 'true';
 }
-
 function saveCollapsed(collapsed: boolean) {
   localStorage.setItem(PANEL_COLLAPSED_KEY, String(collapsed));
 }
-
 function loadPosition(): { x: number; y: number } {
   const x = Number(localStorage.getItem(PANEL_X_KEY)) || 16;
   const y = Number(localStorage.getItem(PANEL_Y_KEY)) || 60;
   return { x, y };
 }
-
 function savePosition(x: number, y: number) {
   localStorage.setItem(PANEL_X_KEY, String(Math.round(x)));
   localStorage.setItem(PANEL_Y_KEY, String(Math.round(y)));
 }
-
 function isLight(hex: string): boolean {
   const c = hex.replace('#', '');
   if (c.length < 6) return true;
@@ -76,47 +72,34 @@ export function FloatingPanel({ drawHook, activeTheme, onThemeChange }: Floating
   const [mounted, setMounted] = useState(false);
   const [prevTheme, setPrevTheme] = useState(activeTheme);
   const panelRef = useRef<HTMLDivElement>(null);
-
   const { currentColor, currentWidth, setCurrentColor, setCurrentWidth } = drawHook;
 
   useEffect(() => {
     setMounted(true);
   }, []);
-
-  // Persist collapsed state
   useEffect(() => {
     saveCollapsed(collapsed);
   }, [collapsed]);
-
-  // Persist saved position
   useEffect(() => {
     savePosition(savedPosition.x, savedPosition.y);
   }, [savedPosition]);
 
-  // Auto-switch pen color when theme changes
   useEffect(() => {
     if (activeTheme === prevTheme) return;
     setPrevTheme(activeTheme);
-
     const themeConfig = themes[activeTheme];
     if (!themeConfig) return;
-
     const light = isLight(themeConfig.bg);
-
     if (light) {
-      if (lightInkColors.includes(currentColor)) {
-        setCurrentColor('#1c1917');
-      }
+      if (lightInkColors.includes(currentColor)) setCurrentColor('#1c1917');
     } else {
-      if (darkInkColors.includes(currentColor)) {
-        setCurrentColor('#ffffff');
-      }
+      if (darkInkColors.includes(currentColor)) setCurrentColor('#ffffff');
     }
   }, [activeTheme]);
 
   const clamp = (x: number, y: number) => {
-    const w = panelRef.current?.offsetWidth ?? 208;
-    const h = panelRef.current?.offsetHeight ?? 360;
+    const w = panelRef.current?.offsetWidth ?? 190;
+    const h = panelRef.current?.offsetHeight ?? 340;
     const maxX = window.innerWidth - w - 8;
     const maxY = window.innerHeight - h - 8;
     return {
@@ -130,27 +113,23 @@ export function FloatingPanel({ drawHook, activeTheme, onThemeChange }: Floating
     setDragging(true);
     setDragStart({ x: e.clientX - position.x, y: e.clientY - position.y });
   };
-
   const handleDrag = (e: React.MouseEvent) => {
     if (!dragging) return;
     setPosition(clamp(e.clientX - dragStart.x, e.clientY - dragStart.y));
   };
-
   const handleDragEnd = () => {
     if (!dragging) return;
     setDragging(false);
-    const clamped = clamp(position.x, position.y);
-    setPosition(clamped);
-    setSavedPosition(clamped);
-    savePosition(clamped.x, clamped.y);
+    const c = clamp(position.x, position.y);
+    setPosition(c);
+    setSavedPosition(c);
+    savePosition(c.x, c.y);
   };
-
   const handleCollapse = (e: React.MouseEvent) => {
     e.stopPropagation();
     setSavedPosition({ ...position });
     setCollapsed(true);
   };
-
   const handleExpand = () => {
     setCollapsed(false);
     setPosition({ ...savedPosition });
@@ -158,19 +137,15 @@ export function FloatingPanel({ drawHook, activeTheme, onThemeChange }: Floating
 
   if (collapsed) {
     return (
-      <div className="absolute z-40 bottom-8 right-5">
+      <div className="absolute z-40 bottom-4 right-4 sm:bottom-8 sm:right-5">
         <button
           onClick={handleExpand}
-          className="group relative w-8 h-8 bg-white rounded-2xl shadow-[0_2px_8px_rgba(28,25,23,0.08),0_8px_24px_rgba(28,25,23,0.10)] border border-stone-200/70 flex items-center justify-center hover:shadow-[0_4px_12px_rgba(28,25,23,0.10),0_12px_32px_rgba(28,25,23,0.14)] hover:-translate-y-0.5 active:translate-y-0 active:scale-95 transition-all duration-200 ease-out cursor-pointer animate-in fade-in zoom-in-95"
           title="Open settings"
+          className="group relative w-11 h-11 sm:w-10 sm:h-10 bg-white rounded-2xl shadow-lg border border-stone-200/60 flex items-center justify-center hover:shadow-xl active:scale-95 transition-all duration-200 cursor-pointer"
         >
-          <Settings2 className="w-[18px] h-[18px] text-stone-500 group-hover:text-stone-800 group-hover:rotate-45 transition-all duration-300" />
+          <Settings2 className="w-5 h-5 sm:w-[18px] sm:h-[18px] text-stone-500 group-hover:text-stone-800 group-hover:rotate-45 transition-all duration-300" />
           <span
-            className="absolute inset-0 rounded-2xl ring-2 ring-offset-2 ring-stone-900/0 group-hover:ring-stone-900/10 transition-all duration-200"
-            aria-hidden
-          />
-          <span
-            className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-gradient-to-br shadow-sm"
+            className="absolute -top-1 -right-1 w-3 h-3 sm:w-2.5 sm:h-2.5 rounded-full shadow-sm"
             style={{ background: currentColor }}
           />
         </button>
@@ -181,64 +156,52 @@ export function FloatingPanel({ drawHook, activeTheme, onThemeChange }: Floating
   return (
     <div
       ref={panelRef}
-      className={`absolute z-40 bg-white/90 backdrop-blur-xl rounded-xl overflow-hidden w-[208px] select-none ${
-        dragging
-          ? 'shadow-[0_8px_16px_rgba(28,25,23,0.10),0_20px_48px_rgba(28,25,23,0.18)] scale-[1.01] cursor-grabbing'
-          : 'shadow-[0_2px_6px_rgba(28,25,23,0.06),0_12px_32px_rgba(28,25,23,0.10)]'
-      } ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-1'} transition-[box-shadow,transform,opacity] duration-200 ease-out`}
+      className={`absolute z-40 bg-white/90 backdrop-blur-xl rounded-xl overflow-hidden w-[180px] sm:w-[208px] select-none ${dragging ? 'shadow-2xl scale-[1.01] cursor-grabbing' : 'shadow-lg'} ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-1'} transition-[box-shadow,transform,opacity] duration-200 ease-out`}
       style={{ left: position.x, top: position.y }}
       onMouseMove={handleDrag}
       onMouseUp={handleDragEnd}
       onMouseLeave={handleDragEnd}
     >
-      {/* Handle */}
       <div
         className="flex items-center justify-between pl-2.5 pr-2 py-2.5 cursor-grab active:cursor-grabbing bg-gradient-to-b from-stone-50/80 to-transparent"
         onMouseDown={handleDragStart}
       >
         <div className="flex items-center gap-1.5">
           <GripVertical className="w-3.5 h-3.5 text-stone-300" />
-          <span className="text-[12px] text-stone-600 font-semibold capitalize">Settings</span>
+          <span className="text-[11px] sm:text-[12px] text-stone-600 font-semibold">Settings</span>
         </div>
         <button
           onClick={handleCollapse}
           className="w-6 h-6 flex items-center justify-center rounded-lg text-stone-400 hover:text-stone-700 hover:bg-stone-100 active:scale-90 transition-all duration-150 cursor-pointer"
-          title="Collapse"
         >
           <X className="w-3.5 h-3.5" />
         </button>
       </div>
-
-      {/* Tabs */}
       <div className="relative flex px-2 gap-1 border-b border-stone-100">
         {[
           { key: 'pen' as const, label: 'Pen', icon: PenLine },
           { key: 'theme' as const, label: 'Theme', icon: SwatchBook },
-        ].map(({ key, label, icon: Icon }) => {
-          const isActive = activeTab === key;
-          return (
-            <button
-              key={key}
-              onClick={() => setActiveTab(key)}
-              className={`relative flex-1 flex items-center justify-center gap-1.5 py-2.5 text-[11px] font-medium transition-colors duration-150 cursor-pointer rounded-t-lg ${
-                isActive ? 'text-stone-900' : 'text-stone-400 hover:text-stone-600'
-              }`}
-            >
-              <Icon
-                className={`w-3.5 h-3.5 transition-transform duration-150 ${isActive ? 'scale-110' : ''}`}
-              />
-              {label}
-              {isActive && (
-                <span className="absolute left-2 right-2 -bottom-px h-[2px] rounded-full bg-stone-900" />
-              )}
-            </button>
-          );
-        })}
+        ].map(({ key, label, icon: Icon }) => (
+          <button
+            key={key}
+            onClick={() => setActiveTab(key)}
+            className={`relative flex-1 flex items-center justify-center gap-1.5 py-2.5 text-[10px] sm:text-[11px] font-medium transition-colors duration-150 cursor-pointer rounded-t-lg ${activeTab === key ? 'text-stone-900' : 'text-stone-400 hover:text-stone-600'}`}
+          >
+            <Icon
+              className={`w-3.5 h-3.5 transition-transform duration-150 ${activeTab === key ? 'scale-110' : ''}`}
+            />
+            {label}
+            {activeTab === key && (
+              <span className="absolute left-2 right-2 -bottom-px h-[2px] rounded-full bg-stone-900" />
+            )}
+          </button>
+        ))}
       </div>
-
-      {/* Content */}
-      <div className="max-h-[300px] overflow-y-auto overscroll-contain [scrollbar-width:thin]">
-        <div key={activeTab} className="p-3 animate-in fade-in slide-in-from-bottom-1 duration-150">
+      <div className="max-h-[280px] sm:max-h-[300px] overflow-y-auto overscroll-contain">
+        <div
+          key={activeTab}
+          className="p-2 sm:p-3 animate-in fade-in slide-in-from-bottom-1 duration-150"
+        >
           {activeTab === 'pen' && (
             <PenControls
               activeColor={currentColor}

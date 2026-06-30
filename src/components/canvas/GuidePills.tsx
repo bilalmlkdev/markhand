@@ -21,11 +21,7 @@ export function GuidePills({ activeGuide, onChange }: GuidePillsProps) {
           key={guide.type}
           onClick={() => onChange(guide.type)}
           title={guide.label}
-          className={`w-8 h-8 flex items-center justify-center rounded-xl transition-all duration-150 cursor-pointer ${
-            activeGuide === guide.type
-              ? 'bg-stone-900 text-white shadow-sm'
-              : 'text-stone-400 hover:text-stone-600 hover:bg-stone-100'
-          }`}
+          className={`w-8 h-8 flex items-center justify-center rounded-xl transition-all duration-150 cursor-pointer ${activeGuide === guide.type ? 'bg-stone-900 text-white shadow-sm' : 'text-stone-400 hover:text-stone-600 hover:bg-stone-100'}`}
         >
           {guide.icon}
         </button>

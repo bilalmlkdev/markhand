@@ -114,22 +114,29 @@ export function Header({
 
   return (
     <>
-      <header className="h-12 min-h-[48px] border-b border-stone-200 px-4 flex items-center justify-between bg-white">
+      <header className="h-12 min-h-[48px] border-b border-stone-200 px-2 sm:px-4 flex items-center justify-between bg-white safe-top">
         {/* Left: Brand */}
-        <div className="flex items-center">
-          <img src={logo} className="w-6 h-6" alt="markhand header logo" />
-          <h1 className="text-lg font-semibold tracking-tight">Markhand</h1>
+        <div className="flex items-center gap-1.5 sm:gap-2">
+          <img src={logo} className="w-5 h-5 sm:w-6 sm:h-6" alt="markhand header logo" />
+          <h1 className="text-base sm:text-lg font-semibold tracking-tight">Markhand</h1>
         </div>
 
         {/* Center: Actions */}
-        <div className="flex items-center gap-0.5">
+        <div className="flex items-center gap-0 sm:gap-0.5">
           <Button variant="ghost" size="icon" disabled={!canUndo} onClick={undo} title="Undo">
             <Undo2 className="w-4 h-4" />
           </Button>
-          <Button variant="ghost" size="icon" disabled={!canRedo} onClick={redo} title="Redo">
+          <Button
+            variant="ghost"
+            size="icon"
+            disabled={!canRedo}
+            onClick={redo}
+            title="Redo"
+            className="hidden sm:flex"
+          >
             <Redo2 className="w-4 h-4" />
           </Button>
-          <div className="w-px h-5 bg-stone-200 mx-1" />
+          <div className="w-px h-5 bg-stone-200 mx-0.5 sm:mx-1 hidden sm:block" />
           <Button
             variant="ghost"
             size="icon"
@@ -139,16 +146,16 @@ export function Header({
           >
             <Trash2 className="w-4 h-4" />
           </Button>
-          <div className="w-px h-5 bg-stone-200 mx-1" />
           <Button
             variant="ghost"
             size="icon"
             onClick={() => setConfirmType('reset')}
             title="Reset all data"
+            className="hidden sm:flex"
           >
             <RefreshCw className="w-4 h-4" />
           </Button>
-          <div className="w-px h-5 bg-stone-200 mx-1" />
+          <div className="w-px h-5 bg-stone-200 mx-0.5 sm:mx-1" />
           <Button
             variant="ghost"
             size="icon"
@@ -164,6 +171,7 @@ export function Header({
             disabled={isEmpty}
             onClick={() => setShareOpen(true)}
             title="Share drawing"
+            className="hidden sm:flex"
           >
             <Share2 className="w-4 h-4" />
           </Button>
@@ -179,13 +187,13 @@ export function Header({
         </div>
 
         {/* Right: Support + Info */}
-        <div className="flex items-center gap-0.5">
+        <div className="flex items-center gap-0 sm:gap-0.5">
           <a
             href="https://www.buymeacoffee.com/bilalmlkdev"
             target="_blank"
             rel="noopener noreferrer"
             title="Buy me a coffee"
-            className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-amber-50 text-stone-400 hover:text-amber-600 transition-colors"
+            className="w-8 h-8 hidden sm:flex items-center justify-center rounded-lg hover:bg-amber-50 text-stone-400 hover:text-amber-600 transition-colors"
           >
             <Coffee className="w-4 h-4" />
           </a>
@@ -194,7 +202,7 @@ export function Header({
             target="_blank"
             rel="noopener noreferrer"
             title="Sponsor on GitHub"
-            className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-pink-50 text-stone-400 hover:text-pink-500 transition-colors"
+            className="w-8 h-8 hidden sm:flex items-center justify-center rounded-lg hover:bg-pink-50 text-stone-400 hover:text-pink-500 transition-colors"
           >
             <Heart className="w-4 h-4" />
           </a>
@@ -207,7 +215,7 @@ export function Header({
           >
             <FiGithub className="w-4 h-4" />
           </a>
-          <div className="w-px h-5 bg-stone-200 mx-1" />
+          <div className="w-px h-5 bg-stone-200 mx-0.5 sm:mx-1" />
           <Button
             variant="ghost"
             size="icon"
@@ -228,21 +236,19 @@ export function Header({
         theme={theme}
         guideType={guideType}
       />
-
       <ShareModal
         open={shareOpen}
         onClose={() => setShareOpen(false)}
         strokes={strokes}
         isEmpty={isEmpty}
       />
-
       <InstructionsModal open={instructionsOpen} onClose={onToggleInstructions} />
 
       {/* Confirmation Modal */}
       {confirmType && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/20 backdrop-blur-sm" onClick={closeConfirm} />
-          <div className="relative bg-white rounded-xl shadow-2xl border border-stone-200 w-[360px] overflow-hidden">
+          <div className="relative bg-white rounded-xl shadow-2xl border border-stone-200 w-full sm:w-[360px] max-w-[95vw] overflow-hidden">
             <div className="flex items-center justify-between px-4 py-3 border-b border-stone-100">
               <div className="flex items-center gap-2">
                 <AlertTriangle className="w-4 h-4 text-red-500" />
@@ -257,8 +263,7 @@ export function Header({
                 <X className="w-4 h-4 text-stone-400" />
               </button>
             </div>
-
-            <div className="p-5 space-y-4">
+            <div className="p-4 sm:p-5 space-y-4">
               {confirmType === 'clear' ? (
                 <p className="text-sm text-stone-600 leading-relaxed">
                   This will remove all strokes from the canvas.
@@ -276,24 +281,19 @@ export function Header({
                 </>
               )}
             </div>
-
             <div className="px-4 pb-4 flex gap-2">
               <Button variant="ghost" className="flex-1" onClick={closeConfirm}>
                 Cancel
               </Button>
               <Button
                 variant="default"
-                className={`flex-1 text-white ${
-                  confirmType === 'clear'
-                    ? 'bg-stone-900 hover:bg-stone-800'
-                    : 'bg-red-600 hover:bg-red-700'
-                }`}
+                className={`flex-1 text-white ${confirmType === 'clear' ? 'bg-stone-900 hover:bg-stone-800' : 'bg-red-600 hover:bg-red-700'}`}
                 onClick={confirmType === 'clear' ? handleClear : handleReset}
               >
                 {confirmType === 'clear' ? (
                   <>
                     <Trash2 className="w-4 h-4" />
-                    Clear Canvas
+                    Clear
                   </>
                 ) : (
                   <>

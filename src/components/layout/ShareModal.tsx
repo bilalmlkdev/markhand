@@ -40,7 +40,7 @@ export function ShareModal({ open, onClose, strokes, isEmpty }: ShareModalProps)
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="absolute inset-0 bg-black/20 backdrop-blur-sm" onClick={onClose} />
 
-      <div className="relative bg-white rounded-xl shadow-2xl border border-stone-200 w-[400px] overflow-hidden">
+      <div className="relative bg-white rounded-xl shadow-2xl border border-stone-200 w-full sm:w-[400px] max-w-[95vw] mx-2">
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-stone-100">
           <div className="flex items-center gap-2">

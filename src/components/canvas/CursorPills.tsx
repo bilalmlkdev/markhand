@@ -22,11 +22,7 @@ export function CursorPills({ activeCursor, onChange }: CursorPillsProps) {
           key={cursor.type}
           onClick={() => onChange(cursor.type)}
           title={cursor.label}
-          className={`w-8 h-8 flex items-center justify-center rounded-xl transition-all duration-150 cursor-pointer ${
-            activeCursor === cursor.type
-              ? 'bg-stone-900 text-white shadow-sm'
-              : 'text-stone-400 hover:text-stone-600 hover:bg-stone-100'
-          }`}
+          className={`w-8 h-8 flex items-center justify-center rounded-xl transition-all duration-150 cursor-pointer ${activeCursor === cursor.type ? 'bg-stone-900 text-white shadow-sm' : 'text-stone-400 hover:text-stone-600 hover:bg-stone-100'}`}
         >
           {cursor.icon}
         </button>
