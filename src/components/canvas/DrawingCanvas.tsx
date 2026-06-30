@@ -130,24 +130,38 @@ export function DrawingCanvas({ drawHook, guideType, theme, cursorStyle }: Drawi
         onTouchEnd={stopDrawing}
       />
 
-      {/* Doodle name label */}
-      {!hasDrawn && (
+      {/* Doodle name — only when doodle is present and user hasn't drawn */}
+      {!hasDrawn && strokes.length > 0 && (
         <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-medium text-stone-500 border border-stone-200 shadow-sm pointer-events-none">
           {doodleName}
         </div>
       )}
 
-      {/* Hint text */}
-      {!hasDrawn && (
+      {/* Hint — only when doodle is present and user hasn't drawn */}
+      {!hasDrawn && strokes.length > 0 && (
         <div className="absolute bottom-3 left-3 bg-white/80 backdrop-blur-sm px-2 py-1 rounded-md text-xs text-stone-400 border border-stone-200 pointer-events-none">
           Start drawing — this doodle is yours to trace
         </div>
       )}
 
-      {/* Stroke count */}
-      {hasDrawn && (
+      {/* Empty state — nothing on canvas */}
+      {!hasDrawn && strokes.length === 0 && (
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <p className="text-stone-300 text-sm select-none">Start drawing your mark</p>
+        </div>
+      )}
+
+      {/* Stroke count — user has drawn */}
+      {hasDrawn && strokes.length > 0 && (
         <div className="absolute bottom-3 left-3 bg-white/80 backdrop-blur-sm px-2 py-1 rounded-md text-xs text-stone-400 border border-stone-200 pointer-events-none">
           {strokes.length} stroke{strokes.length !== 1 ? 's' : ''}
+        </div>
+      )}
+
+      {/* Empty state after clear */}
+      {hasDrawn && strokes.length === 0 && (
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <p className="text-stone-300 text-sm select-none">Start drawing your mark</p>
         </div>
       )}
     </div>

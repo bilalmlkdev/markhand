@@ -248,16 +248,14 @@ export function useDraw(): UseDrawReturn {
     setUndoStack(prev => [...prev, strokes]);
     setRedoStack([]);
     setStrokes([]);
+    if (!hasDrawn) setHasDrawn(true);
     const canvas = canvasRef.current;
     if (canvas) {
       const ctx = canvas.getContext('2d');
       if (ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
     }
-  }, [strokes]);
+  }, [strokes, hasDrawn]);
 
-  // Seeds the canvas with starter strokes (e.g. the initial doodle), treating them
-  // as real drawing data. Only applies if the canvas is genuinely empty, so it never
-  // overwrites a saved drawing or a canvas the user has already cleared themselves.
   const seedStrokes = useCallback((seed: Stroke[]) => {
     setStrokes(prev => (prev.length === 0 ? seed : prev));
   }, []);
