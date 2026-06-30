@@ -106,7 +106,7 @@ export function ShareModal({ open, onClose, strokes, isEmpty }: ShareModalProps)
               <div className="bg-stone-50 rounded-lg p-3">
                 <p className="text-[10px] text-stone-400 leading-relaxed">
                   Anyone with this link can see your drawing. The drawing data is encoded in the URL
-                  — no servers, no accounts, just pure sharing.
+                  - no servers, no accounts, just pure sharing.
                 </p>
               </div>
             </>

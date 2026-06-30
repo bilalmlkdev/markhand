@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import {
-  PenLine,
   Undo2,
   Redo2,
   Trash2,
@@ -22,6 +21,7 @@ import { ShareModal } from './ShareModal';
 import type { UseDrawReturn } from '../../hooks/useDraw';
 import type { CanvasTheme, GuideType } from '../../types';
 import { FiGithub } from 'react-icons/fi';
+import logo from '/logo.svg';
 
 interface HeaderProps {
   drawHook: UseDrawReturn;
@@ -116,8 +116,8 @@ export function Header({
     <>
       <header className="h-12 min-h-[48px] border-b border-stone-200 px-4 flex items-center justify-between bg-white">
         {/* Left: Brand */}
-        <div className="flex items-center gap-2">
-          <PenLine className="w-5 h-5 text-stone-700" />
+        <div className="flex items-center">
+          <img src={logo} className="w-6 h-6" alt="markhand header logo" />
           <h1 className="text-lg font-semibold tracking-tight">Markhand</h1>
         </div>
 
