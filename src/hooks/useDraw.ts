@@ -20,6 +20,7 @@ export interface UseDrawReturn {
   resizeCanvas: () => void;
   getCanvas: () => HTMLCanvasElement | null;
   hasDrawn: boolean;
+  seedStrokes: (seed: Stroke[]) => void;
 }
 
 const STORAGE_KEY = 'markhand_strokes';
@@ -254,6 +255,13 @@ export function useDraw(): UseDrawReturn {
     }
   }, [strokes]);
 
+  // Seeds the canvas with starter strokes (e.g. the initial doodle), treating them
+  // as real drawing data. Only applies if the canvas is genuinely empty, so it never
+  // overwrites a saved drawing or a canvas the user has already cleared themselves.
+  const seedStrokes = useCallback((seed: Stroke[]) => {
+    setStrokes(prev => (prev.length === 0 ? seed : prev));
+  }, []);
+
   return {
     strokes,
     isEmpty,
@@ -273,5 +281,6 @@ export function useDraw(): UseDrawReturn {
     resizeCanvas,
     getCanvas,
     hasDrawn,
+    seedStrokes,
   };
 }

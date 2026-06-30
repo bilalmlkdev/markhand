@@ -18,7 +18,16 @@ export function DrawingCanvas({ drawHook, guideType, theme, cursorStyle }: Drawi
   // Clean Fix: Select a random relative doodle immediately on component initialization
   const [initialDoodle] = useState(() => getRandomDoodle());
 
-  const { strokes, setCanvas, startDrawing, draw, stopDrawing, resizeCanvas, hasDrawn } = drawHook;
+  const {
+    strokes,
+    setCanvas,
+    startDrawing,
+    draw,
+    stopDrawing,
+    resizeCanvas,
+    hasDrawn,
+    seedStrokes,
+  } = drawHook;
 
   const themeConfig = themes[theme];
   const cursorCss = cursors[cursorStyle]?.css ?? 'crosshair';
@@ -46,43 +55,57 @@ export function DrawingCanvas({ drawHook, guideType, theme, cursorStyle }: Drawi
       drawLineGrid(ctx, width, height, 32, themeConfig.dot);
     }
 
-    if (hasDrawn) {
-      // Draw user strokes (stored as absolute physical pixels)
-      strokes.forEach(s => {
-        if (s.points.length < 2) return;
-        ctx.beginPath();
-        ctx.moveTo(s.points[0]!.x, s.points[0]!.y);
-        for (let i = 1; i < s.points.length; i++) {
-          ctx.lineTo(s.points[i]!.x, s.points[i]!.y);
-        }
-        ctx.strokeStyle = s.color;
-        ctx.lineWidth = s.width;
-        ctx.lineCap = 'round';
-        ctx.lineJoin = 'round';
-        ctx.stroke();
-      });
-    } else {
-      // Draw initial doodle (map relative coordinates on-the-fly to current dimensions)
-      initialDoodle.forEach(s => {
-        if (s.points.length < 2) return;
-        ctx.beginPath();
-        ctx.moveTo(s.points[0]!.x * width, s.points[0]!.y * height);
-        for (let i = 1; i < s.points.length; i++) {
-          ctx.lineTo(s.points[i]!.x * width, s.points[i]!.y * height);
-        }
-        ctx.strokeStyle = s.color;
-        ctx.lineWidth = s.width;
-        ctx.lineCap = 'round';
-        ctx.lineJoin = 'round';
-        ctx.stroke();
-      });
-    }
-  }, [strokes, hasDrawn, guideType, themeConfig, initialDoodle]);
+    // Strokes (which include the seeded initial doodle, treated as real drawing
+    // data) are drawn the same way regardless of whether the user has added more.
+    strokes.forEach(s => {
+      if (s.points.length < 2) return;
+      ctx.beginPath();
+      ctx.moveTo(s.points[0]!.x, s.points[0]!.y);
+      for (let i = 1; i < s.points.length; i++) {
+        ctx.lineTo(s.points[i]!.x, s.points[i]!.y);
+      }
+      ctx.strokeStyle = s.color;
+      ctx.lineWidth = s.width;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.stroke();
+    });
+  }, [strokes, guideType, themeConfig]);
 
   // Redraw whenever render dependencies update
   useEffect(() => {
     renderWithGuides();
   }, [renderWithGuides]);
+
+  // Seed the initial doodle into the strokes array exactly once, so it becomes part
+  // of the actual drawing (persists, undoes, resizes like any other stroke) instead
+  // of a separate overlay that gets swapped out the moment the user draws.
+  const seededRef = useRef(false);
+  useEffect(() => {
+    if (seededRef.current) return;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    // Don't seed over a canvas that already has content (saved drawing or already
+    // drawn-on this session) — only a truly empty, never-touched canvas gets the doodle.
+    if (hasDrawn || strokes.length > 0) {
+      seededRef.current = true;
+      return;
+    }
+
+    resizeCanvas();
+    const { width, height } = canvas;
+    if (width === 0 || height === 0) return; // not laid out yet, try again next render
+
+    const absoluteDoodle = initialDoodle.map(s => ({
+      id: s.id,
+      color: s.color,
+      width: s.width,
+      points: s.points.map(p => ({ x: p.x * width, y: p.y * height })),
+    }));
+    seedStrokes(absoluteDoodle);
+    seededRef.current = true;
+  });
 
   // Handle window resizing safely without flaky timeouts
   useEffect(() => {

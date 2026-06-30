@@ -1,518 +1,674 @@
 import type { Stroke } from '../types';
 
-// All doodles use 0-1 relative coordinates, will be scaled to canvas size at render time
+// All doodles use 0-1 relative coordinates, will be scaled to canvas size at render time.
+// Each one is built from several rough freehand-style strokes (food / animals / buildings),
+// not clean geometric shapes — slight wobble and asymmetry is intentional.
 type RelativeStroke = Omit<Stroke, 'points'> & { points: { x: number; y: number }[] };
 
 export const doodles: RelativeStroke[][] = [
-  // 1. Signature swoop
+  // 1. Coffee cup with steam
   [
     {
-      id: 'd1',
+      id: 'd1-cup',
       color: '#1c1917',
       width: 3,
       points: [
-        { x: 0.1, y: 0.55 },
-        { x: 0.14, y: 0.48 },
-        { x: 0.2, y: 0.42 },
-        { x: 0.27, y: 0.38 },
-        { x: 0.35, y: 0.36 },
-        { x: 0.44, y: 0.38 },
-        { x: 0.52, y: 0.42 },
-        { x: 0.6, y: 0.48 },
-        { x: 0.67, y: 0.55 },
-        { x: 0.73, y: 0.52 },
-        { x: 0.8, y: 0.44 },
-        { x: 0.85, y: 0.36 },
-        { x: 0.88, y: 0.3 },
-        { x: 0.92, y: 0.28 },
-        { x: 0.95, y: 0.32 },
-        { x: 0.98, y: 0.44 },
+        { x: 0.36, y: 0.42 },
+        { x: 0.35, y: 0.5 },
+        { x: 0.36, y: 0.6 },
+        { x: 0.39, y: 0.66 },
+        { x: 0.44, y: 0.68 },
+        { x: 0.52, y: 0.685 },
+        { x: 0.58, y: 0.67 },
+        { x: 0.62, y: 0.62 },
+        { x: 0.635, y: 0.54 },
+        { x: 0.63, y: 0.45 },
+        { x: 0.62, y: 0.41 },
+        { x: 0.5, y: 0.405 },
+        { x: 0.42, y: 0.41 },
+        { x: 0.36, y: 0.42 },
       ],
     },
-  ],
-
-  // 2. Heart
-  [
     {
-      id: 'd2',
-      color: '#e03131',
+      id: 'd1-handle',
+      color: '#1c1917',
       width: 3,
       points: [
-        { x: 0.5, y: 0.7 },
-        { x: 0.47, y: 0.64 },
-        { x: 0.42, y: 0.56 },
-        { x: 0.37, y: 0.5 },
-        { x: 0.32, y: 0.46 },
-        { x: 0.28, y: 0.44 },
-        { x: 0.26, y: 0.46 },
-        { x: 0.25, y: 0.5 },
-        { x: 0.26, y: 0.56 },
-        { x: 0.3, y: 0.62 },
-        { x: 0.36, y: 0.68 },
-        { x: 0.43, y: 0.72 },
-        { x: 0.5, y: 0.74 },
-        { x: 0.57, y: 0.72 },
-        { x: 0.64, y: 0.68 },
-        { x: 0.7, y: 0.62 },
-        { x: 0.74, y: 0.56 },
-        { x: 0.75, y: 0.5 },
-        { x: 0.74, y: 0.46 },
-        { x: 0.72, y: 0.44 },
-        { x: 0.68, y: 0.46 },
-        { x: 0.63, y: 0.5 },
-        { x: 0.58, y: 0.56 },
-        { x: 0.53, y: 0.64 },
-        { x: 0.5, y: 0.7 },
+        { x: 0.63, y: 0.46 },
+        { x: 0.71, y: 0.46 },
+        { x: 0.74, y: 0.5 },
+        { x: 0.73, y: 0.56 },
+        { x: 0.69, y: 0.585 },
+        { x: 0.63, y: 0.58 },
+      ],
+    },
+    {
+      id: 'd1-saucer',
+      color: '#1c1917',
+      width: 3,
+      points: [
+        { x: 0.3, y: 0.685 },
+        { x: 0.42, y: 0.71 },
+        { x: 0.56, y: 0.71 },
+        { x: 0.67, y: 0.69 },
+      ],
+    },
+    {
+      id: 'd1-steam1',
+      color: '#a8a29e',
+      width: 2,
+      points: [
+        { x: 0.43, y: 0.38 },
+        { x: 0.41, y: 0.33 },
+        { x: 0.45, y: 0.29 },
+        { x: 0.42, y: 0.24 },
+        { x: 0.45, y: 0.2 },
+      ],
+    },
+    {
+      id: 'd1-steam2',
+      color: '#a8a29e',
+      width: 2,
+      points: [
+        { x: 0.54, y: 0.39 },
+        { x: 0.52, y: 0.34 },
+        { x: 0.56, y: 0.29 },
+        { x: 0.53, y: 0.24 },
+        { x: 0.56, y: 0.19 },
       ],
     },
   ],
 
-  // 3. Star
+  // 2. Pizza slice
   [
     {
-      id: 'd3',
+      id: 'd2-outline',
+      color: '#1c1917',
+      width: 3,
+      points: [
+        { x: 0.32, y: 0.32 },
+        { x: 0.68, y: 0.34 },
+        { x: 0.51, y: 0.72 },
+        { x: 0.32, y: 0.32 },
+      ],
+    },
+    {
+      id: 'd2-crust',
       color: '#f08c00',
       width: 3,
       points: [
-        { x: 0.5, y: 0.32 },
-        { x: 0.52, y: 0.4 },
-        { x: 0.6, y: 0.41 },
-        { x: 0.54, y: 0.47 },
-        { x: 0.56, y: 0.55 },
-        { x: 0.5, y: 0.51 },
-        { x: 0.44, y: 0.55 },
-        { x: 0.46, y: 0.47 },
-        { x: 0.4, y: 0.41 },
-        { x: 0.48, y: 0.4 },
-        { x: 0.5, y: 0.32 },
+        { x: 0.32, y: 0.32 },
+        { x: 0.4, y: 0.27 },
+        { x: 0.5, y: 0.29 },
+        { x: 0.6, y: 0.27 },
+        { x: 0.68, y: 0.34 },
       ],
     },
-  ],
-
-  // 4. Wave
-  [
     {
-      id: 'd4',
-      color: '#1971c2',
-      width: 3,
-      points: [
-        { x: 0.08, y: 0.6 },
-        { x: 0.14, y: 0.48 },
-        { x: 0.22, y: 0.4 },
-        { x: 0.3, y: 0.48 },
-        { x: 0.38, y: 0.6 },
-        { x: 0.46, y: 0.48 },
-        { x: 0.54, y: 0.4 },
-        { x: 0.62, y: 0.48 },
-        { x: 0.7, y: 0.6 },
-        { x: 0.78, y: 0.48 },
-        { x: 0.86, y: 0.4 },
-        { x: 0.92, y: 0.48 },
-      ],
-    },
-  ],
-
-  // 5. Spiral
-  [
-    {
-      id: 'd5',
-      color: '#9c36b5',
-      width: 2,
-      points: (() => {
-        const pts = [];
-        for (let i = 0; i < 120; i++) {
-          const angle = (i / 8) * Math.PI * 2;
-          const r = 0.02 + i * 0.004;
-          pts.push({ x: 0.5 + Math.cos(angle) * r, y: 0.5 + Math.sin(angle) * r });
-        }
-        return pts;
-      })(),
-    },
-  ],
-
-  // 6. Arrow
-  [
-    {
-      id: 'd6',
-      color: '#2f9e44',
-      width: 4,
-      points: [
-        { x: 0.2, y: 0.5 },
-        { x: 0.5, y: 0.5 },
-        { x: 0.72, y: 0.5 },
-        { x: 0.78, y: 0.5 },
-        { x: 0.74, y: 0.46 },
-        { x: 0.78, y: 0.5 },
-        { x: 0.74, y: 0.54 },
-      ],
-    },
-  ],
-
-  // 7. Infinity
-  [
-    {
-      id: 'd7',
-      color: '#0c8599',
-      width: 3,
-      points: (() => {
-        const pts = [];
-        for (let i = 0; i < 100; i++) {
-          const t = (i / 99) * Math.PI * 2;
-          pts.push({
-            x: 0.5 + (0.3 * Math.cos(t)) / (1 + Math.sin(t) * Math.sin(t)),
-            y: 0.5 + (0.22 * Math.sin(t) * Math.cos(t)) / (1 + Math.sin(t) * Math.sin(t)),
-          });
-        }
-        return pts;
-      })(),
-    },
-  ],
-
-  // 8. Checkmark
-  [
-    {
-      id: 'd8',
-      color: '#2f9e44',
-      width: 4,
-      points: [
-        { x: 0.3, y: 0.54 },
-        { x: 0.38, y: 0.64 },
-        { x: 0.52, y: 0.46 },
-        { x: 0.72, y: 0.36 },
-      ],
-    },
-  ],
-
-  // 9. Flower
-  [
-    {
-      id: 'd9',
+      id: 'd2-pep1',
       color: '#e03131',
-      width: 2,
-      points: (() => {
-        const pts = [];
-        for (let i = 0; i < 200; i++) {
-          const angle = (i / 200) * Math.PI * 2;
-          const r = 0.12 + 0.06 * Math.sin(angle * 6);
-          pts.push({ x: 0.5 + Math.cos(angle) * r, y: 0.5 + Math.sin(angle) * r });
-        }
-        return pts;
-      })(),
-    },
-  ],
-
-  // 10. Mountain
-  [
-    {
-      id: 'd10',
-      color: '#1c1917',
-      width: 3,
+      width: 4,
       points: [
-        { x: 0.08, y: 0.7 },
-        { x: 0.22, y: 0.5 },
-        { x: 0.36, y: 0.64 },
-        { x: 0.5, y: 0.34 },
-        { x: 0.64, y: 0.58 },
-        { x: 0.78, y: 0.42 },
-        { x: 0.92, y: 0.7 },
+        { x: 0.44, y: 0.42 },
+        { x: 0.45, y: 0.43 },
+      ],
+    },
+    {
+      id: 'd2-pep2',
+      color: '#e03131',
+      width: 4,
+      points: [
+        { x: 0.53, y: 0.48 },
+        { x: 0.54, y: 0.49 },
+      ],
+    },
+    {
+      id: 'd2-pep3',
+      color: '#e03131',
+      width: 4,
+      points: [
+        { x: 0.46, y: 0.56 },
+        { x: 0.47, y: 0.57 },
       ],
     },
   ],
 
-  // 11. Bird
+  // 3. Ice cream cone
   [
     {
-      id: 'd11',
-      color: '#1c1917',
+      id: 'd3-cone',
+      color: '#c2410c',
       width: 3,
       points: [
-        { x: 0.38, y: 0.52 },
-        { x: 0.42, y: 0.44 },
-        { x: 0.48, y: 0.4 },
-        { x: 0.54, y: 0.42 },
-        { x: 0.6, y: 0.48 },
-        { x: 0.62, y: 0.5 },
-        { x: 0.54, y: 0.48 },
-        { x: 0.48, y: 0.46 },
         { x: 0.42, y: 0.5 },
-        { x: 0.38, y: 0.52 },
+        { x: 0.5, y: 0.78 },
+        { x: 0.58, y: 0.5 },
+      ],
+    },
+    {
+      id: 'd3-cone-lines1',
+      color: '#c2410c',
+      width: 2,
+      points: [
+        { x: 0.45, y: 0.55 },
+        { x: 0.56, y: 0.6 },
+      ],
+    },
+    {
+      id: 'd3-cone-lines2',
+      color: '#c2410c',
+      width: 2,
+      points: [
+        { x: 0.46, y: 0.63 },
+        { x: 0.55, y: 0.67 },
+      ],
+    },
+    {
+      id: 'd3-scoop',
+      color: '#1c1917',
+      width: 3,
+      points: [
+        { x: 0.41, y: 0.5 },
+        { x: 0.39, y: 0.43 },
+        { x: 0.42, y: 0.36 },
+        { x: 0.48, y: 0.33 },
+        { x: 0.5, y: 0.36 },
+        { x: 0.54, y: 0.32 },
+        { x: 0.6, y: 0.35 },
+        { x: 0.61, y: 0.42 },
+        { x: 0.59, y: 0.49 },
+        { x: 0.5, y: 0.52 },
+        { x: 0.41, y: 0.5 },
+      ],
+    },
+    {
+      id: 'd3-cherry',
+      color: '#e03131',
+      width: 4,
+      points: [
+        { x: 0.5, y: 0.31 },
+        { x: 0.5, y: 0.31 },
       ],
     },
   ],
 
-  // 12. Sun
+  // 4. Cat face
   [
     {
-      id: 'd12',
-      color: '#f08c00',
+      id: 'd4-face',
+      color: '#1c1917',
+      width: 3,
+      points: [
+        { x: 0.36, y: 0.42 },
+        { x: 0.33, y: 0.5 },
+        { x: 0.34, y: 0.58 },
+        { x: 0.4, y: 0.64 },
+        { x: 0.5, y: 0.66 },
+        { x: 0.6, y: 0.64 },
+        { x: 0.66, y: 0.58 },
+        { x: 0.67, y: 0.5 },
+        { x: 0.64, y: 0.42 },
+      ],
+    },
+    {
+      id: 'd4-ear-left',
+      color: '#1c1917',
+      width: 3,
+      points: [
+        { x: 0.36, y: 0.42 },
+        { x: 0.34, y: 0.3 },
+        { x: 0.44, y: 0.38 },
+      ],
+    },
+    {
+      id: 'd4-ear-right',
+      color: '#1c1917',
+      width: 3,
+      points: [
+        { x: 0.64, y: 0.42 },
+        { x: 0.67, y: 0.3 },
+        { x: 0.57, y: 0.38 },
+      ],
+    },
+    {
+      id: 'd4-eye-left',
+      color: '#1c1917',
       width: 2,
-      points: (() => {
-        const pts = [];
-        for (let i = 0; i < 120; i++) {
-          const angle = (i / 120) * Math.PI * 2;
-          const r = 0.1 + 0.03 * Math.sin(angle * 12);
-          pts.push({ x: 0.5 + Math.cos(angle) * r, y: 0.5 + Math.sin(angle) * r });
-        }
-        return pts;
-      })(),
+      points: [
+        { x: 0.43, y: 0.5 },
+        { x: 0.46, y: 0.5 },
+      ],
+    },
+    {
+      id: 'd4-eye-right',
+      color: '#1c1917',
+      width: 2,
+      points: [
+        { x: 0.54, y: 0.5 },
+        { x: 0.57, y: 0.5 },
+      ],
+    },
+    {
+      id: 'd4-nose',
+      color: '#e03131',
+      width: 2,
+      points: [
+        { x: 0.48, y: 0.56 },
+        { x: 0.52, y: 0.56 },
+        { x: 0.5, y: 0.59 },
+        { x: 0.48, y: 0.56 },
+      ],
+    },
+    {
+      id: 'd4-whiskers-left',
+      color: '#1c1917',
+      width: 1,
+      points: [
+        { x: 0.4, y: 0.58 },
+        { x: 0.26, y: 0.56 },
+      ],
+    },
+    {
+      id: 'd4-whiskers-left2',
+      color: '#1c1917',
+      width: 1,
+      points: [
+        { x: 0.4, y: 0.61 },
+        { x: 0.26, y: 0.62 },
+      ],
+    },
+    {
+      id: 'd4-whiskers-right',
+      color: '#1c1917',
+      width: 1,
+      points: [
+        { x: 0.6, y: 0.58 },
+        { x: 0.74, y: 0.56 },
+      ],
+    },
+    {
+      id: 'd4-whiskers-right2',
+      color: '#1c1917',
+      width: 1,
+      points: [
+        { x: 0.6, y: 0.61 },
+        { x: 0.74, y: 0.62 },
+      ],
     },
   ],
 
-  // 13. Lightning
+  // 5. Dog (sitting, side profile)
   [
     {
-      id: 'd13',
-      color: '#f08c00',
+      id: 'd5-body',
+      color: '#1c1917',
       width: 3,
       points: [
-        { x: 0.48, y: 0.28 },
-        { x: 0.52, y: 0.4 },
-        { x: 0.49, y: 0.44 },
-        { x: 0.54, y: 0.56 },
-        { x: 0.5, y: 0.6 },
+        { x: 0.3, y: 0.7 },
+        { x: 0.29, y: 0.58 },
+        { x: 0.33, y: 0.48 },
+        { x: 0.4, y: 0.4 },
+        { x: 0.44, y: 0.32 },
+        { x: 0.5, y: 0.28 },
+        { x: 0.56, y: 0.3 },
+        { x: 0.58, y: 0.36 },
+        { x: 0.55, y: 0.4 },
+        { x: 0.6, y: 0.44 },
+        { x: 0.64, y: 0.52 },
+        { x: 0.65, y: 0.6 },
+        { x: 0.63, y: 0.7 },
+        { x: 0.3, y: 0.7 },
+      ],
+    },
+    {
+      id: 'd5-ear',
+      color: '#1c1917',
+      width: 3,
+      points: [
+        { x: 0.45, y: 0.33 },
+        { x: 0.4, y: 0.24 },
+        { x: 0.46, y: 0.27 },
+      ],
+    },
+    {
+      id: 'd5-tail',
+      color: '#1c1917',
+      width: 3,
+      points: [
+        { x: 0.63, y: 0.66 },
+        { x: 0.7, y: 0.58 },
+        { x: 0.7, y: 0.48 },
+      ],
+    },
+    {
+      id: 'd5-eye',
+      color: '#1c1917',
+      width: 2,
+      points: [
+        { x: 0.52, y: 0.36 },
+        { x: 0.53, y: 0.37 },
+      ],
+    },
+    {
+      id: 'd5-nose',
+      color: '#1c1917',
+      width: 3,
+      points: [
+        { x: 0.42, y: 0.37 },
+        { x: 0.4, y: 0.38 },
+      ],
+    },
+  ],
+
+  // 6. House with chimney smoke
+  [
+    {
+      id: 'd6-walls',
+      color: '#1c1917',
+      width: 3,
+      points: [
+        { x: 0.32, y: 0.48 },
+        { x: 0.32, y: 0.72 },
+        { x: 0.68, y: 0.72 },
+        { x: 0.68, y: 0.46 },
+      ],
+    },
+    {
+      id: 'd6-roof',
+      color: '#1c1917',
+      width: 3,
+      points: [
+        { x: 0.27, y: 0.5 },
+        { x: 0.5, y: 0.28 },
+        { x: 0.73, y: 0.49 },
+      ],
+    },
+    {
+      id: 'd6-chimney',
+      color: '#1c1917',
+      width: 3,
+      points: [
+        { x: 0.6, y: 0.36 },
+        { x: 0.6, y: 0.26 },
+        { x: 0.66, y: 0.26 },
+        { x: 0.66, y: 0.41 },
+      ],
+    },
+    {
+      id: 'd6-smoke',
+      color: '#a8a29e',
+      width: 2,
+      points: [
+        { x: 0.63, y: 0.24 },
+        { x: 0.66, y: 0.2 },
+        { x: 0.62, y: 0.16 },
+        { x: 0.65, y: 0.12 },
+      ],
+    },
+    {
+      id: 'd6-door',
+      color: '#1c1917',
+      width: 2,
+      points: [
+        { x: 0.46, y: 0.72 },
+        { x: 0.46, y: 0.58 },
+        { x: 0.55, y: 0.58 },
         { x: 0.55, y: 0.72 },
       ],
     },
-  ],
-
-  // 14. Music note
-  [
     {
-      id: 'd14',
-      color: '#9c36b5',
-      width: 3,
-      points: [
-        { x: 0.44, y: 0.72 },
-        { x: 0.44, y: 0.46 },
-        { x: 0.5, y: 0.4 },
-        { x: 0.5, y: 0.5 },
-        { x: 0.44, y: 0.52 },
-        { x: 0.44, y: 0.42 },
-        { x: 0.5, y: 0.36 },
-      ],
-    },
-    {
-      id: 'd14b',
-      color: '#9c36b5',
-      width: 3,
-      points: [
-        { x: 0.42, y: 0.7 },
-        { x: 0.52, y: 0.7 },
-      ],
-    },
-  ],
-
-  // 15. Moon
-  [
-    {
-      id: 'd15',
+      id: 'd6-window',
       color: '#1c1917',
       width: 2,
-      points: (() => {
-        const pts = [];
-        for (let i = 0; i < 100; i++) {
-          const angle = (i / 99) * Math.PI * 2;
-          pts.push({ x: 0.5 + 0.14 * Math.cos(angle), y: 0.5 + 0.14 * Math.sin(angle) });
-        }
-        return pts;
-      })(),
-    },
-  ],
-
-  // 16. Fish
-  [
-    {
-      id: 'd16',
-      color: '#1971c2',
-      width: 3,
-      points: (() => {
-        const pts = [];
-        for (let i = 0; i < 80; i++) {
-          const angle = (i / 79) * Math.PI * 2;
-          pts.push({ x: 0.5 + 0.16 * Math.cos(angle), y: 0.5 + 0.08 * Math.sin(angle) });
-        }
-        return pts;
-      })(),
-    },
-    {
-      id: 'd16b',
-      color: '#1971c2',
-      width: 3,
       points: [
-        { x: 0.66, y: 0.5 },
-        { x: 0.74, y: 0.44 },
-        { x: 0.76, y: 0.5 },
-        { x: 0.74, y: 0.56 },
+        { x: 0.37, y: 0.56 },
+        { x: 0.37, y: 0.63 },
+        { x: 0.43, y: 0.63 },
+        { x: 0.43, y: 0.56 },
+        { x: 0.37, y: 0.56 },
       ],
     },
   ],
 
-  // 17. Diamond
+  // 7. Tree
   [
     {
-      id: 'd17',
-      color: '#0c8599',
-      width: 3,
+      id: 'd7-trunk',
+      color: '#6b4226',
+      width: 4,
       points: [
-        { x: 0.5, y: 0.28 },
-        { x: 0.72, y: 0.5 },
-        { x: 0.5, y: 0.72 },
-        { x: 0.28, y: 0.5 },
-        { x: 0.5, y: 0.28 },
+        { x: 0.47, y: 0.74 },
+        { x: 0.48, y: 0.6 },
+        { x: 0.46, y: 0.5 },
+        { x: 0.5, y: 0.6 },
+        { x: 0.52, y: 0.74 },
       ],
     },
-  ],
-
-  // 18. Tree
-  [
     {
-      id: 'd18',
+      id: 'd7-canopy',
       color: '#2f9e44',
       width: 3,
       points: [
-        { x: 0.5, y: 0.74 },
-        { x: 0.5, y: 0.56 },
-        { x: 0.42, y: 0.56 },
-        { x: 0.5, y: 0.4 },
-        { x: 0.34, y: 0.48 },
-        { x: 0.5, y: 0.32 },
-        { x: 0.44, y: 0.28 },
-        { x: 0.5, y: 0.22 },
-        { x: 0.56, y: 0.28 },
-        { x: 0.5, y: 0.32 },
+        { x: 0.36, y: 0.5 },
+        { x: 0.3, y: 0.4 },
+        { x: 0.35, y: 0.3 },
+        { x: 0.44, y: 0.26 },
+        { x: 0.5, y: 0.2 },
+        { x: 0.57, y: 0.25 },
+        { x: 0.65, y: 0.28 },
+        { x: 0.7, y: 0.38 },
         { x: 0.66, y: 0.48 },
-        { x: 0.5, y: 0.4 },
-        { x: 0.58, y: 0.56 },
-        { x: 0.5, y: 0.56 },
+        { x: 0.58, y: 0.53 },
+        { x: 0.46, y: 0.54 },
+        { x: 0.36, y: 0.5 },
       ],
     },
   ],
 
-  // 19. Eye
+  // 8. Fish
   [
     {
-      id: 'd19',
-      color: '#1c1917',
-      width: 3,
-      points: (() => {
-        const pts = [];
-        for (let i = 0; i < 100; i++) {
-          const angle = (i / 99) * Math.PI * 2;
-          pts.push({ x: 0.5 + 0.16 * Math.cos(angle), y: 0.5 + 0.1 * Math.sin(angle) });
-        }
-        return pts;
-      })(),
-    },
-    {
-      id: 'd19b',
-      color: '#1c1917',
-      width: 3,
-      points: (() => {
-        const pts = [];
-        for (let i = 0; i < 40; i++) {
-          const angle = (i / 39) * Math.PI * 2;
-          pts.push({ x: 0.5 + 0.04 * Math.cos(angle), y: 0.5 + 0.04 * Math.sin(angle) });
-        }
-        return pts;
-      })(),
-    },
-  ],
-
-  // 20. Flag
-  [
-    {
-      id: 'd20',
-      color: '#e03131',
-      width: 3,
-      points: [
-        { x: 0.36, y: 0.74 },
-        { x: 0.36, y: 0.32 },
-        { x: 0.66, y: 0.36 },
-        { x: 0.36, y: 0.46 },
-        { x: 0.54, y: 0.5 },
-        { x: 0.36, y: 0.56 },
-      ],
-    },
-  ],
-
-  // 21. Cat
-  [
-    {
-      id: 'd21',
-      color: '#1c1917',
-      width: 3,
-      points: [
-        { x: 0.4, y: 0.56 },
-        { x: 0.38, y: 0.4 },
-        { x: 0.42, y: 0.32 },
-        { x: 0.48, y: 0.4 },
-        { x: 0.5, y: 0.52 },
-        { x: 0.52, y: 0.4 },
-        { x: 0.58, y: 0.32 },
-        { x: 0.62, y: 0.4 },
-        { x: 0.6, y: 0.56 },
-      ],
-    },
-  ],
-
-  // 22. Cloud
-  [
-    {
-      id: 'd22',
+      id: 'd8-body',
       color: '#1971c2',
       width: 3,
-      points: (() => {
-        const pts = [];
-        for (let i = 0; i < 160; i++) {
-          const angle = (i / 159) * Math.PI * 2;
-          const r = 0.08 + 0.04 * Math.sin(angle * 5) * Math.cos(angle * 3);
-          pts.push({ x: 0.5 + Math.cos(angle) * r * 2, y: 0.5 + Math.sin(angle) * r });
-        }
-        return pts;
-      })(),
+      points: [
+        { x: 0.3, y: 0.5 },
+        { x: 0.34, y: 0.42 },
+        { x: 0.44, y: 0.38 },
+        { x: 0.56, y: 0.4 },
+        { x: 0.64, y: 0.46 },
+        { x: 0.66, y: 0.5 },
+        { x: 0.62, y: 0.56 },
+        { x: 0.52, y: 0.61 },
+        { x: 0.4, y: 0.6 },
+        { x: 0.32, y: 0.55 },
+        { x: 0.3, y: 0.5 },
+      ],
     },
-  ],
-
-  // 23. House
-  [
     {
-      id: 'd23',
+      id: 'd8-tail',
+      color: '#1971c2',
+      width: 3,
+      points: [
+        { x: 0.3, y: 0.5 },
+        { x: 0.2, y: 0.42 },
+        { x: 0.22, y: 0.5 },
+        { x: 0.2, y: 0.58 },
+        { x: 0.3, y: 0.5 },
+      ],
+    },
+    {
+      id: 'd8-fin',
+      color: '#1971c2',
+      width: 2,
+      points: [
+        { x: 0.46, y: 0.42 },
+        { x: 0.48, y: 0.32 },
+        { x: 0.52, y: 0.4 },
+      ],
+    },
+    {
+      id: 'd8-eye',
       color: '#1c1917',
       width: 3,
       points: [
-        { x: 0.5, y: 0.26 },
-        { x: 0.32, y: 0.44 },
-        { x: 0.68, y: 0.44 },
-        { x: 0.5, y: 0.26 },
-        { x: 0.68, y: 0.44 },
-        { x: 0.68, y: 0.72 },
-        { x: 0.32, y: 0.72 },
-        { x: 0.32, y: 0.44 },
-        { x: 0.44, y: 0.72 },
-        { x: 0.44, y: 0.56 },
-        { x: 0.56, y: 0.56 },
-        { x: 0.56, y: 0.72 },
+        { x: 0.58, y: 0.46 },
+        { x: 0.59, y: 0.47 },
       ],
     },
   ],
 
-  // 24. Abstract loop
+  // 9. Bird
   [
     {
-      id: 'd24',
+      id: 'd9-body',
+      color: '#1c1917',
+      width: 3,
+      points: [
+        { x: 0.34, y: 0.56 },
+        { x: 0.33, y: 0.48 },
+        { x: 0.38, y: 0.4 },
+        { x: 0.46, y: 0.38 },
+        { x: 0.54, y: 0.4 },
+        { x: 0.62, y: 0.46 },
+        { x: 0.66, y: 0.52 },
+        { x: 0.62, y: 0.58 },
+        { x: 0.5, y: 0.6 },
+        { x: 0.4, y: 0.58 },
+        { x: 0.34, y: 0.56 },
+      ],
+    },
+    {
+      id: 'd9-wing',
+      color: '#1c1917',
+      width: 2,
+      points: [
+        { x: 0.42, y: 0.5 },
+        { x: 0.5, y: 0.46 },
+        { x: 0.56, y: 0.5 },
+        { x: 0.48, y: 0.52 },
+        { x: 0.42, y: 0.5 },
+      ],
+    },
+    {
+      id: 'd9-beak',
       color: '#f08c00',
       width: 3,
-      points: (() => {
-        const pts = [];
-        for (let i = 0; i < 150; i++) {
-          const t = (i / 149) * Math.PI * 4;
-          pts.push({
-            x: 0.5 + (0.12 + 0.06 * Math.sin(t * 3)) * Math.cos(t),
-            y: 0.5 + (0.08 + 0.05 * Math.cos(t * 2)) * Math.sin(t),
-          });
-        }
-        return pts;
-      })(),
+      points: [
+        { x: 0.66, y: 0.5 },
+        { x: 0.72, y: 0.49 },
+        { x: 0.66, y: 0.46 },
+      ],
+    },
+    {
+      id: 'd9-eye',
+      color: '#1c1917',
+      width: 2,
+      points: [
+        { x: 0.58, y: 0.46 },
+        { x: 0.59, y: 0.47 },
+      ],
+    },
+    {
+      id: 'd9-legs',
+      color: '#1c1917',
+      width: 2,
+      points: [
+        { x: 0.46, y: 0.6 },
+        { x: 0.44, y: 0.68 },
+        { x: 0.5, y: 0.6 },
+        { x: 0.5, y: 0.68 },
+      ],
+    },
+  ],
+
+  // 10. Donut with sprinkles
+  [
+    {
+      id: 'd10-outer',
+      color: '#c2410c',
+      width: 3,
+      points: [
+        { x: 0.5, y: 0.3 },
+        { x: 0.62, y: 0.33 },
+        { x: 0.69, y: 0.43 },
+        { x: 0.68, y: 0.55 },
+        { x: 0.6, y: 0.64 },
+        { x: 0.5, y: 0.67 },
+        { x: 0.39, y: 0.64 },
+        { x: 0.31, y: 0.55 },
+        { x: 0.3, y: 0.43 },
+        { x: 0.37, y: 0.33 },
+        { x: 0.5, y: 0.3 },
+      ],
+    },
+    {
+      id: 'd10-inner',
+      color: '#c2410c',
+      width: 3,
+      points: [
+        { x: 0.5, y: 0.43 },
+        { x: 0.55, y: 0.45 },
+        { x: 0.56, y: 0.5 },
+        { x: 0.52, y: 0.54 },
+        { x: 0.46, y: 0.53 },
+        { x: 0.44, y: 0.47 },
+        { x: 0.5, y: 0.43 },
+      ],
+    },
+    {
+      id: 'd10-sprinkle1',
+      color: '#e03131',
+      width: 2,
+      points: [
+        { x: 0.4, y: 0.37 },
+        { x: 0.42, y: 0.39 },
+      ],
+    },
+    {
+      id: 'd10-sprinkle2',
+      color: '#1971c2',
+      width: 2,
+      points: [
+        { x: 0.47, y: 0.34 },
+        { x: 0.49, y: 0.36 },
+      ],
+    },
+    {
+      id: 'd10-sprinkle3',
+      color: '#2f9e44',
+      width: 2,
+      points: [
+        { x: 0.58, y: 0.36 },
+        { x: 0.6, y: 0.38 },
+      ],
+    },
+    {
+      id: 'd10-sprinkle4',
+      color: '#9c36b5',
+      width: 2,
+      points: [
+        { x: 0.62, y: 0.46 },
+        { x: 0.64, y: 0.48 },
+      ],
+    },
+    {
+      id: 'd10-sprinkle5',
+      color: '#f08c00',
+      width: 2,
+      points: [
+        { x: 0.36, y: 0.5 },
+        { x: 0.38, y: 0.52 },
+      ],
+    },
+    {
+      id: 'd10-sprinkle6',
+      color: '#e03131',
+      width: 2,
+      points: [
+        { x: 0.56, y: 0.58 },
+        { x: 0.58, y: 0.6 },
+      ],
     },
   ],
 ];
