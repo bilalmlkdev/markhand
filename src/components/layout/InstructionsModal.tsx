@@ -8,7 +8,6 @@ import {
   Undo2,
   MousePointer2,
   RefreshCw,
-  Keyboard,
 } from 'lucide-react';
 import { Button } from '../ui/Button';
 
@@ -71,12 +70,6 @@ const steps = [
     description:
       'Want a fresh start? Use the Reset button in the header to clear all saved data and reload the app.',
   },
-  {
-    icon: <Keyboard className="w-5 h-5" />,
-    title: 'Keyboard shortcuts',
-    description:
-      'Ctrl+Z to undo · Ctrl+C to copy · Ctrl+S to export. Works just like your favorite tools.',
-  },
 ];
 
 export function InstructionsModal({
@@ -107,7 +100,7 @@ export function InstructionsModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/20 backdrop-blur-sm" onClick={onClose} />
+      <div className="absolute inset-0 bg-black/35" onClick={onClose} />
 
       <div className="relative bg-white rounded-xl shadow-2xl border border-stone-200 w-[400px] overflow-hidden">
         {/* Header */}
@@ -141,13 +134,11 @@ export function InstructionsModal({
         </div>
 
         {/* Content */}
-        <div className="p-6 space-y-4 text-center">
-          {/* Icon */}
+        <div className="p-6 space-y-4 text-center min-h-[176px] flex flex-col items-center justify-center">
           <div className="w-14 h-14 bg-stone-100 rounded-2xl flex items-center justify-center mx-auto text-stone-700">
             {current.icon}
           </div>
 
-          {/* Text */}
           <div className="space-y-2">
             <h3 className="text-base font-semibold text-stone-800">{current.title}</h3>
             <p className="text-sm text-stone-500 leading-relaxed">{current.description}</p>

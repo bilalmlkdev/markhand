@@ -4,6 +4,7 @@ import { cursors } from '../../lib/cursors';
 import { getRandomDoodle } from '../../lib/doodles';
 import type { GuideType, CanvasTheme, CursorStyle } from '../../types';
 import type { UseDrawReturn } from '../../hooks/useDraw';
+import type { DoodleSet } from '../../lib/doodles';
 
 interface DrawingCanvasProps {
   drawHook: UseDrawReturn;
@@ -15,8 +16,7 @@ interface DrawingCanvasProps {
 export function DrawingCanvas({ drawHook, guideType, theme, cursorStyle }: DrawingCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  // Clean Fix: Select a random relative doodle immediately on component initialization
-  const [initialDoodle] = useState(() => getRandomDoodle());
+  const [doodleName] = useState(() => getRandomDoodle().name);
 
   const {
     strokes,
@@ -42,7 +42,6 @@ export function DrawingCanvas({ drawHook, guideType, theme, cursorStyle }: Drawi
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // Use the actual high-DPI physical dimensions from the canvas element
     const { width, height } = canvas;
     ctx.clearRect(0, 0, width, height);
 
@@ -55,8 +54,6 @@ export function DrawingCanvas({ drawHook, guideType, theme, cursorStyle }: Drawi
       drawLineGrid(ctx, width, height, 32, themeConfig.dot);
     }
 
-    // Strokes (which include the seeded initial doodle, treated as real drawing
-    // data) are drawn the same way regardless of whether the user has added more.
     strokes.forEach(s => {
       if (s.points.length < 2) return;
       ctx.beginPath();
@@ -72,22 +69,16 @@ export function DrawingCanvas({ drawHook, guideType, theme, cursorStyle }: Drawi
     });
   }, [strokes, guideType, themeConfig]);
 
-  // Redraw whenever render dependencies update
   useEffect(() => {
     renderWithGuides();
   }, [renderWithGuides]);
 
-  // Seed the initial doodle into the strokes array exactly once, so it becomes part
-  // of the actual drawing (persists, undoes, resizes like any other stroke) instead
-  // of a separate overlay that gets swapped out the moment the user draws.
   const seededRef = useRef(false);
   useEffect(() => {
     if (seededRef.current) return;
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    // Don't seed over a canvas that already has content (saved drawing or already
-    // drawn-on this session) — only a truly empty, never-touched canvas gets the doodle.
     if (hasDrawn || strokes.length > 0) {
       seededRef.current = true;
       return;
@@ -95,9 +86,10 @@ export function DrawingCanvas({ drawHook, guideType, theme, cursorStyle }: Drawi
 
     resizeCanvas();
     const { width, height } = canvas;
-    if (width === 0 || height === 0) return; // not laid out yet, try again next render
+    if (width === 0 || height === 0) return;
 
-    const absoluteDoodle = initialDoodle.map(s => ({
+    const doodleSet: DoodleSet = getRandomDoodle();
+    const absoluteDoodle = doodleSet.strokes.map(s => ({
       id: s.id,
       color: s.color,
       width: s.width,
@@ -107,7 +99,6 @@ export function DrawingCanvas({ drawHook, guideType, theme, cursorStyle }: Drawi
     seededRef.current = true;
   });
 
-  // Handle window resizing safely without flaky timeouts
   useEffect(() => {
     resizeCanvas();
     renderWithGuides();
@@ -138,11 +129,22 @@ export function DrawingCanvas({ drawHook, guideType, theme, cursorStyle }: Drawi
         onTouchMove={draw}
         onTouchEnd={stopDrawing}
       />
+
+      {/* Doodle name label */}
+      {!hasDrawn && (
+        <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-medium text-stone-500 border border-stone-200 shadow-sm pointer-events-none">
+          {doodleName}
+        </div>
+      )}
+
+      {/* Hint text */}
       {!hasDrawn && (
         <div className="absolute bottom-3 left-3 bg-white/80 backdrop-blur-sm px-2 py-1 rounded-md text-xs text-stone-400 border border-stone-200 pointer-events-none">
           Start drawing — this doodle is yours to trace
         </div>
       )}
+
+      {/* Stroke count */}
       {hasDrawn && (
         <div className="absolute bottom-3 left-3 bg-white/80 backdrop-blur-sm px-2 py-1 rounded-md text-xs text-stone-400 border border-stone-200 pointer-events-none">
           {strokes.length} stroke{strokes.length !== 1 ? 's' : ''}
