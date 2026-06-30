@@ -1,10 +1,15 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Header } from './components/layout/Header';
 import { DrawingCanvas } from './components/canvas/DrawingCanvas';
 import { FloatingPanel } from './components/layout/FloatingPanel';
 import { GuidePills } from './components/canvas/GuidePills';
 import { CursorPills } from './components/canvas/CursorPills';
 import { useDraw } from './hooks/useDraw';
+import {
+  InstructionsModal,
+  hasSeenInstructions,
+  markInstructionsSeen,
+} from './components/layout/InstructionsModal';
 import { loadTheme, loadGuide, loadCursor, saveTheme, saveGuide, saveCursor } from './lib/storage';
 import type { GuideType, CanvasTheme, CursorStyle } from './types';
 
@@ -14,8 +19,19 @@ function App() {
   const [guideType, setGuideType] = useState<GuideType>((loadGuide() as GuideType) ?? 'dots');
   const [theme, setTheme] = useState<CanvasTheme>((loadTheme() as CanvasTheme) ?? 'default');
   const [cursorStyle, setCursorStyle] = useState<CursorStyle>(
-    (loadCursor() as CursorStyle) ?? 'crosshair',
+    (loadCursor() as CursorStyle) ?? 'pencil',
   );
+  const [instructionsOpen, setInstructionsOpen] = useState(false);
+  const [firstVisit, setFirstVisit] = useState(false);
+
+  // Show instructions on first visit
+  useEffect(() => {
+    if (!hasSeenInstructions()) {
+      setFirstVisit(true);
+      setInstructionsOpen(true);
+      markInstructionsSeen();
+    }
+  }, []);
 
   const handleGuideChange = (guide: GuideType) => {
     setGuideType(guide);
@@ -32,9 +48,19 @@ function App() {
     saveCursor(cursor);
   };
 
+  const handleToggleInstructions = () => {
+    setInstructionsOpen(prev => !prev);
+    setFirstVisit(false);
+  };
+
   return (
     <div className="h-screen flex flex-col bg-stone-50 text-stone-900 overflow-hidden">
-      <Header drawHook={drawHook} theme={theme} guideType={guideType} />
+      <Header
+        drawHook={drawHook}
+        theme={theme}
+        guideType={guideType}
+        onToggleInstructions={handleToggleInstructions}
+      />
       <div className="flex-1 relative overflow-hidden">
         <DrawingCanvas
           drawHook={drawHook}
@@ -46,6 +72,12 @@ function App() {
         <GuidePills activeGuide={guideType} onChange={handleGuideChange} />
         <FloatingPanel drawHook={drawHook} activeTheme={theme} onThemeChange={handleThemeChange} />
       </div>
+
+      <InstructionsModal
+        open={instructionsOpen}
+        onClose={() => setInstructionsOpen(false)}
+        showOnFirstVisit={firstVisit}
+      />
     </div>
   );
 }

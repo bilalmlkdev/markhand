@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { ExportModal } from '../exports/ExportModal';
-import { ProjectModal } from './ProjectModal';
+import { InstructionsModal } from './InstructionsModal';
 import type { UseDrawReturn } from '../../hooks/useDraw';
 import type { CanvasTheme, GuideType } from '../../types';
 import { FiGithub } from 'react-icons/fi';
@@ -25,13 +25,20 @@ interface HeaderProps {
   drawHook: UseDrawReturn;
   theme: CanvasTheme;
   guideType: GuideType;
+  onToggleInstructions: () => void;
+  instructionsOpen: boolean;
 }
 
 type ConfirmType = 'reset' | 'clear' | null;
 
-export function Header({ drawHook, theme, guideType }: HeaderProps) {
+export function Header({
+  drawHook,
+  theme,
+  guideType,
+  onToggleInstructions,
+  instructionsOpen,
+}: HeaderProps) {
   const [exportOpen, setExportOpen] = useState(false);
-  const [projectOpen, setProjectOpen] = useState(false);
   const [copied, setCopied] = useState(false);
   const [confirmType, setConfirmType] = useState<ConfirmType>(null);
 
@@ -192,8 +199,8 @@ export function Header({ drawHook, theme, guideType }: HeaderProps) {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => setProjectOpen(true)}
-            title="About Markhand"
+            onClick={onToggleInstructions}
+            title="How to use Markhand"
           >
             <Info className="w-4 h-4" />
           </Button>
@@ -210,7 +217,7 @@ export function Header({ drawHook, theme, guideType }: HeaderProps) {
         guideType={guideType}
       />
 
-      <ProjectModal open={projectOpen} onClose={() => setProjectOpen(false)} />
+      <InstructionsModal open={instructionsOpen} onClose={onToggleInstructions} />
 
       {/* Confirmation Modal */}
       {confirmType && (
@@ -234,11 +241,9 @@ export function Header({ drawHook, theme, guideType }: HeaderProps) {
 
             <div className="p-5 space-y-4">
               {confirmType === 'clear' ? (
-                <>
-                  <p className="text-sm text-stone-600 leading-relaxed">
-                    This will remove all strokes from the canvas.
-                  </p>
-                </>
+                <p className="text-sm text-stone-600 leading-relaxed">
+                  This will remove all strokes from the canvas.
+                </p>
               ) : (
                 <>
                   <p className="text-sm text-stone-600 leading-relaxed">
