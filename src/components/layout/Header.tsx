@@ -13,10 +13,12 @@ import {
   RefreshCw,
   AlertTriangle,
   X,
+  Share2,
 } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { ExportModal } from '../exports/ExportModal';
 import { InstructionsModal } from './InstructionsModal';
+import { ShareModal } from './ShareModal';
 import type { UseDrawReturn } from '../../hooks/useDraw';
 import type { CanvasTheme, GuideType } from '../../types';
 import { FiGithub } from 'react-icons/fi';
@@ -39,6 +41,7 @@ export function Header({
   instructionsOpen,
 }: HeaderProps) {
   const [exportOpen, setExportOpen] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
   const [copied, setCopied] = useState(false);
   const [confirmType, setConfirmType] = useState<ConfirmType>(null);
 
@@ -159,6 +162,15 @@ export function Header({
             variant="ghost"
             size="icon"
             disabled={isEmpty}
+            onClick={() => setShareOpen(true)}
+            title="Share drawing"
+          >
+            <Share2 className="w-4 h-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            disabled={isEmpty}
             onClick={() => setExportOpen(true)}
             title="Export"
           >
@@ -215,6 +227,13 @@ export function Header({
         height={canvasHeight}
         theme={theme}
         guideType={guideType}
+      />
+
+      <ShareModal
+        open={shareOpen}
+        onClose={() => setShareOpen(false)}
+        strokes={strokes}
+        isEmpty={isEmpty}
       />
 
       <InstructionsModal open={instructionsOpen} onClose={onToggleInstructions} />

@@ -11,6 +11,7 @@ import {
   markInstructionsSeen,
 } from './components/layout/InstructionsModal';
 import { loadTheme, loadGuide, loadCursor, saveTheme, saveGuide, saveCursor } from './lib/storage';
+import { getStrokesFromUrl, cleanUrl } from './lib/share';
 import type { GuideType, CanvasTheme, CursorStyle } from './types';
 
 function App() {
@@ -23,6 +24,18 @@ function App() {
   );
   const [instructionsOpen, setInstructionsOpen] = useState(false);
   const [firstVisit, setFirstVisit] = useState(false);
+  const [sharedLoaded, setSharedLoaded] = useState(false);
+
+  // Load shared drawing from URL
+  useEffect(() => {
+    if (sharedLoaded) return;
+    const sharedStrokes = getStrokesFromUrl();
+    if (sharedStrokes && sharedStrokes.length > 0) {
+      drawHook.seedStrokes(sharedStrokes);
+      cleanUrl();
+    }
+    setSharedLoaded(true);
+  }, [sharedLoaded, drawHook]);
 
   useEffect(() => {
     if (!hasSeenInstructions()) {
