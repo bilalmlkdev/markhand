@@ -24,7 +24,6 @@ function App() {
   const [instructionsOpen, setInstructionsOpen] = useState(false);
   const [firstVisit, setFirstVisit] = useState(false);
 
-  // Show instructions on first visit
   useEffect(() => {
     if (!hasSeenInstructions()) {
       setFirstVisit(true);
@@ -60,6 +59,7 @@ function App() {
         theme={theme}
         guideType={guideType}
         onToggleInstructions={handleToggleInstructions}
+        instructionsOpen={instructionsOpen}
       />
       <div className="flex-1 relative overflow-hidden">
         <DrawingCanvas
@@ -73,11 +73,15 @@ function App() {
         <FloatingPanel drawHook={drawHook} activeTheme={theme} onThemeChange={handleThemeChange} />
       </div>
 
-      <InstructionsModal
-        open={instructionsOpen}
-        onClose={() => setInstructionsOpen(false)}
-        showOnFirstVisit={firstVisit}
-      />
+      {firstVisit ? (
+        <InstructionsModal
+          open={instructionsOpen}
+          onClose={() => setInstructionsOpen(false)}
+          showOnFirstVisit
+        />
+      ) : (
+        <InstructionsModal open={instructionsOpen} onClose={() => setInstructionsOpen(false)} />
+      )}
     </div>
   );
 }
