@@ -119,27 +119,26 @@ export function ExportModal({
       ctx.fillRect(0, 0, previewW, previewH);
     }
 
-    // Draw guides if enabled
-    if (showGuides && background !== 'transparent') {
-      ctx.save();
-      ctx.translate(-bounds.x * scale, -bounds.y * scale);
-      drawGuidesOnContext(ctx, width, height, themeConfig.dot);
-      ctx.restore();
-    }
-
-    // Draw strokes
+    // Guides and strokes share a single transform (translate to bounds origin, then
+    // scale to preview size) so the grid spacing and stroke widths shrink together
+    // instead of the grid staying full-size while strokes are scaled independently.
     ctx.save();
     ctx.translate(-bounds.x * scale, -bounds.y * scale);
+    ctx.scale(scale, scale);
+
+    if (showGuides && background !== 'transparent') {
+      drawGuidesOnContext(ctx, width, height, themeConfig.dot);
+    }
 
     strokes.forEach(s => {
       if (s.points.length < 2) return;
       ctx.beginPath();
-      ctx.moveTo(s.points[0]!.x * scale, s.points[0]!.y * scale);
+      ctx.moveTo(s.points[0]!.x, s.points[0]!.y);
       for (let i = 1; i < s.points.length; i++) {
-        ctx.lineTo(s.points[i]!.x * scale, s.points[i]!.y * scale);
+        ctx.lineTo(s.points[i]!.x, s.points[i]!.y);
       }
       ctx.strokeStyle = s.color;
-      ctx.lineWidth = Math.max(1, s.width * scale);
+      ctx.lineWidth = Math.max(1 / scale, s.width);
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
       ctx.stroke();
