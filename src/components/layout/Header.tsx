@@ -195,24 +195,7 @@ export function Header({
 
         {/* Right: Support + Info */}
         <div className="flex items-center gap-0 sm:gap-0.5">
-          <a
-            href="https://www.buymeacoffee.com/bilalmlkdev"
-            target="_blank"
-            rel="noopener noreferrer"
-            title="Buy me a coffee"
-            className="w-8 h-8 hidden sm:flex items-center justify-center rounded-lg hover:bg-amber-50 text-stone-400 hover:text-amber-600 transition-colors"
-          >
-            <Coffee className="w-4 h-4" />
-          </a>
-          <a
-            href="https://github.com/sponsors/byllzz"
-            target="_blank"
-            rel="noopener noreferrer"
-            title="Sponsor on GitHub"
-            className="w-8 h-8 hidden sm:flex items-center justify-center rounded-lg hover:bg-pink-50 text-stone-400 hover:text-pink-500 transition-colors"
-          >
-            <Heart className="w-4 h-4" />
-          </a>
+          
           <a
             href="https://github.com/byllzz/markhand"
             target="_blank"
