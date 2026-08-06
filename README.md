@@ -1,246 +1,296 @@
 <p align="center">
-  <img src="/public/favicon.svg" width="120" alt="Markhand Logo" />
+  <a href="https://markhand.vercel.app/">
+    <img src="./public/preview.png" alt="Markhand Preview">
+  </a>
 </p>
 
 <h1 align="center">Markhand</h1>
 
 <p align="center">
-  <strong>Your signature, perfected.</strong><br />
-  Draw, practice, and export your mark - a beautiful digital signature tool.
+  Draw, practice, and export your mark—a beautiful, free, open-source digital signature tool.
 </p>
 
 <p align="center">
-  <a href="./LICENSE">
-    <img src="https://img.shields.io/badge/License-MIT-9B72FF.svg?style=flat" alt="MIT License" />
-  </a>
-  <img src="https://img.shields.io/badge/Status-Active-9B72FF.svg?style=flat" alt="Status" />
-  <img src="https://img.shields.io/badge/Website-Online-9B72FF.svg?style=flat" alt="Website" />
-  <img src="https://img.shields.io/badge/React-19-9B72FF.svg?style=flat&logo=react&logoColor=white" alt="React 19" />
-  <img src="https://img.shields.io/badge/TypeScript-5-9B72FF.svg?style=flat&logo=typescript&logoColor=white" alt="TypeScript" />
-  <img src="https://img.shields.io/badge/Tailwind-v4-9B72FF.svg?style=flat&logo=tailwindcss&logoColor=white" alt="Tailwind CSS" />
-  <img src="https://img.shields.io/badge/Vite-6-9B72FF.svg?style=flat&logo=vite&logoColor=white" alt="Vite" />
-  <img src="https://img.shields.io/badge/Made%20With-React-9B72FF.svg?style=flat&logo=react&logoColor=white" alt="Made with React" />
-  <img src="https://img.shields.io/badge/Open%20Source-❤-9B72FF.svg?style=flat" alt="Open Source" />
-  <a href="https://github.com/byllzz">
-    <img src="https://img.shields.io/badge/Author-Bilal%20Malik-9B72FF.svg?style=flat" alt="Author" />
-  </a>
-  <img src="https://img.shields.io/badge/PRs-Welcome-9B72FF.svg?style=flat" alt="PRs Welcome" />
-  <img src="https://img.shields.io/badge/Maintained-Yes-9B72FF.svg?style=flat" alt="Maintained" />
+  <img src="https://img.shields.io/badge/Status-Complete-9B72FF?style=flat"/>
+  <img src="https://img.shields.io/badge/React-Vite-9B72FF?style=flat"/>
+  <img src="https://img.shields.io/badge/Tailwind-v4-9B72FF?style=flat"/>
+  <img src="https://img.shields.io/badge/TypeScript-5-9B72FF?style=flat"/>
+  <img src="https://img.shields.io/badge/License-MIT-9B72FF?style=flat"/>
+  <img src="https://img.shields.io/badge/Deploy-Vercel-9B72FF?style=flat"/>
 </p>
 
 <p align="center">
-  <a href="https://markhand.vercel.app">
-    <img src="https://img.shields.io/badge/%20Try%20-Markhand-9B72FF?style=for-the-badge" alt="Try Markhand" />
-  </a>
-</p>
-
-<p align="center">
-  <img src="./public/preview1.png" width="100%" alt="Markhand Demo" />
-  <img src="./public/preview2.png" width="100%" alt="Markhand Demo" />
+  <a href="https://markhand.vercel.app/">Live Demo</a> •
+  <a href="https://github.com/byllzz/markhand/issues/new">Report Bug</a> •
+  <a href="https://github.com/byllzz/markhand/issues/new">Request Feature</a>
 </p>
 
 
-<p align="center">
-  <em>Draw your mark. Practice it. Own it. Export it anywhere.</em>
-</p>
 
----
+# About Markhand
 
-## What is Markhand?
+Markhand is an open-source digital signature studio designed for anyone who wants to draw, practice, and export their mark with precision and elegance. It combines a fluid drawing canvas, customizable tools, and a unique per-drawing URL system, all wrapped in a clean, responsive interface.
 
-**Markhand** is a free, open-source signature practice and creation tool. Draw your signature with customizable pens and guides, then export it as PNG or SVG - ready for documents, branding, emails, or wherever your mark needs to go.
+Unlike many online drawing tools that rely on servers or require accounts, Markhand runs entirely inside your browser. Every stroke is saved locally using `localStorage`, and every drawing gets its own dedicated URL. Clear the canvas, and you're instantly given a fresh, shareable link while previous drawings remain accessible through their original addresses.
 
-Whether you're designing a new signature, practicing your handwriting, or need a quick digital signature for contracts, Markhand gives you a beautiful canvas to work on.
+Whether you're designing a personal signature, practicing calligraphy, adding a hand-drawn touch to digital documents, or simply exploring your creativity, Markhand provides a distraction-free workspace that adapts to your hand instead of forcing you to adapt to the tool.
 
-> **No sign-up. No ads. No servers. Just you and your mark.**
+# Features
 
----
+- **Drawing** · Freehand drawing, multi-stroke support, responsive canvas, and 10+ doodle traces.
+- **Customization** · 8 preset colors, custom color picker, 1px–12px stroke width, and four canvas themes.
+- **Cursor & Guides** · Five cursor styles with Dot Grid, Line Grid, Ruled Lines, or no guide.
+- **Editing** · Unlimited Undo, Redo, and smart canvas reset with a new drawing ID.
+- **Export** · PNG (Theme, White, Transparent), SVG, clipboard copy, print-ready output, and shareable URLs.
+- **Storage** · Per-drawing `localStorage`, persistent preferences, and completely offline operation.
+- **Keyboard & Mobile** · Keyboard shortcuts, responsive layout, and collapsible mobile navigation.
 
-## Why Markhand?
+# Architecture
 
-Most people hate their signature. They scribble it on documents without thought, and digital signatures feel cold and impersonal.
+Markhand is built around a clean separation between the drawing engine, state management, and the user interface.
 
-**Markhand** changes that by giving you a space to practice, refine, and perfect your signature - or create something entirely new.
+Instead of tightly coupling canvas rendering with the UI, the application centralizes drawing logic inside a custom `useDraw` hook. This hook manages stroke history, undo/redo stacks, and canvas operations, while the React interface simply renders the current state and passes user interactions back to the engine. This separation keeps the codebase predictable, testable, and easy to extend.
 
-Whether you're:
+Routing is handled by React Router, where each drawing is assigned a unique ID through the URL (`/dashboard/:id`). Whenever the canvas is cleared, a new ID is generated and the user is seamlessly redirected while preserving previous drawing data inside `localStorage`.
 
-- ✍️ Designing a signature for the first time
-- 📄 Adding a personal touch to digital documents
-- 🎨 Creating hand-drawn marks for branding
-- 🖊️ Practicing calligraphy and lettering
-- 🔗 Sharing your drawings with a simple link
+The entire application runs locally inside the browser without requiring any external APIs or server-side processing. Every stroke is rendered directly onto the HTML5 Canvas, ensuring fast, smooth, and privacy-friendly performance.
 
-Markhand adapts to **your hand**, not the other way around.
 
----
 
-##  Features
+# Adding a New Doodle
 
-### 🎨 Beautiful Canvas
-Start with a random hand-drawn doodle - from hearts and stars to coffee cups and cats. Trace over it or clear it and start fresh. 10 unique doodles rotate on each visit.
+Expanding Markhand's doodle collection requires only two small steps.
 
-### 🖊️ Customizable Pen
-Choose from 8 colors and 6 stroke widths. The pen settings panel floats over the canvas, draggable and collapsible. Auto-switches to compatible ink when you change canvas themes.
+## Step 1
 
-### 🖱️ 5 Cursor Styles
-Pick your pointer - Crosshair, Pencil, Dot, Brush, or Pen. Each one changes how your cursor looks while drawing.
+Create a new doodle inside:
 
-### 📐 Guide Patterns
-Toggle between Dot Grid, Line Grid, Ruled Lines, or No Guide. Perfect for practice, lettering, or technical drawing.
-
-### 🎨 4 Canvas Themes
-Switch between Default, Warm, Cool, and Dark backgrounds. Each theme has matching dot colors and auto-switches your pen ink for visibility.
-
-### ↩️ Undo & Clear
-Made a mistake? Undo it. Want a clean slate? Clear the canvas. Both have confirmation dialogs so you never lose work accidentally.
-
-### 📤 Export & Share
-- **PNG** - transparent or themed background
-- **SVG** - clean vector output
-- **Copy to clipboard** - paste directly into docs and emails
-- **Print** - clean print-ready output
-- **Share URL** - encode your drawing in a shareable link
-
-### 💾 Persistent Storage
-Everything saves to localStorage - your strokes, pen settings, theme, guide type, cursor, even the floating panel position. No account needed.
-
-### 📱 Fully Responsive
-Works on desktop, tablet, and mobile. UI adapts gracefully - non-essential buttons hide on small screens, touch-friendly targets throughout.
-
-### 🔄 Reset & Fresh Start
-One-click reset clears all data and reloads the app with a fresh doodle. Confirmation dialog prevents accidents.
-
----
-
-##  How to Use
-
-| Action | How to do it |
-|--------|--------------|
-| **Draw** | Click or touch the canvas and drag |
-| **Change pen color** | Open settings panel (bottom-right) → Pen tab |
-| **Change stroke width** | Use the slider in Pen tab |
-| **Change cursor** | Click any icon in the top-left pills |
-| **Change guides** | Click any icon in the right-center pills |
-| **Change theme** | Open settings panel → Theme tab |
-| **Undo** | Click ↩ in header or Ctrl+Z |
-| **Clear canvas** | Click 🗑 in header |
-| **Copy to clipboard** | Click 📋 in header |
-| **Share drawing** | Click 🔗 in header |
-| **Export** | Click ⬇ in header → choose format & background |
-| **Print** | In export modal → click printer icon |
-| **Reset all data** | Click 🔄 in header → confirm |
-| **View instructions** | Click ℹ in header |
-
----
-
-##  Project Structure
+```text
+src/lib/doodles.ts
 ```
-markhand/
-├── public/
-│ ├── favicon.svg
-│ └── og.svg
-├── src/
-│ ├── components/
-│ │ ├── canvas/
-│ │ │ ├── CursorPills.tsx
-│ │ │ ├── DrawingCanvas.tsx
-│ │ │ └── GuidePills.tsx
-│ │ ├── controls/
-│ │ │ ├── PenControls.tsx
-│ │ │ └── ThemeControls.tsx
-│ │ ├── exports/
-│ │ │ └── ExportModal.tsx
-│ │ ├── layout/
-│ │ │ ├── FloatingPanel.tsx
-│ │ │ ├── Header.tsx
-│ │ │ ├── InstructionsModal.tsx
-│ │ │ └── ShareModal.tsx
-│ │ └── ui/
-│ │ ├── Button.tsx
-│ │ ├── ColorPicker.tsx
-│ │ ├── Slider.tsx
-│ │ └── Toggle.tsx
-│ ├── hooks/
-│ │ └── useDraw.ts
-│ ├── lib/
-│ │ ├── canvas.ts
-│ │ ├── cursors.ts
-│ │ ├── doodles.ts
-│ │ ├── export.ts
-│ │ ├── ink.ts
-│ │ ├── share.ts
-│ │ └── storage.ts
-│ ├── types/
-│ │ └── index.ts
-│ ├── App.tsx
-│ ├── main.tsx
-│ ├── index.css
-│ └── vite-env.d.ts
-├── index.html
+
+Each doodle should be an array of relative strokes with coordinates normalized between `0` and `1` so they scale perfectly to every canvas size.
+
+```ts
+export const doodles = [
+  {
+    name: "Example Doodle",
+    strokes: [
+      {
+        id: "ex-1",
+        color: "#1c1917",
+        width: 4,
+        points: [
+          { x: 0.5, y: 0.2 },
+          { x: 0.5, y: 0.8 }
+        ]
+      }
+    ]
+  }
+];
+```
+
+## Step 2
+
+Register the doodle inside the exported doodles array.
+
+```ts
+const doodles = [
+  // existing doodles...
+
+  {
+    name: "Example Doodle",
+    strokes: [...]
+  }
+];
+```
+
+Once registered, the new doodle automatically becomes part of the random doodle selection for fresh drawing sessions. No additional configuration is required.
+# Project Structure
+
+The project follows a clean React architecture where responsibilities are separated into reusable modules.
+
+```text
+markhand
+├── public
+├── src
+│   ├── assets
+│   ├── components
+│   │   ├── canvas
+│   │   ├── controls
+│   │   ├── exports
+│   │   ├── layout
+│   │   └── ui
+│   ├── hooks
+│   ├── lib
+│   ├── types
+│   ├── App.tsx
+│   ├── main.tsx
+│   └── index.css
 ├── package.json
-├── tsconfig.json
-├── tsconfig.app.json
-├── tsconfig.node.json
-├── vite.config.ts
-├── tailwind.config.ts
-├── postcss.config.js
-└── README.md
+└── vite.config.ts
 ```
 
----
+# Directory Overview
 
-##  Tech Stack
+- **`components/canvas/`** · Drawing canvas, cursor pills, and guide pills.
+- **`components/controls/`** · Pen and theme controls.
+- **`components/exports/`** · Export and sharing modals.
+- **`components/layout/`** · Header, floating settings panel, and instructions.
+- **`components/ui/`** · Shared UI components like Button, Slider, Toggle, and ColorPicker.
+- **`hooks/`** · Custom hooks for drawing, exporting, and undo/redo.
+- **`lib/`** · Canvas utilities, doodles, storage, sharing, cursors, and helpers.
+- **`types/`** · Shared TypeScript definitions.
 
-| Technology | Purpose |
-|------------|---------|
-| **React 19** | UI framework |
-| **TypeScript** | Type safety |
-| **Tailwind CSS v4** | Styling |
-| **Vite 6** | Build tool |
-| **Lucide React** | Icons |
-| **React Icons** | Social icons |
-| **Canvas API** | Drawing engine |
 
----
 
-## Contributing
-Contributions are welcome. Yes, even yours.
+# Design Principles
 
-## How to contribute
-* Fork the repository
+- **Pure Canvas Rendering** · Canvas functions remain side-effect free.
+- **Client-Side Processing** · Everything runs entirely in the browser.
+- **Per-Drawing Persistence** · Every drawing has isolated local storage.
+- **Reusable Components** · Modular React components keep the UI consistent.
+- **Extensible Architecture** · New doodles, guides, and cursors are easy to add.
 
-* Create a feature branch
+Markhand is designed to remain responsive even while handling hundreds of strokes.
+
+- **Native Canvas API** for hardware-accelerated rendering.
+- **Memoized State** to reduce unnecessary re-renders.
+- **Local Persistence** for instant loading and saving.
+- **Client-Side Processing** with zero network requests during drawing and exporting.
+
+
+# Built With
+
+Markhand uses a modern frontend stack focused on performance, maintainability, and developer experience.
+
+- React
+- Vite
+- Tailwind CSS v4
+- TypeScript
+- React Router DOM
+- HTML5 Canvas API
+- Lucide React
+
+<p align="left">
+  <img src="https://skillicons.dev/icons?i=react,vite,tailwind,ts,git" />
+</p>
+
+# Getting Started
+
+### Prerequisites
+
+- Node.js
+- npm or Yarn
+- Modern web browser
+
+### Quick Setup
+
 ```bash
-git checkout -b feature/amazing-feature
-Commit your changes
+git clone https://github.com/byllzz/markhand.git
+cd markhand
+npm install
+npm run dev
 ```
-* Commit your feature
+
+### Build
+
 ```bash
-git commit -m "Add amazing feature"
-Push to your branch
+npm run build
+npm run preview
 ```
 
-* Push to your's branch
-```bash
-git push origin feature/amazing-feature
+# Contributing
+
+Contributions of every size are welcome.
+
+Whether you're fixing a typo, improving accessibility, adding a new doodle, optimizing performance, or introducing an entirely new feature, every contribution helps make Markhand better.
+
+Before opening a pull request, take a moment to understand how the drawing engine is organized. Most new features only require a small amount of code thanks to the project's modular architecture.
+
+
+
+## Adding a New Doodle
+
+Creating a new initial doodle is intentionally straightforward.
+
+### 1. Create the Doodle
+
+Add a new doodle set inside:
+
+```text
+src/lib/doodles.ts
 ```
-- *Open a Pull Request*
 
----
+Ensure coordinates are normalized between `0` and `1` so they scale correctly on every canvas.
 
-## Support
-If OffTheGrid helps you, consider supporting the project:
+### 2. Register the Doodle
 
--  Star this repository on GitHub
--  Share it with your friends
--  Leave feedback in GitHub Discussions
--  Buy me a coffee
+Add your new doodle to the exported `doodles` array.
 
-<p align="left"> <a href="https://buymeacoffee.com/bilalmlkdev"> <img src="https://img.shields.io/badge/Buy%20Me%20A%20Coffee-FFDD00?style=for-the-badge&logo=buy-me-a-coffee&logoColor=black" alt="Buy Me A Coffee" /> </a>
+```ts
+const doodles = [
+  // existing doodles...
 
-<a href="https://github.com/sponsors/byllzz"> <img src="https://img.shields.io/badge/Sponsor%20on%20GitHub-181717?style=for-the-badge&logo=github&logoColor=white" alt="Sponsor on GitHub" /> </a> </p>
+  {
+    name: "My New Doodle",
+    strokes: [...]
+  }
+];
+```
 
----
+Once registered, the new doodle automatically becomes part of the random selection pool for new drawing sessions.
+# Author
 
-<p align="center"> Made with 💛 using React, TypeScript, and Tailwind CSS.<br /> <strong>Make your mark. ✍️</strong> </p><p align="center"> © 2026 Markhand - Open Source MIT </p>
+<p align="left">
+  <img src="https://github.com/byllzz.png" width="90" alt="Bilal Malik"/>
+</p>
 
+## Bilal Malik
+
+![GitHub](https://img.shields.io/badge/GitHub-byllzz-9B72FF?style=flat&logo=github&logoColor=white)
+![X](https://img.shields.io/badge/X-@bilalmlkdev-9B72FF?style=flat&logo=x&logoColor=white)
+![Portfolio](https://img.shields.io/badge/Portfolio-bilalmlkdev.vercel.app-9B72FF?style=flat&logo=vercel&logoColor=white)
+![LinkedIn](https://img.shields.io/badge/LinkedIn-Bilal%2520Malik-9B72FF?style=flat&logo=linkedin&logoColor=white)
+![Email](https://img.shields.io/badge/Email-bilalmlkdev@gmail.com-9B72FF?style=flat&logo=gmail&logoColor=white)
+
+
+If you enjoyed this project, consider giving it a ⭐ on GitHub. It helps others discover the project and motivates future improvements.
+
+<p align="right">
+  <a href="#markhand">⬆ Back to Top</a>
+</p>
+
+
+# License (MIT)
+
+This project is licensed under the MIT License.
+
+```text
+MIT License
+
+Copyright (c) 2026 Bilal Malik
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
+
+
+<p align="left">
+  © 2026 Markhand. Licensed under the MIT License.
+</p>

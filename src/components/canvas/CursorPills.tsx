@@ -16,7 +16,7 @@ const cursorOptions: { type: CursorStyle; label: string; icon: React.ReactNode }
 
 export function CursorPills({ activeCursor, onChange }: CursorPillsProps) {
   return (
-    <div className="absolute top-3 right-3 z-30 flex flex-col gap-0.5 bg-white/90 backdrop-blur-md rounded-2xl p-1 border border-stone-200/60 shadow-lg">
+    <div className="absolute top-40 left-3 z-30 flex flex-col gap-0.5 bg-white/90 backdrop-blur-md rounded-2xl p-1 border border-stone-200/60 shadow-lg">
       {cursorOptions.map(cursor => (
         <button
           key={cursor.type}

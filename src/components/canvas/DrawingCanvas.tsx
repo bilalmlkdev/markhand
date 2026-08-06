@@ -123,12 +123,12 @@ export function DrawingCanvas({
       />
 
       {!hasDrawn && strokes.length > 0 && (
-        <div className="absolute top-14 sm:top-4 left-1/2 -translate-x-1/2 bg-white/90 backdrop-blur-sm px-2.5 sm:px-3 py-1 rounded-full text-[10px] sm:text-xs font-medium text-stone-500 border border-stone-200 shadow-sm pointer-events-none whitespace-nowrap">
+        <div className="absolute top-14 sm:top-4 right-1/2 -translate-x-1/2 bg-white/90 backdrop-blur-sm px-2.5 sm:px-3 py-1 rounded-full text-[10px] sm:text-xs font-medium text-stone-500 border border-stone-200 shadow-sm pointer-events-none whitespace-nowrap">
           {doodleName}
         </div>
       )}
       {!hasDrawn && strokes.length > 0 && (
-        <div className="absolute bottom-3 left-2 sm:left-3 bg-white/80 backdrop-blur-sm px-2 py-1 rounded-md text-[10px] sm:text-xs text-stone-400 border border-stone-200 pointer-events-none">
+        <div className="absolute bottom-3 right-2 sm:right-3 bg-white/80 backdrop-blur-sm px-2 py-1 rounded-md text-[10px] sm:text-xs text-stone-400 border border-stone-200 pointer-events-none">
           Start drawing to trace
         </div>
       )}
@@ -139,8 +139,13 @@ export function DrawingCanvas({
           </p>
         </div>
       )}
+
+        <div className="absolute bottom-3 right-2 sm:right-3 bg-white/80 backdrop-blur-sm px-2 py-1 rounded-md text-[10px] sm:text-xs text-stone-400 border border-stone-200 pointer-events-none">
+          MarkHand - Drawing Tool
+        </div>
+
       {hasDrawn && strokes.length > 0 && (
-        <div className="absolute bottom-3 left-2 sm:left-3 bg-white/80 backdrop-blur-sm px-2 py-1 rounded-md text-[10px] sm:text-xs text-stone-400 border border-stone-200 pointer-events-none">
+        <div className="absolute bottom-10 right-2 sm:right-3 bg-white/80 backdrop-blur-sm px-2 py-1 rounded-md text-[10px] sm:text-xs text-stone-400 border border-stone-200 pointer-events-none">
           {strokes.length} stroke{strokes.length !== 1 ? "s" : ""}
         </div>
       )}

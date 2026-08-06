@@ -1,41 +1,51 @@
-import { useState, useEffect } from 'react';
-import { Header } from './components/layout/Header';
-import { DrawingCanvas } from './components/canvas/DrawingCanvas';
-import { FloatingPanel } from './components/layout/FloatingPanel';
-import { GuidePills } from './components/canvas/GuidePills';
-import { CursorPills } from './components/canvas/CursorPills';
-import { useDraw } from './hooks/useDraw';
+import { useState, useEffect } from "react";
+import {
+  Routes,
+  Route,
+  useParams,
+  Navigate,
+} from "react-router-dom";
+import { Header } from "./components/layout/Header";
+import { DrawingCanvas } from "./components/canvas/DrawingCanvas";
+import { FloatingPanel } from "./components/layout/FloatingPanel";
+import { GuidePills } from "./components/canvas/GuidePills";
+import { CursorPills } from "./components/canvas/CursorPills";
+import { useDraw } from "./hooks/useDraw";
 import {
   InstructionsModal,
   hasSeenInstructions,
   markInstructionsSeen,
-} from './components/layout/InstructionsModal';
-import { loadTheme, loadGuide, loadCursor, saveTheme, saveGuide, saveCursor } from './lib/storage';
-import { getStrokesFromUrl, cleanUrl } from './lib/share';
-import type { GuideType, CanvasTheme, CursorStyle } from './types';
+} from "./components/layout/InstructionsModal";
+import {
+  loadTheme,
+  loadGuide,
+  loadCursor,
+  saveTheme,
+  saveGuide,
+  saveCursor,
+} from "./lib/storage";
+import type { GuideType, CanvasTheme, CursorStyle } from "./types";
 
-function App() {
-  const drawHook = useDraw();
+// Generate a random ID (8 characters)
+function generateId(): string {
+  return Math.random().toString(36).slice(2, 10);
+}
 
-  const [guideType, setGuideType] = useState<GuideType>((loadGuide() as GuideType) ?? 'dots');
-  const [theme, setTheme] = useState<CanvasTheme>((loadTheme() as CanvasTheme) ?? 'default');
+function Dashboard() {
+  const { id } = useParams<{ id: string }>();
+  const drawHook = useDraw(id || generateId());
+
+  const [guideType, setGuideType] = useState<GuideType>(
+    (loadGuide() as GuideType) ?? "dots",
+  );
+  const [theme, setTheme] = useState<CanvasTheme>(
+    (loadTheme() as CanvasTheme) ?? "default",
+  );
   const [cursorStyle, setCursorStyle] = useState<CursorStyle>(
-    (loadCursor() as CursorStyle) ?? 'pencil',
+    (loadCursor() as CursorStyle) ?? "pencil",
   );
   const [instructionsOpen, setInstructionsOpen] = useState(false);
   const [firstVisit, setFirstVisit] = useState(false);
-  const [sharedLoaded, setSharedLoaded] = useState(false);
-
-  // Load shared drawing from URL
-  useEffect(() => {
-    if (sharedLoaded) return;
-    const sharedStrokes = getStrokesFromUrl();
-    if (sharedStrokes && sharedStrokes.length > 0) {
-      drawHook.seedStrokes(sharedStrokes);
-      cleanUrl();
-    }
-    setSharedLoaded(true);
-  }, [sharedLoaded, drawHook]);
 
   useEffect(() => {
     if (!hasSeenInstructions()) {
@@ -61,12 +71,12 @@ function App() {
   };
 
   const handleToggleInstructions = () => {
-    setInstructionsOpen(prev => !prev);
+    setInstructionsOpen((prev) => !prev);
     setFirstVisit(false);
   };
 
   return (
-    <div className="h-screen flex flex-col bg-stone-50 text-stone-900 overflow-hidden">
+    <div className="h-screen flex flex-col text-stone-900 overflow-hidden relative font-body">
       <Header
         drawHook={drawHook}
         theme={theme}
@@ -83,7 +93,11 @@ function App() {
         />
         <CursorPills activeCursor={cursorStyle} onChange={handleCursorChange} />
         <GuidePills activeGuide={guideType} onChange={handleGuideChange} />
-        <FloatingPanel drawHook={drawHook} activeTheme={theme} onThemeChange={handleThemeChange} />
+        <FloatingPanel
+          drawHook={drawHook}
+          activeTheme={theme}
+          onThemeChange={handleThemeChange}
+        />
       </div>
 
       {firstVisit ? (
@@ -93,9 +107,24 @@ function App() {
           showOnFirstVisit
         />
       ) : (
-        <InstructionsModal open={instructionsOpen} onClose={() => setInstructionsOpen(false)} />
+        <InstructionsModal
+          open={instructionsOpen}
+          onClose={() => setInstructionsOpen(false)}
+        />
       )}
     </div>
+  );
+}
+
+function App() {
+  return (
+    <Routes>
+      <Route
+        path="/"
+        element={<Navigate to={`/dashboard/${generateId()}`} replace />}
+      />
+      <Route path="/dashboard/:id" element={<Dashboard />} />
+    </Routes>
   );
 }
 

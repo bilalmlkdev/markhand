@@ -152,7 +152,7 @@ export function FloatingPanel({
 
   if (collapsed) {
     return (
-      <div className="absolute z-40 bottom-4 right-4 sm:bottom-8 sm:right-5">
+      <div className="absolute z-40 bottom-4 left-2 sm:bottom-8 sm:left-2.5">
         <button
           onClick={handleExpand}
           title="Open settings"

@@ -1,51 +1,64 @@
-import { useState } from 'react';
-import { X, Copy, Check, Share2 } from 'lucide-react';
-import { Button } from '../ui/Button';
-import { FaXTwitter } from 'react-icons/fa6';
-import { getShareUrl } from '../../lib/share';
-import type { Stroke } from '../../types';
+import { useState } from "react";
+import { X, Copy, Check, Share2 } from "lucide-react";
+import { Button } from "../ui/Button";
+import { FaXTwitter } from "react-icons/fa6";
+import type { Stroke } from "../../types";
 
 interface ShareModalProps {
   open: boolean;
   onClose: () => void;
   strokes: Stroke[];
   isEmpty: boolean;
+  drawingId: string; // added
 }
 
-export function ShareModal({ open, onClose, strokes, isEmpty }: ShareModalProps) {
+export function ShareModal({
+  open,
+  onClose,
+  // strokes,
+  isEmpty,
+  // drawingId,
+}: ShareModalProps) {
   const [copied, setCopied] = useState(false);
 
-  const shareUrl = isEmpty ? '' : getShareUrl(strokes);
+  const shareUrl = window.location.href; // just the current URL
 
   const handleCopyLink = async () => {
-    if (!shareUrl) return;
     try {
       await navigator.clipboard.writeText(shareUrl);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      // Fallback
+      // fallback
     }
   };
 
   const handleTwitterShare = () => {
-    const text = encodeURIComponent('Check out my drawing on Markhand ✍️');
+    const text = encodeURIComponent("Check out my drawing on Markhand ✍️");
     const url = encodeURIComponent(shareUrl);
-    window.open(`https://twitter.com/intent/tweet?text=${text}&url=${url}`, '_blank');
+    window.open(
+      `https://twitter.com/intent/tweet?text=${text}&url=${url}`,
+      "_blank",
+    );
   };
 
   if (!open) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/20 backdrop-blur-sm" onClick={onClose} />
+      <div
+        className="absolute inset-0 bg-black/20 backdrop-blur-sm"
+        onClick={onClose}
+      />
 
       <div className="relative bg-white rounded-xl shadow-2xl border border-stone-200 w-full sm:w-[400px] max-w-[95vw] mx-2">
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-stone-100">
           <div className="flex items-center gap-2">
             <Share2 className="w-4 h-4 text-stone-600" />
-            <h2 className="text-sm font-semibold text-stone-800">Share Drawing</h2>
+            <h2 className="text-sm font-semibold text-stone-800">
+              Share Drawing
+            </h2>
           </div>
           <button
             onClick={onClose}
@@ -76,9 +89,14 @@ export function ShareModal({ open, onClose, strokes, isEmpty }: ShareModalProps)
                     readOnly
                     value={shareUrl}
                     className="flex-1 text-xs bg-stone-50 border border-stone-200 rounded-lg px-3 py-2 text-stone-600 truncate focus:outline-none"
-                    onClick={e => (e.target as HTMLInputElement).select()}
+                    onClick={(e) => (e.target as HTMLInputElement).select()}
                   />
-                  <Button variant="default" size="icon" onClick={handleCopyLink} title="Copy link">
+                  <Button
+                    variant="default"
+                    size="icon"
+                    onClick={handleCopyLink}
+                    title="Copy link"
+                  >
                     {copied ? (
                       <Check className="w-4 h-4 text-green-500" />
                     ) : (
@@ -105,8 +123,8 @@ export function ShareModal({ open, onClose, strokes, isEmpty }: ShareModalProps)
               {/* Info */}
               <div className="bg-stone-50 rounded-lg p-3">
                 <p className="text-[10px] text-stone-400 leading-relaxed">
-                  Anyone with this link can see your drawing. The drawing data is encoded in the URL
-                  - no servers, no accounts, just pure sharing.
+                  This link points to your drawing ID. If you haven't saved it
+                  yet, it will be empty for others.
                 </p>
               </div>
             </>

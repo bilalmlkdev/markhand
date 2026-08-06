@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+@theme {
+  --font-primary : "Gveret Levin", cursive;
+  --font-body: "DM Sans", sans-serif;
+}
+
 @layer base {
   .no-scrollbar::-webkit-scrollbar {
     display: none;

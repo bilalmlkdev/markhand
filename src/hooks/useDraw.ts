@@ -1,5 +1,5 @@
-import { useState, useCallback, useRef, useEffect } from 'react';
-import type { Point, Stroke } from '../types';
+import { useState, useCallback, useRef, useEffect } from "react";
+import type { Point, Stroke } from "../types";
 
 export interface UseDrawReturn {
   strokes: Stroke[];
@@ -21,75 +21,83 @@ export interface UseDrawReturn {
   getCanvas: () => HTMLCanvasElement | null;
   hasDrawn: boolean;
   seedStrokes: (seed: Stroke[]) => void;
-  canUndo: boolean;      // <-- added
-  canRedo: boolean;      // <-- added
+  canUndo: boolean;
+  canRedo: boolean;
+  drawingId: string;
 }
 
-const STORAGE_KEY = 'markhand_strokes';
-const COLOR_KEY = 'markhand_color';
-const WIDTH_KEY = 'markhand_width';
-const HAS_DRAWN_KEY = 'markhand_has_drawn';
+function getStorageKey(drawingId: string): string {
+  return `markhand_drawing_${drawingId}`;
+}
 
-function loadStrokes(): Stroke[] {
+function loadStrokes(drawingId: string): Stroke[] {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = localStorage.getItem(getStorageKey(drawingId));
     return raw ? (JSON.parse(raw) as Stroke[]) : [];
   } catch {
     return [];
   }
 }
 
-function saveStrokes(strokes: Stroke[]) {
+function saveStrokes(drawingId: string, strokes: Stroke[]) {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(strokes));
+    localStorage.setItem(getStorageKey(drawingId), JSON.stringify(strokes));
   } catch {}
 }
 
-function loadColor(): string {
-  return localStorage.getItem(COLOR_KEY) ?? '#1c1917';
+// Per‑drawing hasDrawn flag
+function getHasDrawnKey(drawingId: string): string {
+  return `markhand_hasDrawn_${drawingId}`;
 }
 
+function loadHasDrawn(drawingId: string): boolean {
+  return localStorage.getItem(getHasDrawnKey(drawingId)) === "true";
+}
+
+function saveHasDrawn(drawingId: string, val: boolean) {
+  localStorage.setItem(getHasDrawnKey(drawingId), String(val));
+}
+
+// Global per‑user settings (not per drawing)
+const COLOR_KEY = "markhand_color";
+const WIDTH_KEY = "markhand_width";
+
+function loadColor(): string {
+  return localStorage.getItem(COLOR_KEY) ?? "#1c1917";
+}
 function saveColor(color: string) {
   localStorage.setItem(COLOR_KEY, color);
 }
-
 function loadWidth(): number {
   const w = localStorage.getItem(WIDTH_KEY);
   return w ? Number(w) : 3;
 }
-
 function saveWidth(width: number) {
   localStorage.setItem(WIDTH_KEY, String(width));
 }
 
-function loadHasDrawn(): boolean {
-  return localStorage.getItem(HAS_DRAWN_KEY) === 'true';
-}
-
-function saveHasDrawn(val: boolean) {
-  localStorage.setItem(HAS_DRAWN_KEY, String(val));
-}
-
-export function useDraw(): UseDrawReturn {
+export function useDraw(drawingId: string): UseDrawReturn {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const [strokes, setStrokes] = useState<Stroke[]>(loadStrokes);
+  const [strokes, setStrokes] = useState<Stroke[]>(() =>
+    loadStrokes(drawingId),
+  );
   const [undoStack, setUndoStack] = useState<Stroke[][]>([]);
   const [redoStack, setRedoStack] = useState<Stroke[][]>([]);
   const [isDrawing, setIsDrawing] = useState(false);
   const [currentColor, setCurrentColorState] = useState(loadColor);
   const [currentWidth, setCurrentWidthState] = useState(loadWidth);
-  const [hasDrawn, setHasDrawn] = useState(loadHasDrawn);
+  const [hasDrawn, setHasDrawn] = useState(() => loadHasDrawn(drawingId));
 
   const currentPointsRef = useRef<Point[]>([]);
   const isEmpty = strokes.length === 0;
 
+  // Save strokes and hasDrawn whenever they change
   useEffect(() => {
-    if (hasDrawn) saveStrokes(strokes);
-  }, [strokes, hasDrawn]);
-
-  useEffect(() => {
-    saveHasDrawn(hasDrawn);
-  }, [hasDrawn]);
+    if (hasDrawn) {
+      saveStrokes(drawingId, strokes);
+      saveHasDrawn(drawingId, true);
+    }
+  }, [strokes, hasDrawn, drawingId]);
 
   const setCanvas = useCallback((canvas: HTMLCanvasElement | null) => {
     canvasRef.current = canvas;
@@ -107,22 +115,30 @@ export function useDraw(): UseDrawReturn {
     saveWidth(width);
   }, []);
 
-  const getPoint = useCallback((e: React.MouseEvent | React.TouchEvent): Point => {
-    const canvas = canvasRef.current;
-    if (!canvas) return { x: 0, y: 0 };
-    const rect = canvas.getBoundingClientRect();
-    const scaleX = canvas.width / rect.width;
-    const scaleY = canvas.height / rect.height;
-    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
-    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
-    return {
-      x: (clientX - rect.left) * scaleX,
-      y: (clientY - rect.top) * scaleY,
-    };
-  }, []);
+  const getPoint = useCallback(
+    (e: React.MouseEvent | React.TouchEvent): Point => {
+      const canvas = canvasRef.current;
+      if (!canvas) return { x: 0, y: 0 };
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = canvas.width / rect.width;
+      const scaleY = canvas.height / rect.height;
+      const clientX = "touches" in e ? e.touches[0].clientX : e.clientX;
+      const clientY = "touches" in e ? e.touches[0].clientY : e.clientY;
+      return {
+        x: (clientX - rect.left) * scaleX,
+        y: (clientY - rect.top) * scaleY,
+      };
+    },
+    [],
+  );
 
   const drawStrokeOnContext = useCallback(
-    (ctx: CanvasRenderingContext2D, points: Point[], color: string, width: number) => {
+    (
+      ctx: CanvasRenderingContext2D,
+      points: Point[],
+      color: string,
+      width: number,
+    ) => {
       if (points.length < 2) return;
       ctx.beginPath();
       ctx.moveTo(points[0]!.x, points[0]!.y);
@@ -131,8 +147,8 @@ export function useDraw(): UseDrawReturn {
       }
       ctx.strokeStyle = color;
       ctx.lineWidth = width;
-      ctx.lineCap = 'round';
-      ctx.lineJoin = 'round';
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
       ctx.stroke();
     },
     [],
@@ -141,10 +157,12 @@ export function useDraw(): UseDrawReturn {
   const fullRedraw = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext("2d");
     if (!ctx) return;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    strokes.forEach(s => drawStrokeOnContext(ctx, s.points, s.color, s.width));
+    strokes.forEach((s) =>
+      drawStrokeOnContext(ctx, s.points, s.color, s.width),
+    );
   }, [strokes, drawStrokeOnContext]);
 
   const resizeCanvas = useCallback(() => {
@@ -178,7 +196,7 @@ export function useDraw(): UseDrawReturn {
       if (!isDrawing) return;
       const canvas = canvasRef.current;
       if (!canvas) return;
-      const ctx = canvas.getContext('2d');
+      const ctx = canvas.getContext("2d");
       if (!ctx) return;
 
       const point = getPoint(e);
@@ -192,8 +210,8 @@ export function useDraw(): UseDrawReturn {
         ctx.lineTo(point.x, point.y);
         ctx.strokeStyle = currentColor;
         ctx.lineWidth = currentWidth;
-        ctx.lineCap = 'round';
-        ctx.lineJoin = 'round';
+        ctx.lineCap = "round";
+        ctx.lineJoin = "round";
         ctx.stroke();
       }
     },
@@ -206,7 +224,7 @@ export function useDraw(): UseDrawReturn {
 
     const points = currentPointsRef.current;
     if (points.length > 1) {
-      setUndoStack(prev => [...prev, strokes]);
+      setUndoStack((prev) => [...prev, strokes]);
       setRedoStack([]);
       const newStroke: Stroke = {
         id: crypto.randomUUID(),
@@ -214,7 +232,7 @@ export function useDraw(): UseDrawReturn {
         color: currentColor,
         width: currentWidth,
       };
-      setStrokes(prev => [...prev, newStroke]);
+      setStrokes((prev) => [...prev, newStroke]);
       if (!hasDrawn) setHasDrawn(true);
     }
     currentPointsRef.current = [];
@@ -222,10 +240,10 @@ export function useDraw(): UseDrawReturn {
 
   const undo = useCallback(() => {
     if (undoStack.length === 0 && strokes.length === 0) return;
-    setUndoStack(prev => {
+    setUndoStack((prev) => {
       const updated = [...prev];
       const last = updated.pop();
-      setRedoStack(redoPrev => [...redoPrev, strokes]);
+      setRedoStack((redoPrev) => [...redoPrev, strokes]);
       if (last !== undefined) setStrokes(last);
       else setStrokes([]);
       return updated;
@@ -234,11 +252,11 @@ export function useDraw(): UseDrawReturn {
 
   const redo = useCallback(() => {
     if (redoStack.length === 0) return;
-    setRedoStack(prev => {
+    setRedoStack((prev) => {
       const updated = [...prev];
       const next = updated.pop();
       if (next !== undefined) {
-        setUndoStack(undoPrev => [...undoPrev, strokes]);
+        setUndoStack((undoPrev) => [...undoPrev, strokes]);
         setStrokes(next);
       }
       return updated;
@@ -247,19 +265,19 @@ export function useDraw(): UseDrawReturn {
 
   const clear = useCallback(() => {
     if (strokes.length === 0) return;
-    setUndoStack(prev => [...prev, strokes]);
+    setUndoStack((prev) => [...prev, strokes]);
     setRedoStack([]);
     setStrokes([]);
     if (!hasDrawn) setHasDrawn(true);
     const canvas = canvasRef.current;
     if (canvas) {
-      const ctx = canvas.getContext('2d');
+      const ctx = canvas.getContext("2d");
       if (ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
     }
   }, [strokes, hasDrawn]);
 
   const seedStrokes = useCallback((seed: Stroke[]) => {
-    setStrokes(prev => (prev.length === 0 ? seed : prev));
+    setStrokes((prev) => (prev.length === 0 ? seed : prev));
   }, []);
 
   return {
@@ -284,5 +302,6 @@ export function useDraw(): UseDrawReturn {
     seedStrokes,
     canUndo: undoStack.length > 0,
     canRedo: redoStack.length > 0,
+    drawingId,
   };
 }
