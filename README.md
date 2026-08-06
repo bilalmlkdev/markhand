@@ -248,11 +248,11 @@ Once registered, the new doodle automatically becomes part of the random selecti
 
 ## Bilal Malik
 
-![GitHub](https://img.shields.io/badge/GitHub-byllzz-9B72FF?style=flat&logo=github&logoColor=white)
-![X](https://img.shields.io/badge/X-@bilalmlkdev-9B72FF?style=flat&logo=x&logoColor=white)
-![Portfolio](https://img.shields.io/badge/Portfolio-bilalmlkdev.vercel.app-9B72FF?style=flat&logo=vercel&logoColor=white)
-![LinkedIn](https://img.shields.io/badge/LinkedIn-Bilal%2520Malik-9B72FF?style=flat&logo=linkedin&logoColor=white)
-![Email](https://img.shields.io/badge/Email-bilalmlkdev@gmail.com-9B72FF?style=flat&logo=gmail&logoColor=white)
+[![GitHub](https://img.shields.io/badge/GitHub-byllzz-9B26FF?style=flat&logo=github&logoColor=white)](https://github.com/byllzz)
+[![X](https://img.shields.io/badge/X-@bilalmlkdev-9B26FF?style=flat&logo=x&logoColor=white)](https://x.com/bilalmlkdev)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Bilal%20Malik-9B26FF?style=flat&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/bilalmlkdev/)
+
+
 
 
 If you enjoyed this project, consider giving it a ⭐ on GitHub. It helps others discover the project and motivates future improvements.
