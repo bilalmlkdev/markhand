@@ -7,7 +7,8 @@
 <h1 align="center">Markhand</h1>
 
 <p align="center">
-  Draw, practice, and export your mark—a beautiful, free, open-source digital signature tool.
+ With a fluid canvas, customizable pens, dynamic cursors, guide patterns, and a suite of export options (PNG, SVG, copy, print), Markhand adapts to your hand, not the other way around.
+
 </p>
 
 <p align="center">
