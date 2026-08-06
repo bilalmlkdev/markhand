@@ -21,6 +21,8 @@ export interface UseDrawReturn {
   getCanvas: () => HTMLCanvasElement | null;
   hasDrawn: boolean;
   seedStrokes: (seed: Stroke[]) => void;
+  canUndo: boolean;      // <-- added
+  canRedo: boolean;      // <-- added
 }
 
 const STORAGE_KEY = 'markhand_strokes';
@@ -280,5 +282,7 @@ export function useDraw(): UseDrawReturn {
     getCanvas,
     hasDrawn,
     seedStrokes,
+    canUndo: undoStack.length > 0,
+    canRedo: redoStack.length > 0,
   };
 }

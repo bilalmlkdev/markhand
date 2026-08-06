@@ -45,14 +45,21 @@ export function Header({
   const [copied, setCopied] = useState(false);
   const [confirmType, setConfirmType] = useState<ConfirmType>(null);
 
-  const { strokes, isEmpty, undo, redo, clear, getCanvas } = drawHook;
-
-  const canUndo = strokes.length > 0;
-  const canRedo = false;
+  const {
+    strokes,
+    isEmpty,
+    undo,
+    redo,
+    clear,
+    getCanvas,
+    canUndo,    // <-- now from drawHook
+    canRedo,    // <-- now from drawHook
+  } = drawHook;
 
   const canvas = getCanvas();
-  const canvasWidth = canvas?.getBoundingClientRect().width ?? 800;
-  const canvasHeight = canvas?.getBoundingClientRect().height ?? 500;
+  // Use logical canvas dimensions, not CSS size
+  const canvasWidth = canvas?.width ?? 800;
+  const canvasHeight = canvas?.height ?? 500;
 
   const handleCopy = async () => {
     if (isEmpty) return;
@@ -231,8 +238,8 @@ export function Header({
         open={exportOpen}
         onClose={() => setExportOpen(false)}
         strokes={strokes}
-        width={canvasWidth}
-        height={canvasHeight}
+        width={canvasWidth}     // <-- logical size
+        height={canvasHeight}   // <-- logical size
         theme={theme}
         guideType={guideType}
       />
