@@ -123,7 +123,7 @@ export function DrawingCanvas({
       />
 
       {!hasDrawn && strokes.length > 0 && (
-        <div className="absolute top-14 sm:top-4 right-1/2 -translate-x-1/2 bg-white/90 backdrop-blur-sm px-2.5 sm:px-3 py-1 rounded-full text-[10px] sm:text-xs font-medium text-stone-500 border border-stone-200 shadow-sm pointer-events-none whitespace-nowrap">
+        <div className="absolute top-14 sm:top-4 left-[50%] -translate-x-1/2 bg-white/90 backdrop-blur-sm px-2.5 sm:px-3 py-1 rounded-full text-[10px] sm:text-xs font-medium text-stone-500 border border-stone-200 shadow-sm pointer-events-none whitespace-nowrap">
           {doodleName}
         </div>
       )}

@@ -128,7 +128,7 @@ export function InstructionsModal({
   const current = steps[step]!;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
+    <div className="fixed inset-0 z-99999 flex items-center justify-center">
       {/* Overlay */}
       <div className="absolute inset-0 bg-black/30" onClick={onClose} />
 
