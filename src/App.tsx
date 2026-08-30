@@ -146,7 +146,6 @@ function Dashboard() {
         theme={theme}
         guideType={guideType}
         onToggleInstructions={handleToggleInstructions}
-        instructionsOpen={instructionsOpen}
       />
       <div data-tour="canvas" className="flex-1 relative overflow-hidden">
         <DrawingCanvas

@@ -26,7 +26,6 @@ interface HeaderProps {
   theme: CanvasTheme;
   guideType: GuideType;
   onToggleInstructions: () => void;
-  instructionsOpen: boolean;
 }
 
 function generateId(): string {
@@ -38,7 +37,6 @@ export function Header({
   theme,
   guideType,
   onToggleInstructions,
-  instructionsOpen,
 }: HeaderProps) {
   const navigate = useNavigate();
   const [exportOpen, setExportOpen] = useState(false);
