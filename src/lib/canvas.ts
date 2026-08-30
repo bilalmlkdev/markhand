@@ -1,6 +1,6 @@
 import type { CanvasTheme, ThemeConfig } from '../types';
 
-const DOT_SPACING = 24;
+const DOT_SPACING = 14;
 const DOT_RADIUS = 1.6;
 
 export const themes: Record<CanvasTheme, ThemeConfig> = {
