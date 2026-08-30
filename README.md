@@ -7,14 +7,14 @@
   </a>
 </p>
 
-<h1 align="center">Markhand</h1>
+<h1 align="left">Markhand</h1>
 
-<p align="center">
+<p align="left">
  With a fluid canvas, customizable pens, a precision eraser, dynamic cursors, guide patterns, and a suite of export options (PNG, SVG, copy, print, share), Markhand adapts to your hand, not the other way around.
 
 </p>
 
-<p align="center">
+<p align="left">
   <img src="https://img.shields.io/badge/Status-Complete-9B72FF?style=flat"/>
   <img src="https://img.shields.io/badge/React-Vite-9B72FF?style=flat"/>
   <img src="https://img.shields.io/badge/Tailwind-v4-9B72FF?style=flat"/>
@@ -22,13 +22,6 @@
   <img src="https://img.shields.io/badge/License-MIT-9B72FF?style=flat"/>
   <img src="https://img.shields.io/badge/Deploy-Vercel-9B72FF?style=flat"/>
 </p>
-
-<p align="center">
-  <a href="https://markhand.vercel.app/">Live Demo</a> •
-  <a href="https://github.com/byllzz/markhand/issues/new">Report Bug</a> •
-  <a href="https://github.com/byllzz/markhand/issues/new">Request Feature</a>
-</p>
-
 
 
 # About Markhand
