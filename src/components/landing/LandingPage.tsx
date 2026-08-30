@@ -22,7 +22,7 @@ export function LandingPage() {
 
   return (
     <>
-      {/* <OceanWave /> */}
+      <OceanWave />
       <section>
         {/* Top hairline - increased z-index so it stays above the shader */}
         <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-transparent via-stone-300 to-transparent z-30" />
