@@ -1,8 +1,5 @@
 import { useState } from "react";
 import {
-  Undo2,
-  Redo2,
-  Trash2,
   Download,
   Copy,
   Check,
@@ -12,16 +9,15 @@ import {
   X,
   Share2,
   MoreHorizontal,
+  LayoutGrid,
 } from "lucide-react";
 import { Button } from "../ui/Button";
 import { ExportModal } from "../exports/ExportModal";
-import { InstructionsModal } from "./InstructionsModal";
 import { ShareModal } from "./ShareModal";
 import type { UseDrawReturn } from "../../hooks/useDraw";
 import type { CanvasTheme, GuideType } from "../../types";
 import { FiGithub } from "react-icons/fi";
-import { useNavigate } from "react-router-dom";
-import { FaBrush } from "react-icons/fa6";
+import { useNavigate, Link } from "react-router-dom";
 import { IoCopyOutline } from "react-icons/io5";
 import { MdSimCardDownload } from "react-icons/md";
 
@@ -32,8 +28,6 @@ interface HeaderProps {
   onToggleInstructions: () => void;
   instructionsOpen: boolean;
 }
-
-type ConfirmType = "reset" | "clear" | null;
 
 function generateId(): string {
   return Math.random().toString(36).slice(2, 10);
@@ -50,20 +44,10 @@ export function Header({
   const [exportOpen, setExportOpen] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [confirmType, setConfirmType] = useState<ConfirmType>(null);
+  const [resetConfirmOpen, setResetConfirmOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const {
-    strokes,
-    isEmpty,
-    undo,
-    redo,
-    clear,
-    getCanvas,
-    canUndo,
-    canRedo,
-    drawingId,
-  } = drawHook;
+  const { strokes, isEmpty, clear, getCanvas, drawingId } = drawHook;
 
   const canvas = getCanvas();
   const canvasWidth = canvas?.width ?? 800;
@@ -112,49 +96,16 @@ export function Header({
     clear();
     const newId = generateId();
     navigate(`/dashboard/${newId}`);
-    setConfirmType(null);
+    setResetConfirmOpen(false);
     setMobileMenuOpen(false);
   };
 
-  const handleClear = () => {
-    clear();
-    const newId = generateId();
-    navigate(`/dashboard/${newId}`);
-    setConfirmType(null);
-    setMobileMenuOpen(false);
-  };
-
-  const closeConfirm = () => setConfirmType(null);
+  const closeConfirm = () => setResetConfirmOpen(false);
   const toggleMobileMenu = () => setMobileMenuOpen((prev) => !prev);
 
   // Action buttons that go into the mobile dropdown
   const mobileActions = (
     <div className="flex flex-col gap-1 p-2 bg-white rounded-xl shadow-xl border border-stone-200 min-w-[160px] pointer-events-auto">
-      <Button
-        variant="ghost"
-        size="sm"
-        disabled={isEmpty}
-        onClick={() => {
-          setConfirmType("clear");
-          setMobileMenuOpen(false);
-        }}
-        className="justify-start"
-      >
-        <Trash2 className="w-4 h-4 mr-2" />
-        Clear
-      </Button>
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={() => {
-          setConfirmType("reset");
-          setMobileMenuOpen(false);
-        }}
-        className="justify-start"
-      >
-        <RefreshCw className="w-4 h-4 mr-2" />
-        Reset
-      </Button>
       <Button
         variant="ghost"
         size="sm"
@@ -198,7 +149,27 @@ export function Header({
         <Download className="w-4 h-4 mr-2" />
         Export
       </Button>
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={() => {
+          setResetConfirmOpen(true);
+          setMobileMenuOpen(false);
+        }}
+        className="justify-start"
+      >
+        <RefreshCw className="w-4 h-4 mr-2" />
+        Reset
+      </Button>
       <div className="h-px bg-stone-200 my-1" />
+      <Link
+        to="/drawings"
+        className="flex items-center gap-2 px-3 py-2 text-sm text-stone-600 hover:bg-stone-100 rounded-md transition-colors"
+        onClick={() => setMobileMenuOpen(false)}
+      >
+        <LayoutGrid className="w-4 h-4" />
+        My Drawings
+      </Link>
       <a
         href="https://github.com/byllzz/markhand"
         target="_blank"
@@ -226,27 +197,47 @@ export function Header({
 
   return (
     <>
-      {/*
-        Modified to use transparent floating UI layout.
-        pointer-events-none wrapper allows clicking through the empty spaces to the canvas.
-      */}
-      <header className="w-full absolute top-1.5 px-3 sm:px-5 flex items-center justify-between bg-transparent safe-top z-999 pointer-events-none gap-2">
-        {/* Right side: Actions / Mobile Menu Pill */}
-        <div className="flex  justify-start relative">
+      <header className="w-full absolute top-0 px-3 sm:px-5 pt-2 flex items-center justify-between bg-transparent safe-top z-999 pointer-events-none gap-2">
+        {/* Left: Brand mark */}
+        <div className="flex items-center gap-1.5 pointer-events-auto shrink-0 pl-1">
+          <svg
+            width="17"
+            height="17"
+            viewBox="0 0 24 24"
+            fill="none"
+            className="text-blue-500"
+          >
+            <path
+              d="M12 2v6M12 16v6M2 12h6M16 12h6"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+            />
+          </svg>
+          <span className="text-base relative top-[1px] font-medium tracking-tight text-stone-800">
+            Markhand
+          </span>
+        </div>
+
+        {/* Right: Actions / Mobile Menu Pill */}
+        <div className="flex justify-end relative">
           {/* Desktop Right Pill */}
-          <div className="hidden md:flex items-center px-1.5 py-0.5 bg-white rounded-full border border-stone-200 shadow-sm pointer-events-auto shrink-0">
+          <div
+            data-tour="header-actions"
+            className="hidden md:flex items-center px-1.5 py-1 bg-white/95 backdrop-blur-md rounded-2xl border border-stone-200/70 shadow-[0_4px_20px_rgba(28,25,23,0.08)] pointer-events-auto shrink-0"
+          >
             <Button
               variant="ghost"
               size="sm"
               disabled={isEmpty}
               onClick={handleCopy}
               title="Copy to clipboard"
-              className="flex items-center px-2 whitespace-nowrap shrink-0 rounded-full"
+              className="flex items-center px-2 whitespace-nowrap shrink-0 rounded-xl"
             >
               {copied ? (
-                <Check className="w-3 h-3" />
+                <Check className="w-3.5 h-3.5" />
               ) : (
-                <IoCopyOutline className="w-3 h-3" />
+                <IoCopyOutline className="w-3.5 h-3.5" />
               )}
               <span className="text-xs font-medium relative right-0.5 top-[1px]">
                 {copied ? "Copied!" : "Copy"}
@@ -258,56 +249,57 @@ export function Header({
               disabled={isEmpty}
               onClick={() => setShareOpen(true)}
               title="Share drawing"
-              className="flex items-center px-2 whitespace-nowrap shrink-0 rounded-full"
+              className="flex items-center px-2 whitespace-nowrap shrink-0 rounded-xl"
             >
-              <Share2 className="w-3 h-3" />
+              <Share2 className="w-3.5 h-3.5" />
               <span className="text-xs font-medium relative right-0.5 top-[1px]">
                 Share
               </span>
             </Button>
             <Button
-              variant="ghost"
+              variant="default"
               size="sm"
               disabled={isEmpty}
               onClick={() => setExportOpen(true)}
               title="Export"
-              className="flex items-center px-2 whitespace-nowrap shrink-0 rounded-full"
+              className="flex items-center px-3 ml-0.5 mr-1 whitespace-nowrap shrink-0 rounded-xl"
             >
-              <MdSimCardDownload className="w-3 h-3" />
+              <MdSimCardDownload className="w-3.5 h-3.5" />
               <span className="text-xs font-medium relative right-0.5 top-[1px]">
                 Export
               </span>
             </Button>
 
-            <div className="w-px h-5 bg-stone-200 mx-0.5 sm:mx-1" />
+            <div className="w-px h-5 bg-stone-200 mx-1" />
+            <Link
+              to="/drawings"
+              title="My Drawings"
+              className="px-3 py-1.5 gap-1.5 flex items-center justify-center rounded-xl bg-stone-900 text-white shrink-0 mx-1"
+            >
+              <LayoutGrid className="w-3.5 h-3.5" />
+              <span className="text-xs font-medium relative right-0.5 top-[1px]">
+                Gallery
+              </span>
+            </Link>
             <a
-              href="https://github.com/byllzz/markhand"
+              href="https://github.com/byllzz/markhand.git"
               target="_blank"
               rel="noopener noreferrer"
               title="View on GitHub"
-              className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-stone-100 text-stone-400 hover:text-stone-700 transition-colors shrink-0"
+              className="w-8 h-8 flex items-center justify-center rounded-xl hover:bg-stone-100 text-stone-400 hover:text-stone-700 transition-colors shrink-0"
             >
               <FiGithub className="w-4 h-4" />
             </a>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={onToggleInstructions}
-              title="How to use Markhand"
-              className="shrink-0 rounded-full"
-            >
-              <Info className="w-4 h-4" />
-            </Button>
           </div>
 
           {/* Mobile Right Pill (Toggle) */}
-          <div className="flex md:hidden items-center gap-1 px-1.5 py-1.5 bg-white rounded-full border border-stone-200 shadow-sm pointer-events-auto shrink-0">
+          <div className="flex md:hidden items-center gap-1 px-1.5 py-1.5 bg-white/95 backdrop-blur-md rounded-2xl border border-stone-200/70 shadow-[0_4px_20px_rgba(28,25,23,0.08)] pointer-events-auto shrink-0">
             <Button
               variant="ghost"
               size="icon"
               onClick={toggleMobileMenu}
               title="More options"
-              className="relative rounded-full"
+              className="relative rounded-xl"
             >
               <MoreHorizontal className="w-5 h-5" />
             </Button>
@@ -315,72 +307,11 @@ export function Header({
 
           {/* Mobile dropdown menu */}
           {mobileMenuOpen && (
-            <div className="absolute top-full left-0 mt-3 z-50 md:hidden">
+            <div className="absolute top-full right-0 mt-3 z-50 md:hidden">
               {mobileActions}
             </div>
           )}
         </div>
-
-        {/* Center: Main Controls Pill */}
-        <div className="flex justify-center">
-          <div className="flex items-center px-1.5 py-1 bg-white rounded-full shadow-sm pointer-events-auto shrink-0">
-            <Button
-              variant="ghost"
-              size="sm"
-              disabled={!canUndo}
-              onClick={undo}
-              title="Undo"
-              className="flex items-center px-2 whitespace-nowrap shrink-0 rounded-full"
-            >
-              <Undo2 className="w-3.5 h-3.5" />
-              <span className="hidden md:inline text-xs font-medium relative right-0.5 top-[1px]">
-                Undo
-              </span>
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              disabled={!canRedo}
-              onClick={redo}
-              title="Redo"
-              className="hidden md:flex items-center px-2 whitespace-nowrap shrink-0 rounded-full"
-            >
-              <Redo2 className="w-3.5 h-3.5" />
-              <span className="text-xs hidden md:inline font-medium relative right-0.5 top-[1px]">
-                Redo
-              </span>
-            </Button>
-
-            {/* Desktop-only extra tools embedded in center pill */}
-            <div className="hidden md:block w-px h-5 bg-stone-200 mx-0.5 sm:mx-2" />
-            <Button
-              variant="ghost"
-              size="sm"
-              disabled={isEmpty}
-              onClick={() => setConfirmType("clear")}
-              title="Clear canvas"
-              className="hidden md:flex items-center px-2 whitespace-nowrap shrink-0 rounded-full"
-            >
-              <FaBrush className="w-3 h-3 -rotate-15" />
-              <span className="text-xs font-medium hidden md:inline">
-                Clear Canvas
-              </span>
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setConfirmType("reset")}
-              title="Reset all data"
-              className="hidden md:flex items-center px-2 whitespace-nowrap shrink-0 rounded-full"
-            >
-              <RefreshCw className="w-3 h-3" />
-              <span className="text-xs font-medium hidden md:inline">
-                Reset Canvas
-              </span>
-            </Button>
-          </div>
-        </div>
-
       </header>
 
       <ExportModal
@@ -399,13 +330,9 @@ export function Header({
         isEmpty={isEmpty}
         drawingId={drawingId}
       />
-      <InstructionsModal
-        open={instructionsOpen}
-        onClose={onToggleInstructions}
-      />
 
-      {/* Confirmation Modal */}
-      {confirmType && (
+      {/* Reset confirmation modal */}
+      {resetConfirmOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div
             className="absolute inset-0 bg-black/20 backdrop-blur-sm pointer-events-auto"
@@ -416,7 +343,7 @@ export function Header({
               <div className="flex items-center gap-2">
                 <AlertTriangle className="w-4 h-4 text-red-500" />
                 <h2 className="text-sm font-semibold text-stone-800">
-                  {confirmType === "clear" ? "Clear Canvas" : "Reset All Data"}
+                  Reset All Data
                 </h2>
               </div>
               <button
@@ -427,23 +354,14 @@ export function Header({
               </button>
             </div>
             <div className="p-4 sm:p-5 space-y-4">
-              {confirmType === "clear" ? (
-                <p className="text-sm text-stone-600 leading-relaxed">
-                  This will remove all strokes from the canvas and start a new
-                  drawing.
-                </p>
-              ) : (
-                <>
-                  <p className="text-sm text-stone-600 leading-relaxed">
-                    This will reset your settings and clear the current drawing.
-                    Your other saved drawings will remain.
-                  </p>
-                  <div className="bg-red-50 rounded-lg p-3 text-xs text-red-700">
-                    Your current drawing will be cleared and a new drawing ID
-                    will be created.
-                  </div>
-                </>
-              )}
+              <p className="text-sm text-stone-600 leading-relaxed">
+                This will reset your settings and clear the current drawing.
+                Your other saved drawings will remain.
+              </p>
+              <div className="bg-red-50 rounded-lg p-3 text-xs text-red-700">
+                Your current drawing will be cleared and a new drawing ID will
+                be created.
+              </div>
             </div>
             <div className="px-4 pb-4 flex gap-2">
               <Button variant="ghost" className="flex-1" onClick={closeConfirm}>
@@ -451,20 +369,11 @@ export function Header({
               </Button>
               <Button
                 variant="default"
-                className={`flex-1 text-white ${confirmType === "clear" ? "bg-stone-900 hover:bg-stone-800" : "bg-red-600 hover:bg-red-700"}`}
-                onClick={confirmType === "clear" ? handleClear : handleReset}
+                className="flex-1 text-white bg-red-600 hover:bg-red-700"
+                onClick={handleReset}
               >
-                {confirmType === "clear" ? (
-                  <>
-                    <Trash2 className="w-4 h-4" />
-                    Clear
-                  </>
-                ) : (
-                  <>
-                    <RefreshCw className="w-4 h-4" />
-                    Reset All
-                  </>
-                )}
+                <RefreshCw className="w-4 h-4" />
+                Reset All
               </Button>
             </div>
           </div>

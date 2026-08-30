@@ -1,31 +1,49 @@
 import type { CanvasTheme, ThemeConfig } from '../types';
 
 const DOT_SPACING = 24;
-const DOT_RADIUS = 1;
+const DOT_RADIUS = 1.6;
 
 export const themes: Record<CanvasTheme, ThemeConfig> = {
+  white: {
+    name: 'Pure White',
+    bg: '#ffffff',
+    dot: '#dedad4',
+    surface: '#fafafa',
+  },
   default: {
     name: 'Default',
     bg: '#f5f4f0',
-    dot: '#d6d3d1',
+    dot: '#c7c3bd',
     surface: '#ffffff',
   },
   warm: {
     name: 'Warm',
     bg: '#fef7ed',
-    dot: '#e8d5b7',
+    dot: '#dcc298',
     surface: '#fffcf5',
   },
   cool: {
     name: 'Cool',
     bg: '#f0f4f8',
-    dot: '#c5d5e8',
+    dot: '#aec3dc',
     surface: '#f8fafc',
+  },
+  paper: {
+    name: 'Paper',
+    bg: '#f7f3ea',
+    dot: '#c9bb9e',
+    surface: '#fdfbf5',
+  },
+  graphite: {
+    name: 'Graphite',
+    bg: '#2a2a2c',
+    dot: '#5c5c61',
+    surface: '#343436',
   },
   dark: {
     name: 'Dark',
     bg: '#1c1917',
-    dot: '#44403c',
+    dot: '#57524c',
     surface: '#292524',
   },
 };

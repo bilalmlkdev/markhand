@@ -1,16 +1,15 @@
 import { useRef, useEffect, useCallback, useState } from "react";
 import { drawDotGrid, drawLineGrid, themes } from "../../lib/canvas";
-import { getCursorCss } from "../../lib/cursors"; // <-- import function, not static
-import { getRandomDoodle } from "../../lib/doodles";
+import { getCursorCss } from "../../lib/cursors";
 import type { GuideType, CanvasTheme, CursorStyle } from "../../types";
 import type { UseDrawReturn } from "../../hooks/useDraw";
-import type { DoodleSet } from "../../lib/doodles";
 
 interface DrawingCanvasProps {
   drawHook: UseDrawReturn;
   guideType: GuideType;
   theme: CanvasTheme;
   cursorStyle: CursorStyle;
+  isErasing: boolean;
 }
 
 export function DrawingCanvas({
@@ -18,23 +17,30 @@ export function DrawingCanvas({
   guideType,
   theme,
   cursorStyle,
+  isErasing,
 }: DrawingCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [doodleName] = useState(() => getRandomDoodle().name);
   const {
     strokes,
     setCanvas,
     startDrawing,
     draw,
     stopDrawing,
+    startErasing,
+    erase,
+    stopErasing,
+    eraserRadius,
     resizeCanvas,
-    hasDrawn,
-    seedStrokes,
   } = drawHook;
   const themeConfig = themes[theme];
-  // Determine cursor color based on theme
-  const cursorColor = theme === "dark" ? "#ffffff" : "#1c1917";
+  const isDark = theme === "dark" || theme === "graphite";
+  const cursorColor = isDark ? "#ffffff" : "#1c1917";
   const cursorCss = getCursorCss(cursorStyle, cursorColor);
+  const placeholderColor = isDark ? "text-stone-600" : "text-stone-300";
+  const [eraserPos, setEraserPos] = useState<{ x: number; y: number } | null>(
+    null,
+  );
+  const [displayScale, setDisplayScale] = useState(1);
 
   useEffect(() => {
     setCanvas(canvasRef.current);
@@ -70,39 +76,59 @@ export function DrawingCanvas({
     renderWithGuides();
   }, [renderWithGuides]);
 
-  const seededRef = useRef(false);
   useEffect(() => {
-    if (seededRef.current) return;
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    if (hasDrawn || strokes.length > 0) {
-      seededRef.current = true;
-      return;
-    }
-    resizeCanvas();
-    const { width, height } = canvas;
-    if (width === 0 || height === 0) return;
-    const doodleSet: DoodleSet = getRandomDoodle();
-    const absoluteDoodle = doodleSet.strokes.map((s) => ({
-      id: s.id,
-      color: s.color,
-      width: s.width,
-      points: s.points.map((p) => ({ x: p.x * width, y: p.y * height })),
-    }));
-    seedStrokes(absoluteDoodle);
-    seededRef.current = true;
-  });
-
-  useEffect(() => {
+    const updateScale = () => {
+      const canvas = canvasRef.current;
+      if (canvas && canvas.width > 0) {
+        setDisplayScale(canvas.clientWidth / canvas.width);
+      }
+    };
     resizeCanvas();
     renderWithGuides();
+    updateScale();
     const handleResize = () => {
       resizeCanvas();
       renderWithGuides();
+      updateScale();
     };
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, [resizeCanvas, renderWithGuides]);
+
+  const updateEraserPos = useCallback((e: React.MouseEvent | React.TouchEvent) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const rect = canvas.getBoundingClientRect();
+    const clientX = "touches" in e ? e.touches[0]?.clientX : e.clientX;
+    const clientY = "touches" in e ? e.touches[0]?.clientY : e.clientY;
+    if (clientX === undefined || clientY === undefined) return;
+    setEraserPos({ x: clientX - rect.left, y: clientY - rect.top });
+  }, []);
+
+  const handleStart = (e: React.MouseEvent | React.TouchEvent) => {
+    if (isErasing) {
+      updateEraserPos(e);
+      startErasing(e);
+    } else {
+      startDrawing(e);
+    }
+  };
+  const handleMove = (e: React.MouseEvent | React.TouchEvent) => {
+    if (isErasing) {
+      updateEraserPos(e);
+      erase(e);
+    } else {
+      draw(e);
+    }
+  };
+  const handleEnd = () => {
+    if (isErasing) stopErasing();
+    else stopDrawing();
+  };
+
+  // devicePixelRatio-scaled radius, converted back to CSS px for the
+  // on-screen ring so it visually matches the actual erased area.
+  const eraserRingRadius = eraserRadius * displayScale;
 
   return (
     <div
@@ -112,48 +138,43 @@ export function DrawingCanvas({
       <canvas
         ref={canvasRef}
         className="absolute inset-0 touch-none"
-        style={{ cursor: cursorCss }}
-        onMouseDown={startDrawing}
-        onMouseMove={draw}
-        onMouseUp={stopDrawing}
-        onMouseLeave={stopDrawing}
-        onTouchStart={startDrawing}
-        onTouchMove={draw}
-        onTouchEnd={stopDrawing}
+        style={{ cursor: isErasing ? "none" : cursorCss }}
+        onMouseDown={handleStart}
+        onMouseMove={handleMove}
+        onMouseUp={handleEnd}
+        onMouseLeave={() => {
+          handleEnd();
+          setEraserPos(null);
+        }}
+        onMouseEnter={updateEraserPos}
+        onTouchStart={handleStart}
+        onTouchMove={handleMove}
+        onTouchEnd={handleEnd}
       />
 
-      {!hasDrawn && strokes.length > 0 && (
-        <div className="absolute top-14 sm:top-4 left-[50%] -translate-x-1/2 bg-white/90 backdrop-blur-sm px-2.5 sm:px-3 py-1 rounded-full text-[10px] sm:text-xs font-medium text-stone-500 border border-stone-200 shadow-sm pointer-events-none whitespace-nowrap">
-          {doodleName}
-        </div>
+      {isErasing && eraserPos && (
+        <div
+          className="absolute rounded-full border-2 border-stone-500 bg-stone-500/10 pointer-events-none"
+          style={{
+            left: eraserPos.x - eraserRingRadius,
+            top: eraserPos.y - eraserRingRadius,
+            width: eraserRingRadius * 2,
+            height: eraserRingRadius * 2,
+          }}
+        />
       )}
-      {!hasDrawn && strokes.length > 0 && (
-        <div className="absolute bottom-3 right-2 sm:right-3 bg-white/80 backdrop-blur-sm px-2 py-1 rounded-md text-[10px] sm:text-xs text-stone-400 border border-stone-200 pointer-events-none">
-          Start drawing to trace
-        </div>
-      )}
-      {!hasDrawn && strokes.length === 0 && (
+
+      {strokes.length === 0 && (
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <p className="text-stone-300 text-sm select-none">
+          <p className={`text-sm select-none ${placeholderColor}`}>
             Start drawing your mark
           </p>
         </div>
       )}
 
+      {strokes.length > 0 && (
         <div className="absolute bottom-3 right-2 sm:right-3 bg-white/80 backdrop-blur-sm px-2 py-1 rounded-md text-[10px] sm:text-xs text-stone-400 border border-stone-200 pointer-events-none">
-          MarkHand - Drawing Tool
-        </div>
-
-      {hasDrawn && strokes.length > 0 && (
-        <div className="absolute bottom-10 right-2 sm:right-3 bg-white/80 backdrop-blur-sm px-2 py-1 rounded-md text-[10px] sm:text-xs text-stone-400 border border-stone-200 pointer-events-none">
           {strokes.length} stroke{strokes.length !== 1 ? "s" : ""}
-        </div>
-      )}
-      {hasDrawn && strokes.length === 0 && (
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <p className="text-stone-300 text-sm select-none">
-            Start drawing your mark
-          </p>
         </div>
       )}
     </div>

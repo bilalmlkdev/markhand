@@ -1,35 +1,102 @@
-import type { Signature } from '../types';
+import type { DrawingMeta, CanvasTheme, Stroke } from '../types';
 
-const SIGNATURES_KEY = 'markhand_signatures';
+const REGISTRY_KEY = 'markhand_drawings';
 const THEME_KEY = 'markhand_theme';
 const GUIDE_KEY = 'markhand_guide';
 const CURSOR_KEY = 'markhand_cursor';
 
-export function saveSignature(signature: Signature): void {
-  const existing = getSignatures();
-  existing.push(signature);
-  localStorage.setItem(SIGNATURES_KEY, JSON.stringify(existing));
+function getDrawingStorageKey(id: string): string {
+  return `markhand_drawing_${id}`;
 }
 
-export function getSignatures(): Signature[] {
-  const raw = localStorage.getItem(SIGNATURES_KEY);
-  if (!raw) return [];
+// Read-only access to a drawing's strokes, for gallery thumbnails.
+// The canonical read/write path used while actively drawing is useDraw.ts.
+export function loadDrawingStrokes(id: string): Stroke[] {
   try {
-    return JSON.parse(raw) as Signature[];
+    const raw = localStorage.getItem(getDrawingStorageKey(id));
+    return raw ? (JSON.parse(raw) as Stroke[]) : [];
   } catch {
     return [];
   }
 }
 
-export function deleteSignature(id: string): void {
-  const existing = getSignatures();
-  const filtered = existing.filter(s => s.id !== id);
-  localStorage.setItem(SIGNATURES_KEY, JSON.stringify(filtered));
+// --- Drawing registry (My Drawings gallery) -------------------------------
+// Strokes for a drawing are stored separately under `markhand_drawing_{id}`
+// (see useDraw.ts). This registry only tracks lightweight metadata so the
+// gallery can list drawings without loading every stroke into memory.
+
+export function getDrawingRegistry(): DrawingMeta[] {
+  const raw = localStorage.getItem(REGISTRY_KEY);
+  if (!raw) return [];
+  try {
+    const parsed = JSON.parse(raw) as DrawingMeta[];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
 }
 
-export function clearAllSignatures(): void {
-  localStorage.removeItem(SIGNATURES_KEY);
+function saveDrawingRegistry(entries: DrawingMeta[]): void {
+  try {
+    localStorage.setItem(REGISTRY_KEY, JSON.stringify(entries));
+  } catch {}
 }
+
+// Create or update this drawing's registry entry. Called whenever a
+// drawing's strokes or theme change and it has at least one stroke.
+export function upsertDrawingMeta(
+  id: string,
+  patch: { strokeCount: number; theme: CanvasTheme; name?: string },
+): void {
+  const entries = getDrawingRegistry();
+  const now = Date.now();
+  const existingIndex = entries.findIndex((e) => e.id === id);
+
+  if (existingIndex === -1) {
+    entries.push({
+      id,
+      name: patch.name ?? 'Untitled',
+      createdAt: now,
+      updatedAt: now,
+      strokeCount: patch.strokeCount,
+      theme: patch.theme,
+    });
+  } else {
+    const existing = entries[existingIndex]!;
+    entries[existingIndex] = {
+      ...existing,
+      name: patch.name ?? existing.name,
+      updatedAt: now,
+      strokeCount: patch.strokeCount,
+      theme: patch.theme,
+    };
+  }
+  saveDrawingRegistry(entries);
+}
+
+export function renameDrawing(id: string, name: string): void {
+  const entries = getDrawingRegistry();
+  const index = entries.findIndex((e) => e.id === id);
+  if (index === -1) return;
+  entries[index] = { ...entries[index]!, name };
+  saveDrawingRegistry(entries);
+}
+
+export function removeDrawingMeta(id: string): void {
+  const entries = getDrawingRegistry().filter((e) => e.id !== id);
+  saveDrawingRegistry(entries);
+}
+
+export function deleteDrawing(id: string): void {
+  const entries = getDrawingRegistry().filter((e) => e.id !== id);
+  saveDrawingRegistry(entries);
+  try {
+    localStorage.removeItem(getDrawingStorageKey(id));
+    localStorage.removeItem(`markhand_hasDrawn_${id}`);
+  } catch {}
+}
+
+// --- Global preferences ----------------------------------------------------
 
 export function saveTheme(theme: string): void {
   localStorage.setItem(THEME_KEY, theme);

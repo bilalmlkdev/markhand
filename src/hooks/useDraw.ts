@@ -1,5 +1,17 @@
 import { useState, useCallback, useRef, useEffect } from "react";
-import type { Point, Stroke } from "../types";
+import type { CursorStyle, Point, Stroke } from "../types";
+import { smoothPoints } from "../lib/ink";
+import { remapInkColorForBackground } from "../lib/palette";
+
+// Real-tool-like default line weight per cursor, applied when the user
+// switches tools — mirrors how Procreate/Photoshop brush presets work.
+export const CURSOR_DEFAULT_WIDTH: Record<CursorStyle, number> = {
+  crosshair: 2,
+  pencil: 3,
+  dot: 2,
+  brush: 8,
+  pen: 4,
+};
 
 export interface UseDrawReturn {
   strokes: Stroke[];
@@ -20,10 +32,15 @@ export interface UseDrawReturn {
   resizeCanvas: () => void;
   getCanvas: () => HTMLCanvasElement | null;
   hasDrawn: boolean;
-  seedStrokes: (seed: Stroke[]) => void;
   canUndo: boolean;
   canRedo: boolean;
   drawingId: string;
+  recolorForBackground: (bgIsLight: boolean) => void;
+  isErasing: boolean;
+  eraserRadius: number;
+  startErasing: (e: React.MouseEvent | React.TouchEvent) => void;
+  erase: (e: React.MouseEvent | React.TouchEvent) => void;
+  stopErasing: () => void;
 }
 
 function getStorageKey(drawingId: string): string {
@@ -76,20 +93,68 @@ function saveWidth(width: number) {
   localStorage.setItem(WIDTH_KEY, String(width));
 }
 
-export function useDraw(drawingId: string): UseDrawReturn {
+function distance(a: Point, b: Point): number {
+  return Math.hypot(a.x - b.x, a.y - b.y);
+}
+
+// Remove any points of `stroke` within `radius` of `eraserPoint`, splitting
+// the stroke into separate surviving pieces around the erased gap(s).
+// Pieces with fewer than 2 points are dropped (nothing left to draw).
+function eraseFromStroke(
+  stroke: Stroke,
+  eraserPoint: Point,
+  radius: number,
+): Stroke[] {
+  const segments: Point[][] = [];
+  let current: Point[] = [];
+
+  for (const p of stroke.points) {
+    if (distance(p, eraserPoint) <= radius) {
+      if (current.length >= 2) segments.push(current);
+      current = [];
+    } else {
+      current.push(p);
+    }
+  }
+  if (current.length >= 2) segments.push(current);
+
+  // Nothing was actually touched — return the stroke unchanged.
+  if (segments.length === 1 && segments[0]!.length === stroke.points.length) {
+    return [stroke];
+  }
+
+  return segments.map((points) => ({
+    id: crypto.randomUUID(),
+    points,
+    color: stroke.color,
+    width: stroke.width,
+  }));
+}
+
+export function useDraw(
+  drawingId: string,
+  initialStrokes?: Stroke[] | null,
+): UseDrawReturn {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const [strokes, setStrokes] = useState<Stroke[]>(() =>
-    loadStrokes(drawingId),
+  const [strokes, setStrokes] = useState<Stroke[]>(
+    () => initialStrokes ?? loadStrokes(drawingId),
   );
   const [undoStack, setUndoStack] = useState<Stroke[][]>([]);
   const [redoStack, setRedoStack] = useState<Stroke[][]>([]);
   const [isDrawing, setIsDrawing] = useState(false);
   const [currentColor, setCurrentColorState] = useState(loadColor);
   const [currentWidth, setCurrentWidthState] = useState(loadWidth);
-  const [hasDrawn, setHasDrawn] = useState(() => loadHasDrawn(drawingId));
+  const [hasDrawn, setHasDrawn] = useState(
+    () => Boolean(initialStrokes?.length) || loadHasDrawn(drawingId),
+  );
 
   const currentPointsRef = useRef<Point[]>([]);
   const isEmpty = strokes.length === 0;
+  const [isErasing, setIsErasing] = useState(false);
+  const eraseStrokeSnapshotRef = useRef<Stroke[] | null>(null);
+  // Eraser radius scales with pen width but has a comfortable floor so it
+  // stays usable even at the thinnest pen settings.
+  const eraserRadius = Math.max(10, currentWidth * 3);
 
   // Save strokes and hasDrawn whenever they change
   useEffect(() => {
@@ -226,9 +291,14 @@ export function useDraw(drawingId: string): UseDrawReturn {
     if (points.length > 1) {
       setUndoStack((prev) => [...prev, strokes]);
       setRedoStack([]);
+      // Smooth the committed stroke (Catmull-Rom curve) so it reads as
+      // natural ink rather than a raw jagged polyline of mouse samples.
+      // Very short strokes (dots/taps) are left untouched.
+      const finalPoints =
+        points.length >= 4 ? smoothPoints(points, 0.3) : [...points];
       const newStroke: Stroke = {
         id: crypto.randomUUID(),
-        points: [...points],
+        points: finalPoints,
         color: currentColor,
         width: currentWidth,
       };
@@ -237,6 +307,53 @@ export function useDraw(drawingId: string): UseDrawReturn {
     }
     currentPointsRef.current = [];
   }, [isDrawing, currentColor, currentWidth, strokes, hasDrawn]);
+
+  // Eraser: snapshot strokes once at gesture start (for undo + to avoid
+  // erasing already-erased gaps mid-drag), then progressively remove
+  // touched points as the user drags, splitting strokes around the gap.
+  const startErasing = useCallback(
+    (e: React.MouseEvent | React.TouchEvent) => {
+      e.preventDefault();
+      eraseStrokeSnapshotRef.current = strokes;
+      setIsErasing(true);
+      const point = getPoint(e);
+      setStrokes((prev) =>
+        prev.flatMap((s) => eraseFromStroke(s, point, eraserRadius)),
+      );
+    },
+    [strokes, getPoint, eraserRadius],
+  );
+
+  const erase = useCallback(
+    (e: React.MouseEvent | React.TouchEvent) => {
+      e.preventDefault();
+      if (!isErasing) return;
+      const point = getPoint(e);
+      setStrokes((prev) =>
+        prev.flatMap((s) => eraseFromStroke(s, point, eraserRadius)),
+      );
+    },
+    [isErasing, getPoint, eraserRadius],
+  );
+
+  const stopErasing = useCallback(() => {
+    if (!isErasing) return;
+    setIsErasing(false);
+    const before = eraseStrokeSnapshotRef.current;
+    eraseStrokeSnapshotRef.current = null;
+    if (before !== null) {
+      // Only record undo history if the erase gesture actually changed
+      // anything (e.g. a click-drag that never touched a stroke).
+      setStrokes((current) => {
+        if (current !== before) {
+          setUndoStack((prev) => [...prev, before]);
+          setRedoStack([]);
+          if (!hasDrawn) setHasDrawn(true);
+        }
+        return current;
+      });
+    }
+  }, [isErasing, hasDrawn]);
 
   const undo = useCallback(() => {
     if (undoStack.length === 0 && strokes.length === 0) return;
@@ -276,9 +393,26 @@ export function useDraw(drawingId: string): UseDrawReturn {
     }
   }, [strokes, hasDrawn]);
 
-  const seedStrokes = useCallback((seed: Stroke[]) => {
-    setStrokes((prev) => (prev.length === 0 ? seed : prev));
-  }, []);
+  // Remap stroke and pen colors when the canvas background changes from
+  // light to dark or vice versa, so existing drawings stay visible instead
+  // of blending into the new background. This is a display correction, not
+  // a drawing action, so it intentionally does not push to the undo stack.
+  const recolorForBackground = useCallback(
+    (bgIsLight: boolean) => {
+      setStrokes((prev) =>
+        prev.map((s) => ({
+          ...s,
+          color: remapInkColorForBackground(s.color, bgIsLight),
+        })),
+      );
+      setCurrentColorState((prev) => {
+        const remapped = remapInkColorForBackground(prev, bgIsLight);
+        if (remapped !== prev) saveColor(remapped);
+        return remapped;
+      });
+    },
+    [],
+  );
 
   return {
     strokes,
@@ -299,9 +433,14 @@ export function useDraw(drawingId: string): UseDrawReturn {
     resizeCanvas,
     getCanvas,
     hasDrawn,
-    seedStrokes,
     canUndo: undoStack.length > 0,
     canRedo: redoStack.length > 0,
     drawingId,
+    recolorForBackground,
+    isErasing,
+    eraserRadius,
+    startErasing,
+    erase,
+    stopErasing,
   };
 }

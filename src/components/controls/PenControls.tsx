@@ -1,30 +1,23 @@
 import { Pen, Droplet } from 'lucide-react';
 import { ColorPicker } from '../ui/ColorPicker';
+import { LIGHT_BG_INK_COLORS, DARK_BG_INK_COLORS } from '../../lib/palette';
 
 interface PenControlsProps {
   activeColor: string;
   activeWidth: number;
   onColorChange: (color: string) => void;
   onWidthChange: (width: number) => void;
+  bgIsLight: boolean;
 }
-
-const colors = [
-  '#1c1917',
-  '#e03131',
-  '#2f9e44',
-  '#1971c2',
-  '#f08c00',
-  '#9c36b5',
-  '#0c8599',
-  '#c92a2a',
-];
 
 export function PenControls({
   activeColor,
   activeWidth,
   onColorChange,
   onWidthChange,
+  bgIsLight,
 }: PenControlsProps) {
+  const colors = bgIsLight ? LIGHT_BG_INK_COLORS : DARK_BG_INK_COLORS;
   const minWidth = 1;
   const maxWidth = 12;
   const percent = Math.min(

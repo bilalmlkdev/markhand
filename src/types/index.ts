@@ -10,18 +10,20 @@ export interface Stroke {
   width: number;
 }
 
-export interface Signature {
+export interface DrawingMeta {
   id: string;
-  strokes: Stroke[];
-  createdAt: number;
   name: string;
+  createdAt: number;
+  updatedAt: number;
+  strokeCount: number;
+  theme: CanvasTheme;
 }
 
 export type ExportFormat = 'png' | 'svg' | 'pdf';
 
 export type GuideType = 'none' | 'dots' | 'grid' | 'lines';
 
-export type CanvasTheme = 'default' | 'warm' | 'cool' | 'dark';
+export type CanvasTheme = 'default' | 'white' | 'warm' | 'cool' | 'paper' | 'graphite' | 'dark';
 
 export type CursorStyle = 'crosshair' | 'pencil' | 'dot' | 'brush' | 'pen';
 

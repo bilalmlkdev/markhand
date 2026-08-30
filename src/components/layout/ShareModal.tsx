@@ -1,27 +1,31 @@
-import { useState } from "react";
-import { X, Copy, Check, Share2 } from "lucide-react";
+import { useMemo, useState } from "react";
+import { X, Copy, Check, Share2, AlertTriangle } from "lucide-react";
 import { Button } from "../ui/Button";
 import { FaXTwitter } from "react-icons/fa6";
 import type { Stroke } from "../../types";
+import { getShareUrl } from "../../lib/share";
 
 interface ShareModalProps {
   open: boolean;
   onClose: () => void;
   strokes: Stroke[];
   isEmpty: boolean;
-  drawingId: string; // added
+  drawingId: string;
 }
+
+// A very long URL can be silently truncated by some platforms/browsers.
+const LONG_URL_WARNING_THRESHOLD = 8000;
 
 export function ShareModal({
   open,
   onClose,
-  // strokes,
+  strokes,
   isEmpty,
-  // drawingId,
 }: ShareModalProps) {
   const [copied, setCopied] = useState(false);
 
-  const shareUrl = window.location.href; // just the current URL
+  const shareUrl = useMemo(() => getShareUrl(strokes), [strokes]);
+  const isLong = shareUrl.length > LONG_URL_WARNING_THRESHOLD;
 
   const handleCopyLink = async () => {
     try {
@@ -121,12 +125,24 @@ export function ShareModal({
               </div>
 
               {/* Info */}
-              <div className="bg-stone-50 rounded-lg p-3">
-                <p className="text-[10px] text-stone-400 leading-relaxed">
-                  This link points to your drawing ID. If you haven't saved it
-                  yet, it will be empty for others.
-                </p>
-              </div>
+              {isLong ? (
+                <div className="flex items-start gap-2 bg-amber-50 rounded-lg p-3">
+                  <AlertTriangle className="w-3.5 h-3.5 text-amber-500 shrink-0 mt-0.5" />
+                  <p className="text-[10px] text-amber-700 leading-relaxed">
+                    This drawing is complex, so the link is quite long. Some
+                    platforms may truncate it - exporting as an image is more
+                    reliable for very detailed drawings.
+                  </p>
+                </div>
+              ) : (
+                <div className="bg-stone-50 rounded-lg p-3">
+                  <p className="text-[10px] text-stone-400 leading-relaxed">
+                    Your drawing is encoded directly into this link, so
+                    anyone who opens it sees exactly what you see - no
+                    account or server needed.
+                  </p>
+                </div>
+              )}
             </>
           )}
         </div>

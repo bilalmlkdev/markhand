@@ -3,6 +3,8 @@
 @theme {
   --font-primary : "Gveret Levin", cursive;
   --font-body: "DM Sans", sans-serif;
+  --font-instrument : "Instrument Serif",
+    serif;
 }
 
 @layer base {
