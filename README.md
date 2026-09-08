@@ -1,28 +1,27 @@
-<p align="center">
+<div align="center">
+
   <a href="https://markhand.vercel.app/">
-    <img src="./public/homePreview.png" alt="Markhand Preview">
+    <img src="https://raw.githubusercontent.com/bilalmlkdev/markhand/main/src/assets/favicon.svg" alt="markhand logo" width="100%" height="120">
   </a>
-   <a href="https://markhand.vercel.app/">
-    <img src="./public/AppPreview.png" alt="Markhand Preview">
-  </a>
+
+# Markhand - Draw Freely
+
+ With a fluid canvas, customizable pens, a precision eraser, dynamic cursors, guide patterns, and a suite <br> of export options (PNG, SVG, copy, print, share), Markhand adapts to your hand, not the other way around.
+
+[![Live Demo](https://img.shields.io/badge/Live_Demo-Visit_Site-black?style=for-the-badge)](https://markhand.vercel.app)
+[![GitHub Stars](https://img.shields.io/github/stars/bilalmlkdev/markhand?style=for-the-badge&logo=github&color=yellow)](https://github.com/bilalmlkdev/markhand.git)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](./LICENSE)
+
+</div>
+
+<p align="center">
+  <i>Created by <a href="https://bilalmlkdev.vercel.app" target="_blank">Bilal Malik</a></i><br>
+  <i>Follow on Github <a href="https://github.com/bilalmlkdev" target="_blank">bilalmlkdev</a></i>
 </p>
 
-<h1 align="left">Markhand</h1>
 
-<p align="left">
- With a fluid canvas, customizable pens, a precision eraser, dynamic cursors, guide patterns, and a suite of export options (PNG, SVG, copy, print, share), Markhand adapts to your hand, not the other way around.
-
-</p>
-
-<p align="left">
-  <img src="https://img.shields.io/badge/Status-Complete-9B72FF?style=flat"/>
-  <img src="https://img.shields.io/badge/React-Vite-9B72FF?style=flat"/>
-  <img src="https://img.shields.io/badge/Tailwind-v4-9B72FF?style=flat"/>
-  <img src="https://img.shields.io/badge/TypeScript-5-9B72FF?style=flat"/>
-  <img src="https://img.shields.io/badge/License-MIT-9B72FF?style=flat"/>
-  <img src="https://img.shields.io/badge/Deploy-Vercel-9B72FF?style=flat"/>
-</p>
-
+[![markhand HomePage](https://raw.githubusercontent.com/bilalmlkdev/markhand/main/public/homePreview.png)](https://markhand.vercel.app/)
+[![markhand Dashboard](https://raw.githubusercontent.com/bilalmlkdev/markhand/main/public/AppPreview.png)](https://markhand.vercel.app/)
 
 # About Markhand
 
@@ -124,35 +123,11 @@ Markhand is designed to remain responsive even while handling hundreds of stroke
 - **Client-Side Processing** with zero network requests during drawing and exporting.
 
 
-# Built With
 
-Markhand uses a modern frontend stack focused on performance, maintainability, and developer experience.
-
-- React
-- Vite
-- Tailwind CSS v4
-- TypeScript
-- React Router DOM
-- HTML5 Canvas API
-- Lucide React
-- react-joyride
-
-<p align="left">
-  <img src="https://skillicons.dev/icons?i=react,vite,tailwind,ts,git" />
-</p>
-
-# Getting Started
-
-### Prerequisites
-
-- Node.js
-- npm or Yarn
-- Modern web browser
-
-### Quick Setup
+## Quick Setup
 
 ```bash
-git clone https://github.com/byllzz/markhand.git
+git clone https://github.com/bilalmlkdev/markhand.git
 cd markhand
 npm install
 npm run dev
@@ -225,13 +200,3 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
-
-
-<p align="left">
-  © 2026 Markhand. Licensed under the MIT License.
-</p>
-
-
-<p align="right">
-  <a href="#markhand">⬆ Back to Top</a>
-</p>

@@ -169,7 +169,7 @@ export function Header({
         My Drawings
       </Link>
       <a
-        href="https://github.com/byllzz/markhand"
+        href="https://github.com/bilalmlkdev/markhand"
         target="_blank"
         rel="noopener noreferrer"
         className="flex items-center gap-2 px-3 py-2 text-sm text-stone-600 hover:bg-stone-100 rounded-md transition-colors"
@@ -280,7 +280,7 @@ export function Header({
               </span>
             </Link>
             <a
-              href="https://github.com/byllzz/markhand.git"
+              href="https://github.com/bilalmlkdev/markhand.git"
               target="_blank"
               rel="noopener noreferrer"
               title="View on GitHub"
