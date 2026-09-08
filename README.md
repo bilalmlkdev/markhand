@@ -124,22 +124,6 @@ Markhand is designed to remain responsive even while handling hundreds of stroke
 
 
 
-## Quick Setup
-
-```bash
-git clone https://github.com/bilalmlkdev/markhand.git
-cd markhand
-npm install
-npm run dev
-```
-
-### Build
-
-```bash
-npm run build
-npm run preview
-```
-
 # Contributing
 
 Contributions of every size are welcome.
