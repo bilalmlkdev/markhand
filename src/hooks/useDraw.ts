@@ -23,6 +23,7 @@ export interface UseDrawReturn {
   setCurrentColor: (color: string) => void;
   setCurrentWidth: (width: number) => void;
   setCanvas: (canvas: HTMLCanvasElement | null) => void;
+  setRedrawBase: (fn: (() => void) | null) => void;
   startDrawing: (e: React.PointerEvent<HTMLCanvasElement>) => void;
   draw: (e: React.PointerEvent<HTMLCanvasElement>) => void;
   stopDrawing: () => void;
@@ -207,6 +208,7 @@ export function useDraw(
   initialStrokes?: Stroke[] | null,
 ): UseDrawReturn {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const redrawBaseRef = useRef<(() => void) | null>(null);
   const [strokes, setStrokes] = useState<Stroke[]>(
     () => initialStrokes ?? loadStrokes(drawingId),
   );
@@ -252,6 +254,10 @@ export function useDraw(
 
   const setCanvas = useCallback((canvas: HTMLCanvasElement | null) => {
     canvasRef.current = canvas;
+  }, []);
+
+  const setRedrawBase = useCallback((fn: (() => void) | null) => {
+    redrawBaseRef.current = fn;
   }, []);
 
   const getCanvas = useCallback(() => canvasRef.current, []);
@@ -319,17 +325,28 @@ export function useDraw(
       const prev = currentPointsRef.current;
       prev.push(point);
 
-      if (prev.length >= 2) {
-        const secondLast = prev[prev.length - 2]!;
-        ctx.beginPath();
-        ctx.moveTo(secondLast.x, secondLast.y);
-        ctx.lineTo(point.x, point.y);
-        ctx.strokeStyle = currentColor;
-        ctx.lineWidth = currentWidth;
-        ctx.lineCap = "round";
-        ctx.lineJoin = "round";
-        ctx.stroke();
+      if (prev.length < 2) return;
+
+      // Live preview now uses the same Catmull-Rom smoothing as the
+      // committed stroke (see stopDrawing below), so the line doesn't
+      // visibly "snap" into a different shape the instant the pointer
+      // lifts. Redraw the base layer (background/guides/committed
+      // strokes) first, then paint the smoothed in-progress stroke on
+      // top - repainting only the current stroke's own pixels would
+      // leave a seam between the smoothed tail and the raw segments
+      // drawn on previous frames underneath it.
+      redrawBaseRef.current?.();
+      const previewPoints = prev.length >= 4 ? smoothPoints(prev, 0.3) : prev;
+      ctx.beginPath();
+      ctx.moveTo(previewPoints[0]!.x, previewPoints[0]!.y);
+      for (let i = 1; i < previewPoints.length; i++) {
+        ctx.lineTo(previewPoints[i]!.x, previewPoints[i]!.y);
       }
+      ctx.strokeStyle = currentColor;
+      ctx.lineWidth = currentWidth;
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+      ctx.stroke();
     },
     [isDrawing, getPoint, currentColor, currentWidth],
   );
@@ -370,7 +387,10 @@ export function useDraw(
         const next = prev.flatMap((s) =>
           eraseFromStroke(s, point, eraserRadius),
         );
-        if (next.length !== prev.length || next.some((s, i) => s !== prev[i])) {
+        if (
+          next.length !== prev.length ||
+          next.some((s, i) => s !== prev[i])
+        ) {
           eraseChangedRef.current = true;
         }
         return next;
@@ -437,8 +457,7 @@ export function useDraw(
   // Cancel any in-flight erase frame on unmount.
   useEffect(() => {
     return () => {
-      if (eraseRafRef.current !== null)
-        cancelAnimationFrame(eraseRafRef.current);
+      if (eraseRafRef.current !== null) cancelAnimationFrame(eraseRafRef.current);
     };
   }, []);
 
@@ -484,19 +503,22 @@ export function useDraw(
   // light to dark or vice versa, so existing drawings stay visible instead
   // of blending into the new background. This is a display correction, not
   // a drawing action, so it intentionally does not push to the undo stack.
-  const recolorForBackground = useCallback((bgIsLight: boolean) => {
-    setStrokes((prev) =>
-      prev.map((s) => ({
-        ...s,
-        color: remapInkColorForBackground(s.color, bgIsLight),
-      })),
-    );
-    setCurrentColorState((prev) => {
-      const remapped = remapInkColorForBackground(prev, bgIsLight);
-      if (remapped !== prev) saveColor(remapped);
-      return remapped;
-    });
-  }, []);
+  const recolorForBackground = useCallback(
+    (bgIsLight: boolean) => {
+      setStrokes((prev) =>
+        prev.map((s) => ({
+          ...s,
+          color: remapInkColorForBackground(s.color, bgIsLight),
+        })),
+      );
+      setCurrentColorState((prev) => {
+        const remapped = remapInkColorForBackground(prev, bgIsLight);
+        if (remapped !== prev) saveColor(remapped);
+        return remapped;
+      });
+    },
+    [],
+  );
 
   return {
     strokes,
@@ -506,6 +528,7 @@ export function useDraw(
     setCurrentColor,
     setCurrentWidth,
     setCanvas,
+    setRedrawBase,
     startDrawing,
     draw,
     stopDrawing,

@@ -136,6 +136,7 @@ function ToolButton({
   shortcut,
   onClick,
   children,
+  size = "md",
 }: {
   active?: boolean;
   disabled?: boolean;
@@ -143,6 +144,7 @@ function ToolButton({
   shortcut?: string;
   onClick: () => void;
   children: React.ReactNode;
+  size?: "md" | "sm";
 }) {
   return (
     <Tooltip label={label} shortcut={shortcut}>
@@ -152,7 +154,8 @@ function ToolButton({
         disabled={disabled}
         aria-label={label}
         className={[
-          "w-9 h-9 flex items-center justify-center rounded-[13px] transition-all duration-150 shrink-0",
+          size === "sm" ? "w-8 h-8" : "w-9 h-9",
+          "flex items-center justify-center rounded-[13px] transition-all duration-150 shrink-0",
           active
             ? "bg-stone-900 text-white shadow-[0_2px_6px_rgba(28,25,23,0.16)]"
             : "text-stone-500 hover:text-stone-900 hover:bg-stone-100",
@@ -290,22 +293,45 @@ export function DashboardToolbar({
               </DockPopover>
             </div>
           )}
+        </div>
 
-          <ToolButton label="Select (coming soon)" disabled onClick={() => {}}>
-            <MousePointerClick className="w-[17px] h-[17px]" />
+        {/* Coming-soon tools: kept visually and spatially separate from
+            real, working tools above so they don't read as broken buttons
+            sitting among functional ones. Hidden below lg since the dock
+            is already tight on narrower viewports and these are previews,
+            not features anyone depends on. */}
+        <div className="hidden lg:flex items-center gap-0.5 shrink-0 mx-0.5 pl-1.5 border-l border-dashed border-stone-200">
+          <ToolButton
+            label="Select (coming soon)"
+            disabled
+            size="sm"
+            onClick={() => {}}
+          >
+            <MousePointerClick className="w-4 h-4" />
           </ToolButton>
-          <ToolButton label="Shapes (coming soon)" disabled onClick={() => {}}>
-            <Square className="w-[17px] h-[17px]" />
+          <ToolButton
+            label="Shapes (coming soon)"
+            disabled
+            size="sm"
+            onClick={() => {}}
+          >
+            <Square className="w-4 h-4" />
           </ToolButton>
-          <ToolButton label="Text (coming soon)" disabled onClick={() => {}}>
-            <Type className="w-[17px] h-[17px]" />
+          <ToolButton
+            label="Text (coming soon)"
+            disabled
+            size="sm"
+            onClick={() => {}}
+          >
+            <Type className="w-4 h-4" />
           </ToolButton>
           <ToolButton
             label="Highlighter (coming soon)"
             disabled
+            size="sm"
             onClick={() => {}}
           >
-            <Highlighter className="w-[17px] h-[17px]" />
+            <Highlighter className="w-4 h-4" />
           </ToolButton>
         </div>
 
@@ -330,10 +356,10 @@ export function DashboardToolbar({
                 }`}
               >
                 <span
-                  className="w-[18px] h-[18px] rounded-full ring-1 ring-black/10 flex items-center justify-center"
+                  className="w-[26px] h-[26px] rounded-full ring-1 ring-black/10 flex items-center justify-center"
                   style={{ backgroundColor: activeColor }}
                 >
-                  <PenLine className="w-2.5 h-2.5 text-white mix-blend-difference" />
+                  <PenLine className="w-3.5 h-3.5 text-white mix-blend-difference" />
                 </span>
               </button>
             </Tooltip>
@@ -391,7 +417,7 @@ export function DashboardToolbar({
                   className="w-4 h-4 rounded-full ring-1 ring-black/10 flex items-center justify-center"
                   style={{ backgroundColor: themeBg }}
                 >
-                  <SwatchBook className="w-3 h-3 text-stone-700 mix-blend-difference shrink-0" />
+                  <SwatchBook className="w-5 h-5 text-stone-500 mix-blend-difference shrink-0" />
                 </span>
               </button>
             </Tooltip>
@@ -493,7 +519,7 @@ export function DashboardToolbar({
 
         <div
           data-tour="header-actions"
-          className="flex items-center gap-0.5 shrink-0"
+          className="flex items-center gap-1.5 shrink-0"
         >
           <Tooltip label="Share drawing">
             <button
@@ -511,7 +537,7 @@ export function DashboardToolbar({
               type="button"
               onClick={onExport}
               disabled={isEmpty}
-              className="h-9 px-3 rounded-[13px] bg-stone-900 text-white text-[11px] font-semibold hover:bg-black disabled:opacity-30 disabled:hover:bg-stone-900 disabled:cursor-not-allowed transition-all"
+              className="h-8 px-4 rounded-lg bg-stone-900 text-white text-[13px] font-semibold hover:bg-black disabled:opacity-30 disabled:hover:bg-stone-900 disabled:cursor-not-allowed transition-all"
             >
               <span className="hidden sm:inline">Export</span>
               <span className="sm:hidden">↓</span>

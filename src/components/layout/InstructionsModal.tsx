@@ -1,7 +1,7 @@
+import { useEffect } from "react";
 import {
   X,
-  Sparkles,
-  Crosshair,
+  MousePointer2,
   Pencil,
   Circle,
   Paintbrush,
@@ -11,11 +11,6 @@ import {
   Undo2,
   Redo2,
   Trash2,
-  Palette,
-  MousePointerClick,
-  Square,
-  Type,
-  Highlighter,
 } from "lucide-react";
 
 interface InstructionsModalProps {
@@ -23,237 +18,126 @@ interface InstructionsModalProps {
   onClose: () => void;
 }
 
-interface ToolItem {
-  label: string;
-  keys: string[];
-  icon: React.ReactNode;
-}
-
-const tools: ToolItem[] = [
-  { label: "Crosshair", keys: ["1"], icon: <Crosshair className="size-4" /> },
-  { label: "Pencil", keys: ["2"], icon: <Pencil className="size-4" /> },
-  { label: "Dot", keys: ["3"], icon: <Circle className="size-4" /> },
-  { label: "Brush", keys: ["4"], icon: <Paintbrush className="size-4" /> },
-  { label: "Pen", keys: ["5"], icon: <PenTool className="size-4" /> },
-  { label: "Eraser", keys: ["E"], icon: <Eraser className="size-4" /> },
+const tools = [
+  { icon: MousePointer2, label: "Select", key: "1" },
+  { icon: Pencil, label: "Pencil", key: "2" },
+  { icon: Circle, label: "Dot", key: "3" },
+  { icon: Paintbrush, label: "Brush", key: "4" },
+  { icon: PenTool, label: "Pen", key: "5" },
+  { icon: Eraser, label: "Eraser", key: "E" },
 ];
 
-interface ShortcutRow {
-  label: string;
-  keys: string[];
-  icon: React.ReactNode;
-}
-
-const otherShortcuts: ShortcutRow[] = [
-  { label: "Cycle guide pattern", keys: ["G"], icon: <Grid3X3 className="size-4" /> },
-  { label: "Undo", keys: ["Ctrl", "Z"], icon: <Undo2 className="size-4" /> },
-  { label: "Redo", keys: ["Ctrl", "Shift", "Z"], icon: <Redo2 className="size-4" /> },
-  { label: "Clear canvas", keys: ["Delete"], icon: <Trash2 className="size-4" /> },
+const actions = [
+  { icon: Grid3X3, label: "Guide", key: "G" },
+  { icon: Undo2, label: "Undo", key: "⌘ Z" },
+  { icon: Redo2, label: "Redo", key: "⌘ ⇧ Z" },
+  { icon: Trash2, label: "Clear", key: "Del" },
 ];
 
-const comingSoonFeatures = [
-  {
-    label: "Select",
-    description: "Move and transform strokes",
-    icon: <MousePointerClick className="size-4" />,
-  },
-  {
-    label: "Shapes",
-    description: "Draw circles, boxes, and arrows",
-    icon: <Square className="size-4" />,
-  },
-  {
-    label: "Text",
-    description: "Add editable text to the canvas",
-    icon: <Type className="size-4" />,
-  },
-  {
-    label: "Highlighter",
-    description: "Mark up ideas with soft ink",
-    icon: <Highlighter className="size-4" />,
-  },
-];
-
-function KeyCap({ children }: { children: string }) {
+function Key({ children }: { children: string }) {
   return (
-    <kbd className="inline-flex min-w-[22px] h-6 items-center justify-center rounded-md border border-stone-200 bg-stone-50 px-1.5 text-[11px] font-semibold text-stone-600 shadow-[inset_0_-1px_0_rgba(0,0,0,0.03)]">
+    <kbd className="inline-flex h-5 min-w-[20px] items-center justify-center rounded bg-stone-100 px-1.5 font-mono text-[10px] font-medium text-stone-600">
       {children}
     </kbd>
   );
 }
 
-function KeyChip({ keys }: { keys: string[] }) {
-  return (
-    <div className="flex shrink-0 items-center gap-1">
-      {keys.map((key, index) => (
-        <span key={`${key}-${index}`} className="flex items-center gap-1">
-          <KeyCap>{key}</KeyCap>
-          {index < keys.length - 1 && (
-            <span className="text-[10px] text-stone-300">+</span>
-          )}
-        </span>
-      ))}
-    </div>
-  );
-}
-
 export function InstructionsModal({ open, onClose }: InstructionsModalProps) {
+  useEffect(() => {
+    if (!open) return;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") onClose();
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [open, onClose]);
+
   if (!open) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div
-        className="absolute inset-0 bg-stone-950/20 backdrop-blur-[3px]"
+      {/* Flat overlay */}
+      <button
+        type="button"
+        aria-label="Close instructions"
         onClick={onClose}
+        className="absolute inset-0 bg-stone-900/20"
       />
 
       <section
         role="dialog"
         aria-modal="true"
         aria-labelledby="instructions-title"
-        className="relative flex max-h-[88vh] w-full max-w-[500px] flex-col overflow-hidden rounded-[24px] border border-stone-200/80 bg-white shadow-[0_24px_80px_rgba(0,0,0,0.12)]"
+        className="relative w-full max-w-[420px] rounded-xl border border-stone-200 bg-white p-6"
       >
-        <header className="relative shrink-0 px-6 pb-5 pt-6 sm:px-7 sm:pt-7">
+        {/* Header */}
+        <div className="mb-4 flex items-start justify-between">
+          <h2
+            id="instructions-title"
+            className="text-base font-medium tracking-tight text-stone-900"
+          >
+            Markhand Instructions
+          </h2>
           <button
-            type="button"
             onClick={onClose}
-            aria-label="Close instructions"
-            className="absolute right-5 top-5 inline-flex size-8 items-center justify-center rounded-full text-stone-400 transition-colors hover:bg-stone-100 hover:text-stone-700 sm:right-6 sm:top-6"
+            className="-mr-1.5 -mt-1.5 p-1.5 text-stone-400 transition-colors hover:text-stone-900"
+            aria-label="Close"
           >
             <X className="size-4" />
           </button>
+        </div>
 
-          <div className="flex items-center gap-2 text-stone-400">
-            <Sparkles className="size-3.5" />
-            <span className="text-[10px] font-semibold uppercase tracking-[0.16em]">
-              Markhand guide
-            </span>
-          </div>
+        {/* Intro Wording */}
+        <p className="mb-6 text-[13px] leading-relaxed text-stone-600">
+          Markhand is designed to keep you focused on the canvas. Instead of navigating menus, control your workflow instantly using the keyboard shortcuts below.
+        </p>
 
-          <h2
-            id="instructions-title"
-            className="mt-3 pr-10 text-[20px] font-semibold tracking-[-0.02em] text-stone-950 sm:text-[22px]"
-          >
-            How to use Markhand
-          </h2>
-          <p className="mt-2 max-w-[430px] text-[12px] leading-[1.65] text-stone-400 sm:text-[13px]">
-            Draw with your mouse, trackpad, or stylus. Most controls live in the
-            dock at the bottom of the canvas.
-          </p>
-        </header>
-
-        <div className="overflow-y-auto px-6 pb-7 sm:px-7">
-          <div className="h-px bg-stone-100" />
-
-          {/* Tools — icon grid, matches the dock's own visual language */}
-          <div className="py-6">
-            <h3 className="mb-3 text-[10px] font-semibold uppercase tracking-[0.15em] text-stone-400">
+        {/* Content Grid */}
+        <div className="mb-6 grid grid-cols-2 gap-x-8">
+          {/* Tools List */}
+          <div>
+            <h3 className="mb-3 text-[10px] font-medium uppercase tracking-widest text-stone-400">
               Tools
             </h3>
-            <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-3">
-              {tools.map((tool) => (
-                <div
-                  key={tool.label}
-                  className="flex items-center gap-2.5 rounded-xl bg-stone-50 px-2.5 py-2.5"
-                >
-                  <span className="inline-flex size-8 shrink-0 items-center justify-center rounded-[10px] bg-white text-stone-500 shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
-                    {tool.icon}
-                  </span>
-                  <span className="min-w-0 flex-1 truncate text-[12.5px] font-medium text-stone-700">
-                    {tool.label}
-                  </span>
-                  <KeyChip keys={tool.keys} />
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="h-px bg-stone-100" />
-
-          {/* Everything-else shortcuts */}
-          <div className="py-5">
-            <h3 className="mb-3 text-[10px] font-semibold uppercase tracking-[0.15em] text-stone-400">
-              Shortcuts
-            </h3>
-            <div className="space-y-1">
-              {otherShortcuts.map((row) => (
-                <div
-                  key={row.label}
-                  className="flex items-center gap-3 rounded-xl px-1 py-1.5"
-                >
-                  <span className="inline-flex size-7 shrink-0 items-center justify-center rounded-lg bg-stone-50 text-stone-400">
-                    {row.icon}
-                  </span>
-                  <span className="min-w-0 flex-1 text-[13px] text-stone-700 sm:text-sm">
-                    {row.label}
-                  </span>
-                  <KeyChip keys={row.keys} />
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="h-px bg-stone-100" />
-
-          <div className="py-5">
-            <div className="mb-3 flex items-center gap-2 text-stone-400">
-              <span className="inline-flex size-4 items-center justify-center leading-none">
-                <Palette className="size-3.5" />
-              </span>
-              <h3 className="text-[10px] font-semibold uppercase tracking-[0.15em]">
-                Style, theme &amp; sharing
-              </h3>
-            </div>
-            <p className="max-w-[430px] text-[13px] leading-[1.7] text-stone-500 sm:text-sm">
-              Use the color, line weight, and theme controls in the dock to
-              adjust the drawing. Share and Export sit alongside Gallery and
-              GitHub.
-            </p>
-          </div>
-
-          <div className="h-px bg-stone-100" />
-
-          <div className="py-5">
-            <div className="mb-4 flex items-center justify-between gap-4">
-              <div className="flex items-center gap-2 text-stone-400">
-                <span className="inline-flex size-4 items-center justify-center leading-none">
-                  <Sparkles className="size-3.5" />
-                </span>
-                <h3 className="text-[10px] font-semibold uppercase tracking-[0.15em]">
-                  Coming soon
-                </h3>
-              </div>
-              <span className="text-[9px] font-semibold uppercase tracking-[0.13em] text-stone-300">
-                In development
-              </span>
-            </div>
-
-            <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
-              {comingSoonFeatures.map((feature) => (
-                <div
-                  key={feature.label}
-                  className="flex items-center gap-3 rounded-xl bg-stone-50 px-2.5 py-2.5"
-                >
-                  <span className="inline-flex size-8 shrink-0 items-center justify-center rounded-[10px] bg-white text-stone-400 shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
-                    {feature.icon}
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
-                      <span className="text-[12.5px] font-medium text-stone-700">
-                        {feature.label}
-                      </span>
-                    </div>
-                    <p className="mt-0.5 truncate text-[10.5px] leading-relaxed text-stone-400">
-                      {feature.description}
-                    </p>
+            <ul className="flex flex-col gap-2.5">
+              {tools.map(({ icon: Icon, label, key }) => (
+                <li key={label} className="flex items-center justify-between">
+                  <div className="flex items-center gap-2.5 text-stone-700">
+                    <Icon className="size-3.5" strokeWidth={1.5} />
+                    <span className="text-[13px]">{label}</span>
                   </div>
-                  <span className="shrink-0 rounded-full border border-stone-200 bg-white px-1.5 py-0.5 text-[8.5px] font-semibold uppercase tracking-wide text-stone-400">
-                    Soon
-                  </span>
-                </div>
+                  <Key>{key}</Key>
+                </li>
               ))}
-            </div>
+            </ul>
           </div>
+
+          {/* Actions List */}
+          <div>
+            <h3 className="mb-3 text-[10px] font-medium uppercase tracking-widest text-stone-400">
+              Actions
+            </h3>
+            <ul className="flex flex-col gap-2.5">
+              {actions.map(({ icon: Icon, label, key }) => (
+                <li key={label} className="flex items-center justify-between">
+                  <div className="flex items-center gap-2.5 text-stone-700">
+                    <Icon className="size-3.5" strokeWidth={1.5} />
+                    <span className="text-[13px]">{label}</span>
+                  </div>
+                  <Key>{key}</Key>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+
+        {/* Footer Wording */}
+        <div className="border-t border-stone-100 pt-4">
+          <p className="text-[12px] leading-relaxed text-stone-500">
+            Future updates will introduce shapes, typography, and highlighters. Press <span className="font-mono text-[10px] bg-stone-100 px-1 py-0.5 rounded">ESC</span> to close.
+          </p>
         </div>
       </section>
     </div>
