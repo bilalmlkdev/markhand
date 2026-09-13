@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import type { Stroke, CanvasTheme } from "../../types";
 import { themes } from "../../lib/canvas";
+import { paintStroke } from "../../lib/render";
 
 interface DrawingThumbnailProps {
   strokes: Stroke[];
@@ -63,17 +64,7 @@ export function DrawingThumbnail({
     ctx.scale(scale, scale);
 
     strokes.forEach((s) => {
-      if (s.points.length < 2) return;
-      ctx.beginPath();
-      ctx.moveTo(s.points[0]!.x, s.points[0]!.y);
-      for (let i = 1; i < s.points.length; i++) {
-        ctx.lineTo(s.points[i]!.x, s.points[i]!.y);
-      }
-      ctx.strokeStyle = s.color;
-      ctx.lineWidth = Math.max(1 / scale, s.width);
-      ctx.lineCap = "round";
-      ctx.lineJoin = "round";
-      ctx.stroke();
+      paintStroke(ctx, s, 1 / scale);
     });
     ctx.restore();
   }, [strokes, theme, themeConfig]);

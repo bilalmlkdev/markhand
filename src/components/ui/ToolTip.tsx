@@ -25,8 +25,15 @@ export function Tooltip({ label, children, shortcut }: TooltipProps) {
     timerRef.current = setTimeout(() => {
       const rect = wrapperRef.current?.getBoundingClientRect();
       if (!rect) return;
+      const margin = 8;
+      const approxWidth = 24 + label.length * 6.5 + (shortcut ? 30 : 0);
+      const anchorMid = rect.left + rect.width / 2;
+      const left = Math.min(
+        window.innerWidth - margin - approxWidth / 2,
+        Math.max(margin + approxWidth / 2, anchorMid),
+      );
       setCoords({
-        left: rect.left + rect.width / 2,
+        left,
         bottom: window.innerHeight - rect.top + 10,
       });
       setVisible(true);

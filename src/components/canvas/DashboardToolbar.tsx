@@ -209,20 +209,6 @@ export function DashboardToolbar({
       className="absolute bottom-4 left-1/2 -translate-x-1/2 z-40 max-w-[calc(100vw-1rem)]"
     >
       <div className="flex items-center gap-1 max-w-[calc(100vw-1rem)] overflow-x-auto overscroll-x-contain no-scrollbar rounded-[20px] border border-black/[0.07] bg-white/88 backdrop-blur-2xl backdrop-saturate-150 px-1.5 py-1.5 shadow-[0_2px_6px_rgba(28,25,23,0.05),0_14px_34px_rgba(28,25,23,0.12)] ring-1 ring-inset ring-white/80">
-        <div className="hidden md:flex items-center gap-1 px-1.5">
-          <div className="w-7 h-7 rounded-[10px] border border-stone-200 bg-stone-50 flex items-center justify-center">
-            <span
-              className="w-3.5 h-3.5 rounded-full ring-1 ring-black/10"
-              style={{ backgroundColor: activeColor }}
-            />
-          </div>
-          <span className="text-[11px] font-medium text-stone-500 tabular-nums min-w-[28px]">
-            {activeWidth}px
-          </span>
-        </div>
-
-        <Divider />
-
         <div className="flex items-center gap-0.5 shrink-0">
           {cursorOptions.map((cursor) => (
             <ToolButton
@@ -356,10 +342,10 @@ export function DashboardToolbar({
                 }`}
               >
                 <span
-                  className="w-[26px] h-[26px] rounded-full ring-1 ring-black/10 flex items-center justify-center"
-                  style={{ backgroundColor: activeColor }}
+                  className="w-[28px] h-[28px] rounded-full ring-1 ring-black/10  flex items-center justify-center"
+                  // style={{ backgroundColor: activeColor }}
                 >
-                  <PenLine className="w-3.5 h-3.5 text-white mix-blend-difference" />
+                  <PenLine className="w-4 h-4 text-stone-400" />
                 </span>
               </button>
             </Tooltip>
@@ -414,10 +400,10 @@ export function DashboardToolbar({
                 }`}
               >
                 <span
-                  className="w-4 h-4 rounded-full ring-1 ring-black/10 flex items-center justify-center"
-                  style={{ backgroundColor: themeBg }}
+                  className="w-[28px] h-[28px] rounded-full ring-1 ring-black/10 flex items-center justify-center"
+                  // style={{ backgroundColor: themeBg }}
                 >
-                  <SwatchBook className="w-5 h-5 text-stone-500 mix-blend-difference shrink-0" />
+                  <SwatchBook className="w-5 h-5 text-stone-400 mix-blend-difference shrink-0" />
                 </span>
               </button>
             </Tooltip>
@@ -610,7 +596,7 @@ export function DashboardToolbar({
                   className="w-full flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-xs font-medium text-red-600 hover:bg-red-50"
                 >
                   <RefreshCw className="w-4 h-4" />
-                  Reset all data
+                  Reset canvas
                 </button>
               </div>
             </DockPopover>

@@ -43,7 +43,10 @@ export function ProductTour({ run, onFinish }: ProductTourProps) {
   const [stepIndex, setStepIndex] = useState(0);
 
   useEffect(() => {
-    if (run) setStepIndex(0);
+    if (run) {
+      const id = requestAnimationFrame(() => setStepIndex(0));
+      return () => cancelAnimationFrame(id);
+    }
   }, [run]);
 
   const restoreScroll = useCallback(() => {

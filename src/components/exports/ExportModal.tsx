@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { X, Download, Copy, Check, Printer } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { themes, drawDotGrid, drawGrid } from '../../lib/canvas';
+import { paintStroke, strokeSvgGeometry } from '../../lib/render';
 import type { Stroke, CanvasTheme, GuideType } from '../../types';
 
 interface ExportModalProps {
@@ -131,17 +132,7 @@ export function ExportModal({
     }
 
     strokes.forEach(s => {
-      if (s.points.length < 2) return;
-      ctx.beginPath();
-      ctx.moveTo(s.points[0]!.x, s.points[0]!.y);
-      for (let i = 1; i < s.points.length; i++) {
-        ctx.lineTo(s.points[i]!.x, s.points[i]!.y);
-      }
-      ctx.strokeStyle = s.color;
-      ctx.lineWidth = Math.max(1 / scale, s.width);
-      ctx.lineCap = 'round';
-      ctx.lineJoin = 'round';
-      ctx.stroke();
+      paintStroke(ctx, s, 1 / scale);
     });
 
     ctx.restore();
@@ -191,17 +182,7 @@ export function ExportModal({
     }
 
     strokes.forEach(s => {
-      if (s.points.length < 2) return;
-      ctx.beginPath();
-      ctx.moveTo(s.points[0]!.x, s.points[0]!.y);
-      for (let i = 1; i < s.points.length; i++) {
-        ctx.lineTo(s.points[i]!.x, s.points[i]!.y);
-      }
-      ctx.strokeStyle = s.color;
-      ctx.lineWidth = s.width;
-      ctx.lineCap = 'round';
-      ctx.lineJoin = 'round';
-      ctx.stroke();
+      paintStroke(ctx, s);
     });
 
     return exportCanvas;
@@ -217,12 +198,7 @@ export function ExportModal({
     } else {
       let paths = '';
       strokes.forEach(s => {
-        if (s.points.length < 2) return;
-        let d = `M ${s.points[0]!.x} ${s.points[0]!.y}`;
-        for (let i = 1; i < s.points.length; i++) {
-          d += ` L ${s.points[i]!.x} ${s.points[i]!.y}`;
-        }
-        paths += `<path d="${d}" stroke="${s.color}" stroke-width="${s.width}" fill="none" stroke-linecap="round" stroke-linejoin="round"/>\n`;
+        paths += strokeSvgGeometry(s) + '\n';
       });
 
       const svgBg = background === 'transparent' ? 'transparent' : bgHex;

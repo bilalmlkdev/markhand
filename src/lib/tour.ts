@@ -11,5 +11,7 @@ export function hasSeenTour(): boolean {
 export function markTourSeen(): void {
   try {
     localStorage.setItem(TOUR_SEEN_KEY, "true");
-  } catch {}
+  } catch {
+    /* ignore */
+  }
 }

@@ -25,7 +25,7 @@ export function ResetConfirmModal({
           <div className="flex items-center gap-2">
             <AlertTriangle className="w-4 h-4 text-red-500" />
             <h2 className="text-sm font-semibold text-stone-800">
-              Reset All Data
+              Reset canvas
             </h2>
           </div>
           <button
@@ -37,13 +37,9 @@ export function ResetConfirmModal({
         </div>
         <div className="p-4 sm:p-5 space-y-4">
           <p className="text-sm text-stone-600 leading-relaxed">
-            This will reset your settings and clear the current drawing. Your
-            other saved drawings will remain.
+            This clears the current drawing and starts a fresh canvas. Your
+            settings and other saved drawings will remain.
           </p>
-          <div className="bg-red-50 rounded-lg p-3 text-xs text-red-700">
-            Your current drawing will be cleared and a new drawing ID will be
-            created.
-          </div>
         </div>
         <div className="px-4 pb-4 flex gap-2">
           <Button variant="ghost" className="flex-1" onClick={onClose}>
@@ -55,7 +51,7 @@ export function ResetConfirmModal({
             onClick={onConfirm}
           >
             <RefreshCw className="w-4 h-4" />
-            Reset All
+            Reset canvas
           </Button>
         </div>
       </div>

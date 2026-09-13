@@ -18,6 +18,7 @@ export const ERASER_RADIUS_RANGE = { min: 6, max: 60 } as const;
 export interface UseDrawReturn {
   strokes: Stroke[];
   isEmpty: boolean;
+  storageWarning: string | null;
   currentColor: string;
   currentWidth: number;
   setCurrentColor: (color: string) => void;
@@ -57,10 +58,14 @@ function loadStrokes(drawingId: string): Stroke[] {
   }
 }
 
-function saveStrokes(drawingId: string, strokes: Stroke[]) {
+function saveStrokes(drawingId: string, strokes: Stroke[]): boolean {
   try {
+    if (strokes.length === 0) return false;
     localStorage.setItem(getStorageKey(drawingId), JSON.stringify(strokes));
-  } catch {}
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 // Per‑drawing hasDrawn flag
@@ -79,7 +84,9 @@ function loadHasDrawn(drawingId: string): boolean {
 function saveHasDrawn(drawingId: string, val: boolean) {
   try {
     localStorage.setItem(getHasDrawnKey(drawingId), String(val));
-  } catch {}
+  } catch {
+    /* ignore */
+  }
 }
 
 // Global per‑user settings (not per drawing)
@@ -96,7 +103,9 @@ function loadColor(): string {
 function saveColor(color: string) {
   try {
     localStorage.setItem(COLOR_KEY, color);
-  } catch {}
+  } catch {
+    /* ignore */
+  }
 }
 function loadWidth(): number {
   try {
@@ -110,7 +119,9 @@ function loadWidth(): number {
 function saveWidth(width: number) {
   try {
     localStorage.setItem(WIDTH_KEY, String(width));
-  } catch {}
+  } catch {
+    /* ignore */
+  }
 }
 
 const ERASER_RADIUS_KEY = "markhand_eraser_radius";
@@ -132,7 +143,9 @@ function loadEraserRadius(): number {
 function saveEraserRadius(radius: number) {
   try {
     localStorage.setItem(ERASER_RADIUS_KEY, String(radius));
-  } catch {}
+  } catch {
+    /* ignore */
+  }
 }
 
 function distance(a: Point, b: Point): number {
@@ -168,7 +181,18 @@ function eraseFromStroke(
   eraserPoint: Point,
   radius: number,
 ): Stroke[] {
-  if (stroke.points.length < 2) return [stroke];
+  // Single-point strokes (dots/taps) are erased when the eraser center is
+  // within the radius, without the segment logic that only applies to
+  // multi-point strokes.
+  if (stroke.points.length < 2) {
+    if (
+      stroke.points.length === 1 &&
+      distance(stroke.points[0]!, eraserPoint) <= radius
+    ) {
+      return [];
+    }
+    return [stroke];
+  }
 
   const segments: Point[][] = [];
   let current: Point[] = [];
@@ -220,6 +244,8 @@ export function useDraw(
   const [hasDrawn, setHasDrawn] = useState(
     () => Boolean(initialStrokes?.length) || loadHasDrawn(drawingId),
   );
+  const [storageWarning, setStorageWarning] = useState<string | null>(null);
+  const saveOkRef = useRef(true);
 
   const currentPointsRef = useRef<Point[]>([]);
   const isEmpty = strokes.length === 0;
@@ -246,9 +272,18 @@ export function useDraw(
 
   // Save strokes and hasDrawn whenever they change
   useEffect(() => {
-    if (hasDrawn) {
-      saveStrokes(drawingId, strokes);
-      saveHasDrawn(drawingId, true);
+    if (!hasDrawn) return;
+    const ok = saveStrokes(drawingId, strokes);
+    saveHasDrawn(drawingId, true);
+    if (ok !== saveOkRef.current) {
+      saveOkRef.current = ok;
+      queueMicrotask(() =>
+        setStorageWarning(
+          ok
+            ? null
+            : "Your browser is out of storage space, so this drawing can't be saved.",
+        ),
+      );
     }
   }, [strokes, hasDrawn, drawingId]);
 
@@ -356,7 +391,7 @@ export function useDraw(
     setIsDrawing(false);
 
     const points = currentPointsRef.current;
-    if (points.length > 1) {
+    if (points.length > 0) {
       setUndoStack((prev) => [...prev, strokes]);
       setRedoStack([]);
       // Smooth the committed stroke (Catmull-Rom curve) so it reads as
@@ -463,27 +498,26 @@ export function useDraw(
 
   const undo = useCallback(() => {
     if (undoStack.length === 0 && strokes.length === 0) return;
-    setUndoStack((prev) => {
-      const updated = [...prev];
-      const last = updated.pop();
-      setRedoStack((redoPrev) => [...redoPrev, strokes]);
-      if (last !== undefined) setStrokes(last);
-      else setStrokes([]);
-      return updated;
-    });
+
+    if (undoStack.length === 0) {
+      setStrokes([]);
+      setRedoStack((prev) => [...prev, strokes]);
+      return;
+    }
+
+    const last = undoStack[undoStack.length - 1]!;
+    setUndoStack(undoStack.slice(0, -1));
+    setRedoStack((prev) => [...prev, strokes]);
+    setStrokes(last);
   }, [strokes, undoStack]);
 
   const redo = useCallback(() => {
     if (redoStack.length === 0) return;
-    setRedoStack((prev) => {
-      const updated = [...prev];
-      const next = updated.pop();
-      if (next !== undefined) {
-        setUndoStack((undoPrev) => [...undoPrev, strokes]);
-        setStrokes(next);
-      }
-      return updated;
-    });
+
+    const next = redoStack[redoStack.length - 1]!;
+    setRedoStack(redoStack.slice(0, -1));
+    setUndoStack((prev) => [...prev, strokes]);
+    setStrokes(next);
   }, [strokes, redoStack]);
 
   const clear = useCallback(() => {
@@ -523,6 +557,7 @@ export function useDraw(
   return {
     strokes,
     isEmpty,
+    storageWarning,
     currentColor,
     currentWidth,
     setCurrentColor,

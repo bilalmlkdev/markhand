@@ -44,10 +44,3 @@ export function smoothPoints(points: Point[], tension: number = 0.3): Point[] {
 
   return smoothed;
 }
-
-export function calculatePressure(prevPoint: Point, currentPoint: Point): number {
-  const dx = currentPoint.x - prevPoint.x;
-  const dy = currentPoint.y - prevPoint.y;
-  const distance = Math.sqrt(dx * dx + dy * dy);
-  return Math.max(0.2, Math.min(1, 1 - distance / 50));
-}

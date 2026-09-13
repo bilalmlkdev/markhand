@@ -21,7 +21,7 @@ export interface DrawingMeta {
 
 export type GuideType = 'none' | 'dots' | 'grid';
 
-export type CanvasTheme = 'default' | 'white' | 'warm' | 'cool' | 'paper' | 'graphite' | 'dark';
+export type CanvasTheme = 'default' | 'white' | 'warm' | 'cool' | 'paper' | 'sky';
 
 export type CursorStyle = 'crosshair' | 'pencil' | 'dot' | 'brush' | 'pen';
 

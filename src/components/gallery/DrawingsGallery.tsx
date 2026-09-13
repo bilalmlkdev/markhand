@@ -8,6 +8,7 @@ import {
   renameDrawing,
 } from "../../lib/storage";
 import { themes } from "../../lib/canvas";
+import { useNearViewport } from "../../hooks/useNearViewport";
 import { DrawingThumbnail } from "./DrawingThumbnail";
 import type { DrawingMeta } from "../../types";
 
@@ -41,7 +42,11 @@ function DrawingCard({
   const [nameDraft, setNameDraft] = useState(meta.name);
   const [menuOpen, setMenuOpen] = useState(false);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
-  const strokes = useMemo(() => loadDrawingStrokes(meta.id), [meta.id]);
+  const [cardRef, isNear] = useNearViewport<HTMLElement>();
+  const strokes = useMemo(
+    () => (isNear ? loadDrawingStrokes(meta.id) : []),
+    [isNear, meta.id],
+  );
   const theme = themes[meta.theme] ?? themes.default;
 
   const commitRename = () => {
@@ -53,7 +58,10 @@ function DrawingCard({
   };
 
   return (
-    <article className="group overflow-hidden rounded-[22px] border border-stone-200/90 bg-white transition-colors duration-200 hover:border-stone-300">
+    <article
+      ref={cardRef}
+      className="group overflow-hidden rounded-[22px] border border-stone-200/90 bg-white transition-colors duration-200 hover:border-stone-300"
+    >
       <Link
         to={`/dashboard/${meta.id}`}
         className="relative block aspect-[16/11] overflow-hidden border-b border-stone-100 bg-stone-50 focus-visible:outline-none"
@@ -66,7 +74,7 @@ function DrawingCard({
             style={{
               backgroundColor: `${theme.surface}ee`,
               borderColor: `${theme.dot}66`,
-              color: meta.theme === "dark" || meta.theme === "graphite" ? "#e7e5e4" : "#57534e",
+              color: "#57534e",
             }}
           >
             <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: theme.dot }} />

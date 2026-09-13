@@ -2,7 +2,7 @@ import { useNavigate, Link } from "react-router-dom";
 import GrainyShader from "../components/background/GrainyShader";
 
 function generateId(): string {
-  return Math.random().toString(36).slice(2, 10);
+  return crypto.randomUUID();
 }
 
 export function NotFound() {

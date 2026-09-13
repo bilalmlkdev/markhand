@@ -1,19 +1,11 @@
 import { Check } from 'lucide-react';
 import type { CanvasTheme } from '../../types';
 import { themes } from '../../lib/canvas';
+import { isLightColor } from '../../lib/palette';
 
 interface ThemeControlsProps {
   activeTheme: CanvasTheme;
   onChange: (theme: CanvasTheme) => void;
-}
-
-function isLight(hex: string) {
-  const c = hex.replace('#', '');
-  if (c.length < 6) return true;
-  const r = parseInt(c.slice(0, 2), 16);
-  const g = parseInt(c.slice(2, 4), 16);
-  const b = parseInt(c.slice(4, 6), 16);
-  return (r * 299 + g * 587 + b * 114) / 1000 > 150;
 }
 
 export function ThemeControls({ activeTheme, onChange }: ThemeControlsProps) {
@@ -23,7 +15,7 @@ export function ThemeControls({ activeTheme, onChange }: ThemeControlsProps) {
     <div className="grid grid-cols-2 gap-2">
       {themeEntries.map(([key, theme]) => {
         const isActive = activeTheme === key;
-        const light = isLight(theme.bg);
+        const light = isLightColor(theme.bg);
         const inkColor = light ? '#1c1917' : '#ffffff';
 
         return (

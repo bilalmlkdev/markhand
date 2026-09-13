@@ -39,7 +39,9 @@ export function getDrawingRegistry(): DrawingMeta[] {
 function saveDrawingRegistry(entries: DrawingMeta[]): void {
   try {
     localStorage.setItem(REGISTRY_KEY, JSON.stringify(entries));
-  } catch {}
+  } catch {
+    /* ignore */
+  }
 }
 
 // Create or update this drawing's registry entry. Called whenever a
@@ -90,10 +92,19 @@ export function removeDrawingMeta(id: string): void {
 export function deleteDrawing(id: string): void {
   const entries = getDrawingRegistry().filter((e) => e.id !== id);
   saveDrawingRegistry(entries);
+  removeDrawingData(id);
+}
+
+// Purge a drawing's strokes and hasDrawn flag from localStorage. Used by
+// reset/delete/empty flows so cleared drawings stop leaving orphaned keys
+// behind.
+export function removeDrawingData(id: string): void {
   try {
     localStorage.removeItem(getDrawingStorageKey(id));
     localStorage.removeItem(`markhand_hasDrawn_${id}`);
-  } catch {}
+  } catch {
+    /* ignore */
+  }
 }
 
 // --- Global preferences ----------------------------------------------------
@@ -101,7 +112,9 @@ export function deleteDrawing(id: string): void {
 export function saveTheme(theme: string): void {
   try {
     localStorage.setItem(THEME_KEY, theme);
-  } catch {}
+  } catch {
+    /* ignore */
+  }
 }
 
 export function loadTheme(): string | null {
@@ -115,7 +128,9 @@ export function loadTheme(): string | null {
 export function saveGuide(guide: string): void {
   try {
     localStorage.setItem(GUIDE_KEY, guide);
-  } catch {}
+  } catch {
+    /* ignore */
+  }
 }
 
 export function loadGuide(): string | null {
@@ -129,7 +144,9 @@ export function loadGuide(): string | null {
 export function saveCursor(cursor: string): void {
   try {
     localStorage.setItem(CURSOR_KEY, cursor);
-  } catch {}
+  } catch {
+    /* ignore */
+  }
 }
 
 export function loadCursor(): string | null {

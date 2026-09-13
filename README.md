@@ -37,7 +37,7 @@ Whether you're sketching an idea, practicing a signature, annotating something, 
 - **Erasing** · A real pixel eraser - drag over any part of a stroke to remove just that segment, splitting the stroke around the gap instead of wiping the whole canvas.
 - **Customization** · 8 preset colors per theme (light and dark palettes), a custom color picker, 1px–12px stroke width, and per-tool default line weights (Crosshair, Pencil, Dot, Brush, and Pen each start at a different natural weight, like a real pen set).
 - **Cursor & Guides** · Five cursor styles with Dot Grid, Grid, or no guide - all accessible from a single unified toolbar.
-- **Themes** · Seven canvas themes (Pure White, Default, Warm, Cool, Paper, Graphite, Dark). Switching themes automatically remaps your existing strokes' colors so a drawing made in a light theme stays visible after switching to a dark one, instead of vanishing into the background.
+- **Themes** · Six canvas themes (Pure White, Default, Warm, Cool, Paper, Sky). Switching themes automatically remaps your existing strokes' colors so ink drawn on one background stays visible on the next, instead of vanishing into it.
 - **Editing** · Unlimited Undo, Redo, and smart canvas reset with a new drawing ID.
 - **Export** · PNG (Theme, White, Transparent), SVG, clipboard copy, print-ready output, and shareable URLs that encode the drawing itself - no account or server needed, and no dead links.
 - **My Drawings Gallery** · Every saved drawing is tracked with a thumbnail, stroke count, and last-edited time. Rename or delete drawings, or jump back into any of them at any time.

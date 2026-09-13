@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import GrainyShader from "../background/GrainyShader";
 import { MdOutlineKeyboardArrowRight } from "react-icons/md";
@@ -6,16 +6,12 @@ import { LuGithub } from "react-icons/lu";
 import { getDrawingRegistry } from "../../lib/storage";
 
 function generateId(): string {
-  return Math.random().toString(36).slice(2, 10);
+  return crypto.randomUUID();
 }
 
 export function LandingPage() {
   const navigate = useNavigate();
-  const [hasDrawings, setHasDrawings] = useState(false);
-
-  useEffect(() => {
-    setHasDrawings(getDrawingRegistry().length > 0);
-  }, []);
+  const [hasDrawings] = useState(() => getDrawingRegistry().length > 0);
 
   const openEditor = () =>
     navigate(`/dashboard/${generateId()}`, { state: { fromLanding: true } });

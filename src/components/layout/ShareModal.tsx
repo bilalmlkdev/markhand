@@ -28,8 +28,10 @@ export function ShareModal({
 
   const shareUrl = useMemo(() => getShareUrl(strokes), [strokes]);
   const isLong = shareUrl.length > LONG_URL_WARNING_THRESHOLD;
+  const couldNotShare = shareUrl === "";
 
   const handleCopyLink = async () => {
+    if (!shareUrl) return;
     try {
       await navigator.clipboard.writeText(shareUrl);
       setCopied(true);
@@ -75,6 +77,19 @@ export function ShareModal({
             </p>
             <p className="text-xs text-stone-400 mt-0.5">
               Draw something first, then come back here.
+            </p>
+          </div>
+        ) : couldNotShare ? (
+          <div className="py-12 px-6 text-center">
+            <div className="w-12 h-12 rounded-2xl bg-amber-50 border border-amber-100 flex items-center justify-center mx-auto mb-3">
+              <AlertTriangle className="w-5 h-5 text-amber-500" />
+            </div>
+            <p className="text-sm font-medium text-stone-600">
+              Couldn't create a share link
+            </p>
+            <p className="text-xs text-stone-400 mt-0.5">
+              Something went wrong while encoding this drawing. Try exporting
+              it as an image instead.
             </p>
           </div>
         ) : (

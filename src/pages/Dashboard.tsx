@@ -26,6 +26,7 @@ import {
   saveCursor,
   upsertDrawingMeta,
   removeDrawingMeta,
+  removeDrawingData,
 } from "../lib/storage";
 import type { GuideType, CanvasTheme, CursorStyle } from "../types";
 
@@ -62,15 +63,18 @@ export function Dashboard() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const [guideType, setGuideType] = useState<GuideType>(
-    (loadGuide() as GuideType) ?? "dots",
-  );
-  const [theme, setTheme] = useState<CanvasTheme>(
-    (loadTheme() as CanvasTheme) ?? "white",
-  );
-  const [cursorStyle, setCursorStyle] = useState<CursorStyle>(
-    (loadCursor() as CursorStyle) ?? "pencil",
-  );
+  const [guideType, setGuideType] = useState<GuideType>(() => {
+    const g = loadGuide();
+    return g && (GUIDE_ORDER as string[]).includes(g) ? (g as GuideType) : "dots";
+  });
+  const [theme, setTheme] = useState<CanvasTheme>(() => {
+    const t = loadTheme();
+    return t && t in themes ? (t as CanvasTheme) : "white";
+  });
+  const [cursorStyle, setCursorStyle] = useState<CursorStyle>(() => {
+    const c = loadCursor();
+    return c && c in CURSOR_DEFAULT_WIDTH ? (c as CursorStyle) : "pencil";
+  });
   const [instructionsOpen, setInstructionsOpen] = useState(false);
   const [tourRun, setTourRun] = useState(false);
   const [isErasing, setIsErasing] = useState(false);
@@ -98,7 +102,10 @@ export function Dashboard() {
 
   useEffect(() => {
     if (drawHook.isEmpty) {
-      if (drawHook.hasDrawn) removeDrawingMeta(drawHook.drawingId);
+      if (drawHook.hasDrawn) {
+        removeDrawingMeta(drawHook.drawingId);
+        removeDrawingData(drawHook.drawingId);
+      }
       return;
     }
     upsertDrawingMeta(drawHook.drawingId, {
@@ -153,7 +160,13 @@ export function Dashboard() {
     onToggleEraser: handleToggleEraser,
     onCycleGuide: handleCycleGuide,
     isEmpty: drawHook.isEmpty,
-    enabled: !instructionsOpen && !tourRun && !loading,
+    enabled:
+      !instructionsOpen &&
+      !tourRun &&
+      !loading &&
+      !exportOpen &&
+      !shareOpen &&
+      !resetConfirmOpen,
   });
 
   const handleToggleInstructions = () => {
@@ -161,6 +174,10 @@ export function Dashboard() {
   };
 
   const handleReset = () => {
+    if (!drawHook.isEmpty) {
+      removeDrawingMeta(drawHook.drawingId);
+      removeDrawingData(drawHook.drawingId);
+    }
     drawHook.clear();
     const newId = generateId();
     navigate(`/dashboard/${newId}`);
@@ -237,6 +254,11 @@ export function Dashboard() {
       />
 
       <ProductTour run={tourRun} onFinish={() => setTourRun(false)} />
+      {drawHook.storageWarning && (
+        <div className="absolute bottom-20 left-1/2 z-40 -translate-x-1/2 rounded-xl border border-red-200 bg-red-50/95 px-4 py-2 text-xs font-medium text-red-700 shadow-lg backdrop-blur-sm">
+          {drawHook.storageWarning}
+        </div>
+      )}
       {loading && <DashboardLoader onDone={() => setLoading(false)} />}
     </div>
   );

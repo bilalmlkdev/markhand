@@ -1,5 +1,6 @@
 import { useRef, useEffect, useCallback, useState } from "react";
 import { drawDotGrid, drawGrid, themes } from "../../lib/canvas";
+import { paintStroke } from "../../lib/render";
 import { getCursorCss } from "../../lib/cursors";
 import type { GuideType, CanvasTheme, CursorStyle } from "../../types";
 import type { UseDrawReturn } from "../../hooks/useDraw";
@@ -40,11 +41,10 @@ export function DrawingCanvas({
     eraserRadius,
     resizeCanvas,
   } = drawHook;
-  const themeConfig = themes[theme];
-  const isDark = theme === "dark" || theme === "graphite";
-  const cursorColor = isDark ? "#ffffff" : "#1c1917";
+  const themeConfig = themes[theme] ?? themes.default;
+  const cursorColor = "#1c1917";
   const cursorCss = getCursorCss(cursorStyle, cursorColor);
-  const placeholderColor = isDark ? "text-stone-600" : "text-stone-300";
+  const placeholderColor = "text-stone-300";
   const [eraserPos, setEraserPos] = useState<{ x: number; y: number } | null>(
     null,
   );
@@ -75,16 +75,7 @@ export function DrawingCanvas({
     if (guideType === "dots") drawDotGrid(ctx, width, height, themeConfig.dot, dpr);
     else if (guideType === "grid") drawGrid(ctx, width, height, themeConfig.dot, dpr);
     strokes.forEach((s) => {
-      if (s.points.length < 2) return;
-      ctx.beginPath();
-      ctx.moveTo(s.points[0]!.x, s.points[0]!.y);
-      for (let i = 1; i < s.points.length; i++)
-        ctx.lineTo(s.points[i]!.x, s.points[i]!.y);
-      ctx.strokeStyle = s.color;
-      ctx.lineWidth = s.width;
-      ctx.lineCap = "round";
-      ctx.lineJoin = "round";
-      ctx.stroke();
+      paintStroke(ctx, s);
     });
   }, [strokes, guideType, themeConfig]);
 

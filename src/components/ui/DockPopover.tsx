@@ -41,10 +41,18 @@ export function DockPopover({
       const anchor = anchorRef.current;
       if (!anchor) return;
       const rect = anchor.getBoundingClientRect();
-      setCoords({
-        left: rect.left + rect.width / 2,
-        bottom: window.innerHeight - rect.top + 12,
-      });
+      const margin = 8;
+      const popoverWidth = parseFloat(width) || 216;
+      const anchorMid = rect.left + rect.width / 2;
+      const left = Math.min(
+        window.innerWidth - margin - popoverWidth / 2,
+        Math.max(margin + popoverWidth / 2, anchorMid),
+      );
+      const bottom = Math.max(
+        margin,
+        window.innerHeight - rect.top + 12,
+      );
+      setCoords({ left, bottom });
     }
 
     updatePosition();
@@ -74,7 +82,7 @@ export function DockPopover({
       document.removeEventListener("mousedown", handleClick);
       document.removeEventListener("keydown", handleKey);
     };
-  }, [open, onClose, anchorRef]);
+  }, [open, onClose, anchorRef, width]);
 
   if (!open || !coords) return null;
 

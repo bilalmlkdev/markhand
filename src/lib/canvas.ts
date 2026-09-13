@@ -35,17 +35,11 @@ export const themes: Record<CanvasTheme, ThemeConfig> = {
     dot: "#d0c4ab",
     surface: "#fdfbf5",
   },
-  graphite: {
-    name: "Graphite",
-    bg: "#2a2a2c",
-    dot: "#55575d",
-    surface: "#343436",
-  },
-  dark: {
-    name: "Dark",
-    bg: "#1c1917",
-    dot: "#55504a",
-    surface: "#292524",
+  sky: {
+    name: "Sky",
+    bg: "#e1f3fb",
+    dot: "#a9cfe8",
+    surface: "#eef9ff",
   },
 };
 
