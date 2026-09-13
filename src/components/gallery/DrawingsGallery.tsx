@@ -59,28 +59,26 @@ function DrawingCard({
     setEditing(false);
   };
 
-return (
-  <div className="group relative flex flex-col rounded-2xl border border-stone-200 bg-white overflow-hidden hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200">
-    <Link
-      to={`/dashboard/${meta.id}`}
-      className="block aspect-[4/3] w-full overflow-hidden border-b border-stone-100"
-    >
-      <DrawingThumbnail
-        strokes={strokes}
-        theme={meta.theme}
-        className="w-full h-full"
-      />
-    </Link>
+  return (
+    <div className="group relative flex flex-col rounded-2xl border border-stone-200/80 bg-white overflow-hidden hover:shadow-[0_8px_24px_rgba(28,25,23,0.08)] hover:-translate-y-0.5 hover:border-stone-300 transition-all duration-200">
+      <Link
+        to={`/dashboard/${meta.id}`}
+        className="relative block aspect-[4/3] w-full overflow-hidden border-b border-stone-100"
+      >
+        <DrawingThumbnail
+          strokes={strokes}
+          theme={meta.theme}
+          className="w-full h-full"
+        />
+        <span className="absolute bottom-2 left-2 px-2 py-0.5 rounded-full bg-black/50 backdrop-blur-sm text-white text-[10px] font-medium opacity-0 group-hover:opacity-100 transition-opacity">
+          {meta.strokeCount} stroke{meta.strokeCount !== 1 ? "s" : ""}
+        </span>
+      </Link>
 
-    <div className="p-3 flex flex-col flex-1">
-      {" "}
-      {/* Changed to column, added flex-1 */}
-      <div className="flex items-start justify-between gap-2 flex-1">
-        {" "}
-        {/* Row for name and actions */}
+      <div className="p-3 flex items-center justify-between gap-2">
         <div className="min-w-0 flex-1">
           {editing ? (
-            <div className="flex items-center gap-1 relative">
+            <div className="flex items-center gap-1">
               <input
                 autoFocus
                 value={nameDraft}
@@ -116,16 +114,14 @@ return (
                 {meta.name}
               </p>
               <p className="text-[11px] text-stone-400">
-                {meta.strokeCount} stroke{meta.strokeCount !== 1 ? "s" : ""} ·{" "}
                 {formatDate(meta.updatedAt)}
               </p>
             </>
           )}
         </div>
+
         {!editing && (
-          <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity shrink-0 self-start">
-            {" "}
-           
+          <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity shrink-0">
             <button
               onClick={() => setEditing(true)}
               title="Rename"
@@ -155,8 +151,7 @@ return (
         )}
       </div>
     </div>
-  </div>
-);
+  );
 }
 
 export function DrawingsGallery() {
@@ -168,8 +163,6 @@ export function DrawingsGallery() {
     const entries = getDrawingRegistry().sort(
       (a, b) => b.updatedAt - a.updatedAt,
     );
-    // Registry reads are effectively instant, but a fixed minimum keeps the
-    // skeleton from flashing for a single frame on fast devices.
     const t = setTimeout(() => {
       setDrawings(entries);
       setLoading(false);
@@ -184,9 +177,7 @@ export function DrawingsGallery() {
 
   const handleRename = (id: string, name: string) => {
     renameDrawing(id, name);
-    setDrawings((prev) =>
-      prev.map((d) => (d.id === id ? { ...d, name } : d)),
-    );
+    setDrawings((prev) => prev.map((d) => (d.id === id ? { ...d, name } : d)));
   };
 
   const handleNew = () => {
@@ -223,6 +214,11 @@ export function DrawingsGallery() {
               <h1 className="text-sm font-semibold text-stone-800 truncate">
                 My Drawings
               </h1>
+              {!loading && drawings.length > 0 && (
+                <span className="text-[11px] text-stone-400 font-medium shrink-0">
+                  {drawings.length}
+                </span>
+              )}
             </div>
           </div>
           <button
@@ -241,7 +237,7 @@ export function DrawingsGallery() {
             {Array.from({ length: 8 }).map((_, i) => (
               <div
                 key={i}
-                className="rounded-2xl border border-stone-200 bg-white overflow-hidden animate-pulse "
+                className="rounded-2xl border border-stone-200 bg-white overflow-hidden animate-pulse"
               >
                 <div className="aspect-[4/3] w-full bg-stone-100" />
                 <div className="p-3 space-y-2">
@@ -252,7 +248,7 @@ export function DrawingsGallery() {
             ))}
           </div>
         ) : drawings.length === 0 ? (
-          <div className="flex flex-col items-center justify-center text-center">
+          <div className="flex flex-col items-center justify-center text-center py-12">
             <div className="w-14 h-14 rounded-2xl bg-white border border-stone-200 flex items-center justify-center mb-4">
               <PenLine className="w-6 h-6 text-stone-300" />
             </div>
@@ -260,8 +256,8 @@ export function DrawingsGallery() {
               No drawings yet
             </p>
             <p className="text-xs text-stone-400 mb-5 max-w-xs">
-              Drawings you create are saved automatically in this browser.
-              Start one to see it here.
+              Drawings you create are saved automatically in this browser. Start
+              one to see it here.
             </p>
             <button
               onClick={handleNew}

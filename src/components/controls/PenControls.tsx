@@ -1,6 +1,6 @@
-import { Pen, Droplet } from 'lucide-react';
-import { ColorPicker } from '../ui/ColorPicker';
-import { LIGHT_BG_INK_COLORS, DARK_BG_INK_COLORS } from '../../lib/palette';
+import { Pen, Droplet, Gauge } from "lucide-react";
+import { ColorPicker } from "../ui/ColorPicker";
+import { LIGHT_BG_INK_COLORS, DARK_BG_INK_COLORS } from "../../lib/palette";
 
 interface PenControlsProps {
   activeColor: string;
@@ -40,7 +40,11 @@ export function PenControls({
         <div className="relative h-8 flex items-center group/slider">
           {/* Tapered Track Visual */}
           <div className="absolute inset-x-0 h-3 bg-stone-50 border border-stone-100 rounded-lg overflow-hidden pointer-events-none">
-            <svg className="w-full h-full" preserveAspectRatio="none" viewBox="0 0 100 10">
+            <svg
+              className="w-full h-full"
+              preserveAspectRatio="none"
+              viewBox="0 0 100 10"
+            >
               <path d="M 2 5 L 98 1 L 98 9 Z" fill="#e7e5e4" />
               <path
                 d={`M 2 5 L ${percent} ${5 - (4 * percent) / 100} L ${percent} ${5 + (4 * percent) / 100} Z`}
@@ -57,7 +61,7 @@ export function PenControls({
             max={maxWidth}
             step="1"
             value={activeWidth}
-            onChange={e => onWidthChange(Number(e.target.value))}
+            onChange={(e) => onWidthChange(Number(e.target.value))}
             className="absolute inset-x-0 w-full h-full opacity-0 cursor-ew-resize z-20"
           />
 
@@ -83,6 +87,23 @@ export function PenControls({
 
       <hr className="border-stone-100" />
 
+      {/* PRESSURE SENSITIVITY (coming soon) */}
+      <div
+        title="Pressure sensitivity — coming soon"
+        aria-disabled="true"
+        className="w-full flex items-center justify-between gap-2 px-2 py-1.5 rounded-md text-xs text-stone-300 cursor-not-allowed"
+      >
+        <span className="flex items-center gap-2">
+          <Gauge className="w-3.5 h-3.5" />
+          Pressure sensitivity
+        </span>
+        <span className="px-[5px] py-px rounded-full bg-stone-100 text-stone-400 text-[9px] font-bold leading-none tracking-wide">
+          SOON
+        </span>
+      </div>
+
+      <hr className="border-stone-100" />
+
       {/* COLOR SELECTION */}
       <div className="space-y-2.5">
         <p className="flex items-center gap-1.5 text-[10px] font-bold text-stone-400 uppercase tracking-wider px-0.5">
@@ -90,7 +111,7 @@ export function PenControls({
           Palette
         </p>
         <div className="grid grid-cols-5 gap-2">
-          {colors.map(value => {
+          {colors.map((value) => {
             const isActive = activeColor === value;
             return (
               <button
@@ -98,13 +119,17 @@ export function PenControls({
                 onClick={() => onColorChange(value)}
                 title={value}
                 className={`relative w-full aspect-square rounded-xl transition-all duration-200 cursor-pointer hover:scale-105 active:scale-95 ${
-                  isActive ? 'shadow-[0_4px_12px_rgba(0,0,0,0.15)] scale-105' : 'hover:shadow-sm'
+                  isActive
+                    ? "shadow-[0_4px_12px_rgba(0,0,0,0.15)] scale-105"
+                    : "hover:shadow-sm"
                 }`}
                 style={{
                   backgroundColor: value,
-                  outline: isActive ? '2px solid white' : 'none',
-                  outlineOffset: isActive ? '-2.5px' : '0',
-                  boxShadow: isActive ? `0 0 0 2px ${value}` : 'inset 0 0 0 1px rgba(0,0,0,0.04)',
+                  outline: isActive ? "2px solid white" : "none",
+                  outlineOffset: isActive ? "-2.5px" : "0",
+                  boxShadow: isActive
+                    ? `0 0 0 2px ${value}`
+                    : "inset 0 0 0 1px rgba(0,0,0,0.04)",
                 }}
               >
                 {isActive && (
