@@ -19,7 +19,7 @@ import { DrawingThumbnail } from "./DrawingThumbnail";
 import type { DrawingMeta } from "../../types";
 
 function generateId(): string {
-  return Math.random().toString(36).slice(2, 10);
+  return crypto.randomUUID();
 }
 
 function formatDate(ts: number): string {

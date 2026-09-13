@@ -25,11 +25,11 @@
 
 # About Markhand
 
-Markhand is an open-source digital signature studio designed for anyone who wants to draw, practice, and export their mark with precision and elegance. It combines a fluid drawing canvas, customizable tools, and a per-drawing URL system, all wrapped in a clean, responsive interface.
+Markhand is an open-source open-source drawing studio for sketching, practicing, annotating, and exporting hand-drawn work with precision and a deliberately quiet interface. It combines a fluid drawing canvas, customizable tools, and a per-drawing URL system, all wrapped in a clean, responsive interface.
 
 Unlike many online drawing tools that rely on servers or require accounts, Markhand runs entirely inside your browser. Every stroke is saved locally using `localStorage`, and every drawing gets its own dedicated URL. Clear the canvas, and you're instantly given a fresh, shareable link while previous drawings remain accessible through the My Drawings gallery.
 
-Whether you're designing a personal signature, practicing calligraphy, adding a hand-drawn touch to digital documents, or simply exploring your creativity, Markhand provides a distraction-free workspace that adapts to your hand instead of forcing you to adapt to the tool.
+Whether you're sketching an idea, practicing a signature, annotating something, or simply drawing for the sake of it, Markhand keeps the workspace distraction-free and puts the canvas first.
 
 # Features
 
@@ -57,7 +57,7 @@ The entire application runs locally inside the browser without requiring any ext
 
 ## How Sharing Works
 
-Share links don't point at a server-hosted drawing - they encode the strokes directly into the URL itself (compressed and base64-encoded). Opening a shared link loads those strokes straight from the URL on first paint, so the recipient sees exactly what was shared, with nothing to host and no account required. Very detailed drawings produce longer links; Markhand warns you if a link gets long enough that some platforms might truncate it, and suggests exporting an image instead for those cases.
+Share links don't point at a server-hosted drawing - they encode the drawing directly into the URL using a compact versioned payload and URL-safe base64 encoding. Point coordinates are quantized to a tenth of a pixel and implementation-only stroke IDs are omitted, keeping links smaller without requiring a backend. Markhand also validates shared payloads and rejects oversized or malformed data instead of blindly loading arbitrary JSON.
 
 ## How Theme-Aware Recoloring Works
 

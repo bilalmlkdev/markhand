@@ -1,5 +1,5 @@
 import { lazy, Suspense } from "react";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, useParams } from "react-router-dom";
 import { RouteLoader } from "./components/layout/RouteLayout";
 
 // Each route is its own chunk now. The landing page (what most first-time
@@ -18,6 +18,10 @@ const DrawingsGallery = lazy(() =>
 const Dashboard = lazy(() =>
   import("./pages/Dashboard").then((m) => ({ default: m.Dashboard })),
 );
+function DashboardRoute() {
+  const { id } = useParams();
+  return <Dashboard key={id ?? "new"} />;
+}
 
 function App() {
   return (
@@ -25,7 +29,7 @@ function App() {
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/drawings" element={<DrawingsGallery />} />
-        <Route path="/dashboard/:id" element={<Dashboard />} />
+        <Route path="/dashboard/:id" element={<DashboardRoute />} />
       </Routes>
     </Suspense>
   );

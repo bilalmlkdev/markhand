@@ -27,7 +27,7 @@ export function generateSVG(
 
 export function exportPNG(
   canvas: HTMLCanvasElement,
-  filename: string = 'markhand-signature',
+  filename: string = 'markhand-drawing',
   background: string = 'transparent',
 ): void {
   // If transparent, just export directly
@@ -66,7 +66,7 @@ export function exportSVG(
   strokes: Stroke[],
   width: number,
   height: number,
-  filename: string = 'markhand-signature',
+  filename: string = 'markhand-drawing',
   background: string = 'transparent',
 ): void {
   const svg = generateSVG(strokes, width, height, { background });

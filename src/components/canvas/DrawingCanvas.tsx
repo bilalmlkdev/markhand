@@ -95,17 +95,20 @@ export function DrawingCanvas({
     return () => window.removeEventListener("resize", handleResize);
   }, [resizeCanvas, renderWithGuides]);
 
-  const updateEraserPos = useCallback((e: React.MouseEvent | React.TouchEvent) => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const rect = canvas.getBoundingClientRect();
-    const clientX = "touches" in e ? e.touches[0]?.clientX : e.clientX;
-    const clientY = "touches" in e ? e.touches[0]?.clientY : e.clientY;
-    if (clientX === undefined || clientY === undefined) return;
-    setEraserPos({ x: clientX - rect.left, y: clientY - rect.top });
-  }, []);
+  const updateEraserPos = useCallback(
+    (e: React.PointerEvent<HTMLCanvasElement>) => {
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+      const rect = canvas.getBoundingClientRect();
+      setEraserPos({
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top,
+      });
+    },
+    [],
+  );
 
-  const handleStart = (e: React.MouseEvent | React.TouchEvent) => {
+  const handleStart = (e: React.PointerEvent<HTMLCanvasElement>) => {
     if (isErasing) {
       updateEraserPos(e);
       startErasing(e);
@@ -113,7 +116,7 @@ export function DrawingCanvas({
       startDrawing(e);
     }
   };
-  const handleMove = (e: React.MouseEvent | React.TouchEvent) => {
+  const handleMove = (e: React.PointerEvent<HTMLCanvasElement>) => {
     if (isErasing) {
       updateEraserPos(e);
       erase(e);
@@ -137,19 +140,35 @@ export function DrawingCanvas({
     >
       <canvas
         ref={canvasRef}
-        className="absolute inset-0 touch-none"
+        className="absolute inset-0 touch-none select-none"
         style={{ cursor: isErasing ? "none" : cursorCss }}
-        onMouseDown={handleStart}
-        onMouseMove={handleMove}
-        onMouseUp={handleEnd}
-        onMouseLeave={() => {
+        onPointerDown={(e) => {
+          if (!e.isPrimary) return;
+          e.currentTarget.setPointerCapture(e.pointerId);
+          handleStart(e);
+        }}
+        onPointerMove={(e) => {
+          if (!e.isPrimary) return;
+          handleMove(e);
+        }}
+        onPointerUp={(e) => {
+          if (!e.isPrimary) return;
+          handleEnd();
+          setEraserPos(null);
+          if (e.currentTarget.hasPointerCapture(e.pointerId)) {
+            e.currentTarget.releasePointerCapture(e.pointerId);
+          }
+        }}
+        onPointerCancel={(e) => {
+          if (!e.isPrimary) return;
           handleEnd();
           setEraserPos(null);
         }}
-        onMouseEnter={updateEraserPos}
-        onTouchStart={handleStart}
-        onTouchMove={handleMove}
-        onTouchEnd={handleEnd}
+        onPointerEnter={updateEraserPos}
+        onPointerLeave={() => {
+          if (!isErasing) return;
+          setEraserPos(null);
+        }}
       />
 
       {isErasing && eraserPos && (

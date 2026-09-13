@@ -285,7 +285,7 @@ export function ExportModal({
           </style>
         </head>
         <body>
-          <img src="${dataUrl}" alt="Signature" />
+          <img src="${dataUrl}" alt="Drawing" />
         </body>
       </html>
     `);
@@ -301,7 +301,7 @@ export function ExportModal({
       <div className="relative bg-white rounded-xl shadow-2xl border border-stone-200 w-full sm:w-[400px] max-w-[95vw] max-h-[90vh] overflow-y-auto mx-2">
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-stone-100">
-          <h2 className="text-sm font-semibold text-stone-800">Export Signature</h2>
+          <h2 className="text-sm font-semibold text-stone-800">Export Drawing</h2>
           <button
             onClick={onClose}
             className="w-7 h-7 flex items-center justify-center rounded-md hover:bg-stone-100 transition-colors cursor-pointer"

@@ -22,8 +22,8 @@ export interface UseDrawReturn {
   setCurrentColor: (color: string) => void;
   setCurrentWidth: (width: number) => void;
   setCanvas: (canvas: HTMLCanvasElement | null) => void;
-  startDrawing: (e: React.MouseEvent | React.TouchEvent) => void;
-  draw: (e: React.MouseEvent | React.TouchEvent) => void;
+  startDrawing: (e: React.PointerEvent<HTMLCanvasElement>) => void;
+  draw: (e: React.PointerEvent<HTMLCanvasElement>) => void;
   stopDrawing: () => void;
   undo: () => void;
   redo: () => void;
@@ -38,8 +38,8 @@ export interface UseDrawReturn {
   recolorForBackground: (bgIsLight: boolean) => void;
   isErasing: boolean;
   eraserRadius: number;
-  startErasing: (e: React.MouseEvent | React.TouchEvent) => void;
-  erase: (e: React.MouseEvent | React.TouchEvent) => void;
+  startErasing: (e: React.PointerEvent<HTMLCanvasElement>) => void;
+  erase: (e: React.PointerEvent<HTMLCanvasElement>) => void;
   stopErasing: () => void;
 }
 
@@ -97,31 +97,61 @@ function distance(a: Point, b: Point): number {
   return Math.hypot(a.x - b.x, a.y - b.y);
 }
 
-// Remove any points of `stroke` within `radius` of `eraserPoint`, splitting
-// the stroke into separate surviving pieces around the erased gap(s).
-// Pieces with fewer than 2 points are dropped (nothing left to draw).
+function distanceToSegment(point: Point, start: Point, end: Point): number {
+  const dx = end.x - start.x;
+  const dy = end.y - start.y;
+  if (dx === 0 && dy === 0) return distance(point, start);
+
+  const t = Math.max(
+    0,
+    Math.min(
+      1,
+      ((point.x - start.x) * dx + (point.y - start.y) * dy) /
+        (dx * dx + dy * dy),
+    ),
+  );
+
+  return distance(point, {
+    x: start.x + t * dx,
+    y: start.y + t * dy,
+  });
+}
+
+// Remove points touched by the eraser and also detect long segments that
+// cross the eraser circle between sampled points. Dense pointer sampling
+// handles normal strokes well, while the segment test prevents obvious
+// "eraser passed through the line but nothing happened" gaps.
 function eraseFromStroke(
   stroke: Stroke,
   eraserPoint: Point,
   radius: number,
 ): Stroke[] {
+  if (stroke.points.length < 2) return [stroke];
+
   const segments: Point[][] = [];
   let current: Point[] = [];
+  let changed = false;
 
-  for (const p of stroke.points) {
-    if (distance(p, eraserPoint) <= radius) {
+  for (let i = 0; i < stroke.points.length; i++) {
+    const point = stroke.points[i]!;
+    const previous = stroke.points[i - 1];
+    const touched =
+      distance(point, eraserPoint) <= radius ||
+      (previous !== undefined &&
+        distanceToSegment(eraserPoint, previous, point) <= radius);
+
+    if (touched) {
+      changed = true;
       if (current.length >= 2) segments.push(current);
       current = [];
     } else {
-      current.push(p);
+      current.push(point);
     }
   }
+
   if (current.length >= 2) segments.push(current);
 
-  // Nothing was actually touched — return the stroke unchanged.
-  if (segments.length === 1 && segments[0]!.length === stroke.points.length) {
-    return [stroke];
-  }
+  if (!changed) return [stroke];
 
   return segments.map((points) => ({
     id: crypto.randomUUID(),
@@ -152,6 +182,7 @@ export function useDraw(
   const isEmpty = strokes.length === 0;
   const [isErasing, setIsErasing] = useState(false);
   const eraseStrokeSnapshotRef = useRef<Stroke[] | null>(null);
+  const eraseChangedRef = useRef(false);
   // Eraser radius scales with pen width but has a comfortable floor so it
   // stays usable even at the thinnest pen settings.
   const eraserRadius = Math.max(10, currentWidth * 3);
@@ -181,17 +212,15 @@ export function useDraw(
   }, []);
 
   const getPoint = useCallback(
-    (e: React.MouseEvent | React.TouchEvent): Point => {
+    (e: React.PointerEvent<HTMLCanvasElement>): Point => {
       const canvas = canvasRef.current;
       if (!canvas) return { x: 0, y: 0 };
       const rect = canvas.getBoundingClientRect();
       const scaleX = canvas.width / rect.width;
       const scaleY = canvas.height / rect.height;
-      const clientX = "touches" in e ? e.touches[0].clientX : e.clientX;
-      const clientY = "touches" in e ? e.touches[0].clientY : e.clientY;
       return {
-        x: (clientX - rect.left) * scaleX,
-        y: (clientY - rect.top) * scaleY,
+        x: (e.clientX - rect.left) * scaleX,
+        y: (e.clientY - rect.top) * scaleY,
       };
     },
     [],
@@ -246,7 +275,7 @@ export function useDraw(
   }, []);
 
   const startDrawing = useCallback(
-    (e: React.MouseEvent | React.TouchEvent) => {
+    (e: React.PointerEvent<HTMLCanvasElement>) => {
       e.preventDefault();
       const point = getPoint(e);
       setIsDrawing(true);
@@ -256,7 +285,7 @@ export function useDraw(
   );
 
   const draw = useCallback(
-    (e: React.MouseEvent | React.TouchEvent) => {
+    (e: React.PointerEvent<HTMLCanvasElement>) => {
       e.preventDefault();
       if (!isDrawing) return;
       const canvas = canvasRef.current;
@@ -312,26 +341,40 @@ export function useDraw(
   // erasing already-erased gaps mid-drag), then progressively remove
   // touched points as the user drags, splitting strokes around the gap.
   const startErasing = useCallback(
-    (e: React.MouseEvent | React.TouchEvent) => {
+    (e: React.PointerEvent<HTMLCanvasElement>) => {
       e.preventDefault();
       eraseStrokeSnapshotRef.current = strokes;
+      eraseChangedRef.current = false;
       setIsErasing(true);
+
       const point = getPoint(e);
-      setStrokes((prev) =>
-        prev.flatMap((s) => eraseFromStroke(s, point, eraserRadius)),
-      );
+      setStrokes((prev) => {
+        const next = prev.flatMap((s) =>
+          eraseFromStroke(s, point, eraserRadius),
+        );
+        if (next.length !== prev.length || next.some((s, i) => s !== prev[i])) {
+          eraseChangedRef.current = true;
+        }
+        return next;
+      });
     },
     [strokes, getPoint, eraserRadius],
   );
 
   const erase = useCallback(
-    (e: React.MouseEvent | React.TouchEvent) => {
+    (e: React.PointerEvent<HTMLCanvasElement>) => {
       e.preventDefault();
       if (!isErasing) return;
       const point = getPoint(e);
-      setStrokes((prev) =>
-        prev.flatMap((s) => eraseFromStroke(s, point, eraserRadius)),
-      );
+      setStrokes((prev) => {
+        const next = prev.flatMap((s) =>
+          eraseFromStroke(s, point, eraserRadius),
+        );
+        if (next.length !== prev.length || next.some((s, i) => s !== prev[i])) {
+          eraseChangedRef.current = true;
+        }
+        return next;
+      });
     },
     [isErasing, getPoint, eraserRadius],
   );
@@ -339,19 +382,17 @@ export function useDraw(
   const stopErasing = useCallback(() => {
     if (!isErasing) return;
     setIsErasing(false);
+
     const before = eraseStrokeSnapshotRef.current;
+    const changed = eraseChangedRef.current;
+
     eraseStrokeSnapshotRef.current = null;
-    if (before !== null) {
-      // Only record undo history if the erase gesture actually changed
-      // anything (e.g. a click-drag that never touched a stroke).
-      setStrokes((current) => {
-        if (current !== before) {
-          setUndoStack((prev) => [...prev, before]);
-          setRedoStack([]);
-          if (!hasDrawn) setHasDrawn(true);
-        }
-        return current;
-      });
+    eraseChangedRef.current = false;
+
+    if (before !== null && changed) {
+      setUndoStack((prev) => [...prev, before]);
+      setRedoStack([]);
+      if (!hasDrawn) setHasDrawn(true);
     }
   }, [isErasing, hasDrawn]);
 

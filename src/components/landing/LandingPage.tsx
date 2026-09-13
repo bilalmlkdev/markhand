@@ -78,7 +78,7 @@ export function LandingPage() {
             </div>
 
             <p className="lg:text-base text-sm text-black max-w-lg leading-relaxed">
-              A distraction‑free studio to draw and refine your signature. Pick
+              A distraction‑free studio to draw freely and keep the canvas distraction-free. Pick
               a pen that feels right, switch canvas themes to match your style,
               and export a clean PNG or SVG, all privately, right in your
               browser.

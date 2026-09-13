@@ -26,9 +26,9 @@ export function loadDrawingStrokes(id: string): Stroke[] {
 // gallery can list drawings without loading every stroke into memory.
 
 export function getDrawingRegistry(): DrawingMeta[] {
-  const raw = localStorage.getItem(REGISTRY_KEY);
-  if (!raw) return [];
   try {
+    const raw = localStorage.getItem(REGISTRY_KEY);
+    if (!raw) return [];
     const parsed = JSON.parse(raw) as DrawingMeta[];
     return Array.isArray(parsed) ? parsed : [];
   } catch {
@@ -99,25 +99,43 @@ export function deleteDrawing(id: string): void {
 // --- Global preferences ----------------------------------------------------
 
 export function saveTheme(theme: string): void {
-  localStorage.setItem(THEME_KEY, theme);
+  try {
+    localStorage.setItem(THEME_KEY, theme);
+  } catch {}
 }
 
 export function loadTheme(): string | null {
-  return localStorage.getItem(THEME_KEY);
+  try {
+    return localStorage.getItem(THEME_KEY);
+  } catch {
+    return null;
+  }
 }
 
 export function saveGuide(guide: string): void {
-  localStorage.setItem(GUIDE_KEY, guide);
+  try {
+    localStorage.setItem(GUIDE_KEY, guide);
+  } catch {}
 }
 
 export function loadGuide(): string | null {
-  return localStorage.getItem(GUIDE_KEY);
+  try {
+    return localStorage.getItem(GUIDE_KEY);
+  } catch {
+    return null;
+  }
 }
 
 export function saveCursor(cursor: string): void {
-  localStorage.setItem(CURSOR_KEY, cursor);
+  try {
+    localStorage.setItem(CURSOR_KEY, cursor);
+  } catch {}
 }
 
 export function loadCursor(): string | null {
-  return localStorage.getItem(CURSOR_KEY);
+  try {
+    return localStorage.getItem(CURSOR_KEY);
+  } catch {
+    return null;
+  }
 }

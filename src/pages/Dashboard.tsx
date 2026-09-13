@@ -31,7 +31,7 @@ import type { GuideType, CanvasTheme, CursorStyle } from "../types";
 
 // Generate a random ID (8 characters)
 function generateId(): string {
-  return Math.random().toString(36).slice(2, 10);
+  return crypto.randomUUID();
 }
 
 export function Dashboard() {

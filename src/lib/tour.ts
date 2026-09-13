@@ -1,9 +1,15 @@
 const TOUR_SEEN_KEY = "markhand_tour_seen";
 
 export function hasSeenTour(): boolean {
-  return localStorage.getItem(TOUR_SEEN_KEY) === "true";
+  try {
+    return localStorage.getItem(TOUR_SEEN_KEY) === "true";
+  } catch {
+    return false;
+  }
 }
 
 export function markTourSeen(): void {
-  localStorage.setItem(TOUR_SEEN_KEY, "true");
+  try {
+    localStorage.setItem(TOUR_SEEN_KEY, "true");
+  } catch {}
 }
