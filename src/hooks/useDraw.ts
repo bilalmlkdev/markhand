@@ -13,6 +13,8 @@ export const CURSOR_DEFAULT_WIDTH: Record<CursorStyle, number> = {
   pen: 4,
 };
 
+export const ERASER_RADIUS_RANGE = { min: 6, max: 60 } as const;
+
 export interface UseDrawReturn {
   strokes: Stroke[];
   isEmpty: boolean;
@@ -35,6 +37,7 @@ export interface UseDrawReturn {
   drawingId: string;
   recolorForBackground: (bgIsLight: boolean) => void;
   eraserRadius: number;
+  setEraserRadius: (radius: number) => void;
   startErasing: (e: React.PointerEvent<HTMLCanvasElement>) => void;
   erase: (e: React.PointerEvent<HTMLCanvasElement>) => void;
   stopErasing: () => void;
@@ -106,6 +109,28 @@ function loadWidth(): number {
 function saveWidth(width: number) {
   try {
     localStorage.setItem(WIDTH_KEY, String(width));
+  } catch {}
+}
+
+const ERASER_RADIUS_KEY = "markhand_eraser_radius";
+const ERASER_RADIUS_MIN = 6;
+const ERASER_RADIUS_MAX = 60;
+const ERASER_RADIUS_DEFAULT = 14;
+
+function loadEraserRadius(): number {
+  try {
+    const r = localStorage.getItem(ERASER_RADIUS_KEY);
+    const parsed = r ? Number(r) : ERASER_RADIUS_DEFAULT;
+    return Number.isFinite(parsed)
+      ? Math.min(ERASER_RADIUS_MAX, Math.max(ERASER_RADIUS_MIN, parsed))
+      : ERASER_RADIUS_DEFAULT;
+  } catch {
+    return ERASER_RADIUS_DEFAULT;
+  }
+}
+function saveEraserRadius(radius: number) {
+  try {
+    localStorage.setItem(ERASER_RADIUS_KEY, String(radius));
   } catch {}
 }
 
@@ -199,9 +224,23 @@ export function useDraw(
   const [isErasing, setIsErasing] = useState(false);
   const eraseStrokeSnapshotRef = useRef<Stroke[] | null>(null);
   const eraseChangedRef = useRef(false);
-  // Eraser radius scales with pen width but has a comfortable floor so it
-  // stays usable even at the thinnest pen settings.
-  const eraserRadius = Math.max(10, currentWidth * 3);
+  // Eraser size is independently adjustable (not tied to pen width) and
+  // persisted across sessions like color/width.
+  const [eraserRadius, setEraserRadiusState] = useState(loadEraserRadius);
+  const setEraserRadius = useCallback((radius: number) => {
+    const clamped = Math.min(
+      ERASER_RADIUS_MAX,
+      Math.max(ERASER_RADIUS_MIN, radius),
+    );
+    setEraserRadiusState(clamped);
+    saveEraserRadius(clamped);
+  }, []);
+  // Pending erase point + rAF handle, so a burst of pointermove events
+  // during a fast drag collapses into at most one erase + one React
+  // commit per animation frame instead of one per pointer sample (which
+  // is what caused the visible lag when moving the eraser quickly).
+  const pendingErasePointRef = useRef<Point | null>(null);
+  const eraseRafRef = useRef<number | null>(null);
 
   // Save strokes and hasDrawn whenever they change
   useEffect(() => {
@@ -342,51 +381,67 @@ export function useDraw(
     currentPointsRef.current = [];
   }, [isDrawing, currentColor, currentWidth, strokes, hasDrawn]);
 
-  // Eraser: snapshot strokes once at gesture start (for undo + to avoid
-  // erasing already-erased gaps mid-drag), then progressively remove
-  // touched points as the user drags, splitting strokes around the gap.
+  // Eraser: snapshot strokes once at gesture start (for undo), then
+  // progressively remove touched points as the user drags, splitting
+  // strokes around the gap. Erase work for pointermove is coalesced onto
+  // a single requestAnimationFrame so fast drags don't queue up more
+  // erase passes + re-renders than the screen can actually paint.
+  const runErase = useCallback(
+    (point: Point) => {
+      setStrokes((prev) => {
+        const next = prev.flatMap((s) =>
+          eraseFromStroke(s, point, eraserRadius),
+        );
+        if (next.length !== prev.length || next.some((s, i) => s !== prev[i])) {
+          eraseChangedRef.current = true;
+        }
+        return next;
+      });
+    },
+    [eraserRadius],
+  );
+
   const startErasing = useCallback(
     (e: React.PointerEvent<HTMLCanvasElement>) => {
       e.preventDefault();
       eraseStrokeSnapshotRef.current = strokes;
       eraseChangedRef.current = false;
       setIsErasing(true);
-
-      const point = getPoint(e);
-      setStrokes((prev) => {
-        const next = prev.flatMap((s) =>
-          eraseFromStroke(s, point, eraserRadius),
-        );
-        if (next.length !== prev.length || next.some((s, i) => s !== prev[i])) {
-          eraseChangedRef.current = true;
-        }
-        return next;
-      });
+      runErase(getPoint(e));
     },
-    [strokes, getPoint, eraserRadius],
+    [strokes, getPoint, runErase],
   );
 
   const erase = useCallback(
     (e: React.PointerEvent<HTMLCanvasElement>) => {
       e.preventDefault();
       if (!isErasing) return;
-      const point = getPoint(e);
-      setStrokes((prev) => {
-        const next = prev.flatMap((s) =>
-          eraseFromStroke(s, point, eraserRadius),
-        );
-        if (next.length !== prev.length || next.some((s, i) => s !== prev[i])) {
-          eraseChangedRef.current = true;
-        }
-        return next;
+      pendingErasePointRef.current = getPoint(e);
+      if (eraseRafRef.current !== null) return;
+      eraseRafRef.current = requestAnimationFrame(() => {
+        eraseRafRef.current = null;
+        const point = pendingErasePointRef.current;
+        pendingErasePointRef.current = null;
+        if (point) runErase(point);
       });
     },
-    [isErasing, getPoint, eraserRadius],
+    [isErasing, getPoint, runErase],
   );
 
   const stopErasing = useCallback(() => {
     if (!isErasing) return;
     setIsErasing(false);
+
+    // Flush any erase point still waiting on a queued animation frame so
+    // the last point of a fast drag isn't dropped when the pointer lifts.
+    if (eraseRafRef.current !== null) {
+      cancelAnimationFrame(eraseRafRef.current);
+      eraseRafRef.current = null;
+    }
+    if (pendingErasePointRef.current) {
+      runErase(pendingErasePointRef.current);
+      pendingErasePointRef.current = null;
+    }
 
     const before = eraseStrokeSnapshotRef.current;
     const changed = eraseChangedRef.current;
@@ -399,7 +454,15 @@ export function useDraw(
       setRedoStack([]);
       if (!hasDrawn) setHasDrawn(true);
     }
-  }, [isErasing, hasDrawn]);
+  }, [isErasing, hasDrawn, runErase]);
+
+  // Cancel any in-flight erase frame on unmount.
+  useEffect(() => {
+    return () => {
+      if (eraseRafRef.current !== null)
+        cancelAnimationFrame(eraseRafRef.current);
+    };
+  }, []);
 
   const undo = useCallback(() => {
     if (undoStack.length === 0 && strokes.length === 0) return;
@@ -443,22 +506,19 @@ export function useDraw(
   // light to dark or vice versa, so existing drawings stay visible instead
   // of blending into the new background. This is a display correction, not
   // a drawing action, so it intentionally does not push to the undo stack.
-  const recolorForBackground = useCallback(
-    (bgIsLight: boolean) => {
-      setStrokes((prev) =>
-        prev.map((s) => ({
-          ...s,
-          color: remapInkColorForBackground(s.color, bgIsLight),
-        })),
-      );
-      setCurrentColorState((prev) => {
-        const remapped = remapInkColorForBackground(prev, bgIsLight);
-        if (remapped !== prev) saveColor(remapped);
-        return remapped;
-      });
-    },
-    [],
-  );
+  const recolorForBackground = useCallback((bgIsLight: boolean) => {
+    setStrokes((prev) =>
+      prev.map((s) => ({
+        ...s,
+        color: remapInkColorForBackground(s.color, bgIsLight),
+      })),
+    );
+    setCurrentColorState((prev) => {
+      const remapped = remapInkColorForBackground(prev, bgIsLight);
+      if (remapped !== prev) saveColor(remapped);
+      return remapped;
+    });
+  }, []);
 
   return {
     strokes,
@@ -482,6 +542,7 @@ export function useDraw(
     drawingId,
     recolorForBackground,
     eraserRadius,
+    setEraserRadius,
     startErasing,
     erase,
     stopErasing,

@@ -15,7 +15,9 @@ interface TooltipProps {
 // the dock as a normal child.
 export function Tooltip({ label, children, shortcut }: TooltipProps) {
   const [visible, setVisible] = useState(false);
-  const [coords, setCoords] = useState<{ left: number; bottom: number } | null>(null);
+  const [coords, setCoords] = useState<{ left: number; bottom: number } | null>(
+    null,
+  );
   const wrapperRef = useRef<HTMLDivElement>(null);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -28,7 +30,7 @@ export function Tooltip({ label, children, shortcut }: TooltipProps) {
         bottom: window.innerHeight - rect.top + 10,
       });
       setVisible(true);
-    }, 350);
+    }, 80);
   };
   const hide = () => {
     if (timerRef.current) clearTimeout(timerRef.current);
@@ -56,7 +58,7 @@ export function Tooltip({ label, children, shortcut }: TooltipProps) {
               bottom: coords.bottom,
               transform: "translateX(-50%)",
             }}
-            className="z-[9999] pointer-events-none animate-in fade-in slide-in-from-bottom-1 duration-100"
+            className="z-[9999] pointer-events-none animate-in fade-in slide-in-from-bottom-1 duration-75"
           >
             <div className="flex items-center gap-1.5 whitespace-nowrap px-2 py-1 rounded-lg bg-stone-900 text-white text-[11px] font-medium shadow-lg">
               {label}

@@ -1,31 +1,39 @@
 import type { ReactNode } from "react";
-import { Tooltip } from "./ToolTip";
 
 interface ComingSoonButtonProps {
-  icon: ReactNode;
   label: string;
-  className?: string;
+  icon: ReactNode;
+  description?: string;
 }
 
-// A disabled placeholder button for features that are planned but not
-// built yet. Deliberately styled to look like a real toolbar button (so
-// people discover what's coming) while being unmistakably non-interactive.
 export function ComingSoonButton({
-  icon,
   label,
-  className = "",
+  icon,
+  description,
 }: ComingSoonButtonProps) {
   return (
-    <Tooltip label={`${label} - coming soon`}>
-      <div
-        aria-disabled="true"
-        className={`relative w-8 h-8 flex items-center justify-center rounded-xl text-stone-300 cursor-not-allowed shrink-0 ${className}`}
-      >
+    <button
+      type="button"
+      disabled
+      aria-label={`${label}, coming soon`}
+      className="group w-full flex items-center gap-3 rounded-xl px-2.5 py-2.5 text-left cursor-not-allowed"
+    >
+      <span className="w-8 h-8 flex items-center justify-center shrink-0 rounded-[10px] bg-stone-100 text-stone-400 leading-none">
         {icon}
-        <span className="absolute -top-1.5 -right-1.5 px-[3px] py-px rounded-full bg-stone-200 text-stone-500 text-[7px] font-bold leading-none tracking-wide">
-          SOON
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="block text-xs font-medium text-stone-600 truncate">
+          {label}
         </span>
-      </div>
-    </Tooltip>
+        {description && (
+          <span className="block text-[10px] text-stone-400 mt-0.5 truncate">
+            {description}
+          </span>
+        )}
+      </span>
+      <span className="shrink-0 rounded-full border border-stone-200 bg-stone-50 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-stone-400">
+        Soon
+      </span>
+    </button>
   );
 }

@@ -36,12 +36,13 @@ Whether you're sketching an idea, practicing a signature, annotating something, 
 - **Drawing** · Freehand drawing, multi-stroke support, a responsive canvas, and automatic ink smoothing so strokes read as natural curves instead of raw polylines.
 - **Erasing** · A real pixel eraser - drag over any part of a stroke to remove just that segment, splitting the stroke around the gap instead of wiping the whole canvas.
 - **Customization** · 8 preset colors per theme (light and dark palettes), a custom color picker, 1px–12px stroke width, and per-tool default line weights (Crosshair, Pencil, Dot, Brush, and Pen each start at a different natural weight, like a real pen set).
-- **Cursor & Guides** · Five cursor styles with Dot Grid, Line Grid, Ruled Lines, or no guide - all accessible from a single unified toolbar.
+- **Cursor & Guides** · Five cursor styles with Dot Grid, Grid, or no guide - all accessible from a single unified toolbar.
 - **Themes** · Seven canvas themes (Pure White, Default, Warm, Cool, Paper, Graphite, Dark). Switching themes automatically remaps your existing strokes' colors so a drawing made in a light theme stays visible after switching to a dark one, instead of vanishing into the background.
 - **Editing** · Unlimited Undo, Redo, and smart canvas reset with a new drawing ID.
 - **Export** · PNG (Theme, White, Transparent), SVG, clipboard copy, print-ready output, and shareable URLs that encode the drawing itself - no account or server needed, and no dead links.
 - **My Drawings Gallery** · Every saved drawing is tracked with a thumbnail, stroke count, and last-edited time. Rename or delete drawings, or jump back into any of them at any time.
 - **Guided Onboarding** · A real spotlight-style product tour (powered by react-joyride) walks first-time users through the canvas, toolbar, style panel, and export options - advance with Enter, dismiss with Escape.
+- **Coming Soon** · Select/transform, geometric shapes, editable text, and a highlighter are surfaced in the editor as clearly marked upcoming tools without pretending they are active yet.
 - **Storage** · Per-drawing `localStorage`, persistent preferences, and completely offline operation.
 - **Keyboard & Mobile** · Keyboard shortcuts (`1`–`5` for cursor tools, `E` for eraser, `G` to cycle guides, `Ctrl/Cmd+Z`/`Ctrl+Shift+Z` for undo/redo, `Delete` to clear), a responsive layout, and a collapsible mobile menu.
 
@@ -99,8 +100,8 @@ markhand
 - **`components/exports/`** · Export modal (PNG/SVG/copy/print).
 - **`components/gallery/`** · My Drawings gallery page and drawing thumbnails.
 - **`components/landing/`** · The marketing landing page.
-- **`components/layout/`** · Header, docked style panel, share modal, instructions modal, product tour, and the first-load dashboard loader.
-- **`components/ui/`** · Shared UI components like Button, Slider, Toggle, and ColorPicker.
+- **`components/layout/`** · share modal, instructions modal, product tour, and the first-load dashboard loader.
+- **`components/ui/`** · Shared UI components like Button, ColorPicker, and ComingSoonButton.
 - **`hooks/`** · Custom hooks for drawing/erasing (`useDraw`) and keyboard shortcuts.
 - **`lib/`** · Canvas utilities, ink smoothing, theme-aware color palette, storage/registry, sharing, and cursor helpers.
 - **`types/`** · Shared TypeScript definitions.

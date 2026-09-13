@@ -186,6 +186,8 @@ export function Dashboard() {
           onCursorChange={handleCursorChange}
           isErasing={isErasing}
           onToggleEraser={handleToggleEraser}
+          eraserRadius={drawHook.eraserRadius}
+          onEraserRadiusChange={drawHook.setEraserRadius}
           activeGuide={guideType}
           onGuideChange={handleGuideChange}
           canUndo={drawHook.canUndo}
