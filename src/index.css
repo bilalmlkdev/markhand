@@ -2,10 +2,8 @@
 
 
 @theme {
-  --font-primary : "Gveret Levin", cursive;
   --font-body: "DM Sans", sans-serif;
-  --font-instrument : "Instrument Serif",
-    serif;
+  --font-instrument: "Instrument Serif", serif;
 }
 
 
@@ -43,6 +41,7 @@
   body {
     margin: 0;
     background: #ffffff;
+    font-family: var(--font-body);
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
   }

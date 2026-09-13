@@ -1,7 +1,7 @@
 <div align="center">
 
   <a href="https://markhand.vercel.app/">
-    <img src="https://raw.githubusercontent.com/bilalmlkdev/markhand/main/src/assets/favicon.svg" alt="markhand logo" width="100%" height="120">
+    <img src="https://raw.githubusercontent.com/bilalmlkdev/markhand/main/public/favicon.svg" alt="markhand logo" width="100%" height="120">
   </a>
 
 # Markhand - Draw Freely
@@ -74,7 +74,6 @@ The project follows a clean React architecture where responsibilities are separa
 markhand
 ├── public
 ├── src
-│   ├── assets
 │   ├── components
 │   │   ├── canvas
 │   │   ├── controls
@@ -101,7 +100,7 @@ markhand
 - **`components/gallery/`** · My Drawings gallery page and drawing thumbnails.
 - **`components/landing/`** · The marketing landing page.
 - **`components/layout/`** · share modal, instructions modal, product tour, and the first-load dashboard loader.
-- **`components/ui/`** · Shared UI components like Button, ColorPicker, and ComingSoonButton.
+- **`components/ui/`** · Shared UI components like Button, ColorPicker, DockPopover, Slider, and tooltips.
 - **`hooks/`** · Custom hooks for drawing/erasing (`useDraw`) and keyboard shortcuts.
 - **`lib/`** · Canvas utilities, ink smoothing, theme-aware color palette, storage/registry, sharing, and cursor helpers.
 - **`types/`** · Shared TypeScript definitions.
