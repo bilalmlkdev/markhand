@@ -32,7 +32,6 @@ import { ThemeControls } from "../controls/ThemeControls";
 import { themes } from "../../lib/canvas";
 import { isLightColor } from "../../lib/palette";
 import { Link } from "react-router-dom";
-import { ComingSoonButton } from "../ui/ComingSoonButton";
 import { ERASER_RADIUS_RANGE } from "../../hooks/useDraw";
 import type { CursorStyle, GuideType, CanvasTheme } from "../../types";
 import { LuGithub } from "react-icons/lu";
@@ -291,6 +290,23 @@ export function DashboardToolbar({
               </DockPopover>
             </div>
           )}
+
+          <ToolButton label="Select (coming soon)" disabled onClick={() => {}}>
+            <MousePointerClick className="w-[17px] h-[17px]" />
+          </ToolButton>
+          <ToolButton label="Shapes (coming soon)" disabled onClick={() => {}}>
+            <Square className="w-[17px] h-[17px]" />
+          </ToolButton>
+          <ToolButton label="Text (coming soon)" disabled onClick={() => {}}>
+            <Type className="w-[17px] h-[17px]" />
+          </ToolButton>
+          <ToolButton
+            label="Highlighter (coming soon)"
+            disabled
+            onClick={() => {}}
+          >
+            <Highlighter className="w-[17px] h-[17px]" />
+          </ToolButton>
         </div>
 
         <Divider />
@@ -529,37 +545,6 @@ export function DashboardToolbar({
               width="214px"
             >
               <div className="p-1.5">
-                <div className="px-3 py-2">
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-stone-300">
-                    Coming soon
-                  </p>
-                  <p className="text-[10px] text-stone-400 mt-0.5">
-                    More ways to create and edit.
-                  </p>
-                </div>
-                <div className="space-y-0.5 mb-1">
-                  <ComingSoonButton
-                    label="Select"
-                    description="Move and transform strokes"
-                    icon={<MousePointerClick className="w-4 h-4" />}
-                  />
-                  <ComingSoonButton
-                    label="Shapes"
-                    description="Draw circles, boxes, and arrows"
-                    icon={<Square className="w-4 h-4" />}
-                  />
-                  <ComingSoonButton
-                    label="Text"
-                    description="Add editable text to the canvas"
-                    icon={<Type className="w-4 h-4" />}
-                  />
-                  <ComingSoonButton
-                    label="Highlighter"
-                    description="Mark up ideas with soft ink"
-                    icon={<Highlighter className="w-4 h-4" />}
-                  />
-                </div>
-                <div className="my-1 border-t border-stone-100" />
                 <Link
                   to="/drawings"
                   onClick={() => setOpenPopover(null)}
