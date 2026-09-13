@@ -1,5 +1,5 @@
 import { useRef, useEffect, useCallback, useState } from "react";
-import { drawDotGrid, drawLineGrid, themes } from "../../lib/canvas";
+import { drawDotGrid, drawGrid, themes } from "../../lib/canvas";
 import { getCursorCss } from "../../lib/cursors";
 import type { GuideType, CanvasTheme, CursorStyle } from "../../types";
 import type { UseDrawReturn } from "../../hooks/useDraw";
@@ -55,9 +55,9 @@ export function DrawingCanvas({
     ctx.clearRect(0, 0, width, height);
     ctx.fillStyle = themeConfig.bg;
     ctx.fillRect(0, 0, width, height);
-    if (guideType === "dots") drawDotGrid(ctx, width, height, themeConfig.dot);
-    else if (guideType === "grid" || guideType === "lines")
-      drawLineGrid(ctx, width, height, 32, themeConfig.dot);
+    const dpr = window.devicePixelRatio || 1;
+    if (guideType === "dots") drawDotGrid(ctx, width, height, themeConfig.dot, dpr);
+    else if (guideType === "grid") drawGrid(ctx, width, height, themeConfig.dot, dpr);
     strokes.forEach((s) => {
       if (s.points.length < 2) return;
       ctx.beginPath();

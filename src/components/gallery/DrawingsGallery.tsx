@@ -1,20 +1,13 @@
-import { useState, useEffect, useMemo } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useMemo, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { ArrowLeft, Check, MoreHorizontal, Pencil, PenLine, Plus, Trash2, X } from "lucide-react";
 import {
-  Plus,
-  Trash2,
-  Pencil,
-  Check,
-  X,
-  ArrowLeft,
-  PenLine,
-} from "lucide-react";
-import {
-  getDrawingRegistry,
   deleteDrawing,
-  renameDrawing,
+  getDrawingRegistry,
   loadDrawingStrokes,
+  renameDrawing,
 } from "../../lib/storage";
+import { themes } from "../../lib/canvas";
 import { DrawingThumbnail } from "./DrawingThumbnail";
 import type { DrawingMeta } from "../../types";
 
@@ -25,12 +18,8 @@ function generateId(): string {
 function formatDate(ts: number): string {
   const date = new Date(ts);
   const now = new Date();
-  const isToday = date.toDateString() === now.toDateString();
-  if (isToday) {
-    return date.toLocaleTimeString(undefined, {
-      hour: "numeric",
-      minute: "2-digit",
-    });
+  if (date.toDateString() === now.toDateString()) {
+    return date.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
   }
   return date.toLocaleDateString(undefined, {
     month: "short",
@@ -50,35 +39,53 @@ function DrawingCard({
 }) {
   const [editing, setEditing] = useState(false);
   const [nameDraft, setNameDraft] = useState(meta.name);
+  const [menuOpen, setMenuOpen] = useState(false);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const strokes = useMemo(() => loadDrawingStrokes(meta.id), [meta.id]);
+  const theme = themes[meta.theme] ?? themes.default;
 
   const commitRename = () => {
-    const trimmed = nameDraft.trim();
-    onRename(meta.id, trimmed || "Untitled");
+    const nextName = nameDraft.trim() || "Untitled";
+    onRename(meta.id, nextName);
+    setNameDraft(nextName);
     setEditing(false);
+    setMenuOpen(false);
   };
 
   return (
-    <div className="group relative flex flex-col rounded-2xl border border-stone-200/80 bg-white overflow-hidden hover:shadow-[0_8px_24px_rgba(28,25,23,0.08)] hover:-translate-y-0.5 hover:border-stone-300 transition-all duration-200">
+    <article className="group overflow-hidden rounded-[22px] border border-stone-200/90 bg-white transition-colors duration-200 hover:border-stone-300">
       <Link
         to={`/dashboard/${meta.id}`}
-        className="relative block aspect-[4/3] w-full overflow-hidden border-b border-stone-100"
+        className="relative block aspect-[16/11] overflow-hidden border-b border-stone-100 bg-stone-50 focus-visible:outline-none"
       >
-        <DrawingThumbnail
-          strokes={strokes}
-          theme={meta.theme}
-          className="w-full h-full"
-        />
-        <span className="absolute bottom-2 left-2 px-2 py-0.5 rounded-full bg-black/50 backdrop-blur-sm text-white text-[10px] font-medium opacity-0 group-hover:opacity-100 transition-opacity">
-          {meta.strokeCount} stroke{meta.strokeCount !== 1 ? "s" : ""}
-        </span>
+        <DrawingThumbnail strokes={strokes} theme={meta.theme} className="h-full w-full" />
+
+        <div className="pointer-events-none absolute inset-x-0 top-0 flex items-center justify-between p-3">
+          <span
+            className="inline-flex h-6 items-center gap-1.5 rounded-full border px-2.5 text-[10px] font-semibold"
+            style={{
+              backgroundColor: `${theme.surface}ee`,
+              borderColor: `${theme.dot}66`,
+              color: meta.theme === "dark" || meta.theme === "graphite" ? "#e7e5e4" : "#57534e",
+            }}
+          >
+            <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: theme.dot }} />
+            {theme.name}
+          </span>
+          <span className="rounded-full border border-white/70 bg-white/80 px-2.5 py-1 text-[10px] font-medium text-stone-500 backdrop-blur-sm">
+            {meta.strokeCount} {meta.strokeCount === 1 ? "stroke" : "strokes"}
+          </span>
+        </div>
+
+        <div className="pointer-events-none absolute inset-x-3 bottom-3 rounded-xl border border-white/70 bg-white/72 px-3 py-2 text-[10px] text-stone-500 opacity-0 backdrop-blur-sm transition-opacity duration-200 group-hover:opacity-100 group-focus-within:opacity-100">
+          Open drawing
+        </div>
       </Link>
 
-      <div className="p-3 flex items-center justify-between gap-2">
+      <div className="relative flex min-h-[76px] items-center gap-3 px-3.5 py-3">
         <div className="min-w-0 flex-1">
           {editing ? (
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1.5">
               <input
                 autoFocus
                 value={nameDraft}
@@ -90,94 +97,99 @@ function DrawingCard({
                     setEditing(false);
                   }
                 }}
-                className="min-w-0 flex-1 text-sm font-medium text-stone-800 bg-stone-50 border border-stone-200 rounded-md px-2 py-1 focus:outline-none focus:border-stone-400"
+                className="min-w-0 flex-1 rounded-lg border border-stone-200 bg-stone-50 px-2.5 py-2 text-sm font-medium text-stone-800 outline-none focus:border-stone-400"
               />
-              <button
-                onClick={commitRename}
-                className="w-6 h-6 flex items-center justify-center rounded-md text-green-600 hover:bg-green-50 shrink-0 cursor-pointer"
-              >
-                <Check className="w-3.5 h-3.5" />
+              <button type="button" onClick={commitRename} aria-label="Save name" className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-stone-700 hover:bg-stone-100">
+                <Check className="h-4 w-4" />
               </button>
-              <button
-                onClick={() => {
-                  setNameDraft(meta.name);
-                  setEditing(false);
-                }}
-                className="w-6 h-6 flex items-center justify-center rounded-md text-stone-400 hover:bg-stone-100 shrink-0 cursor-pointer"
-              >
-                <X className="w-3.5 h-3.5" />
+              <button type="button" onClick={() => { setNameDraft(meta.name); setEditing(false); }} aria-label="Cancel rename" className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-stone-400 hover:bg-stone-100">
+                <X className="h-4 w-4" />
               </button>
             </div>
           ) : (
             <>
-              <p className="text-sm font-medium text-stone-800 truncate">
-                {meta.name}
-              </p>
-              <p className="text-[11px] text-stone-400">
-                {formatDate(meta.updatedAt)}
-              </p>
+              <h2 className="truncate text-sm font-semibold text-stone-800">{meta.name}</h2>
+              <p className="mt-1 text-[11px] text-stone-400">Updated {formatDate(meta.updatedAt)}</p>
             </>
           )}
         </div>
 
         {!editing && (
-          <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity shrink-0">
+          <div className="relative shrink-0">
             <button
-              onClick={() => setEditing(true)}
-              title="Rename"
-              className="w-7 h-7 flex items-center justify-center rounded-md text-stone-400 hover:text-stone-700 hover:bg-stone-100 cursor-pointer"
+              type="button"
+              aria-label="Drawing actions"
+              aria-expanded={menuOpen}
+              onClick={() => setMenuOpen((open) => !open)}
+              className="flex h-8 w-8 items-center justify-center rounded-lg text-stone-400 hover:bg-stone-100 hover:text-stone-700"
             >
-              <Pencil className="w-3.5 h-3.5" />
+              <MoreHorizontal className="h-4 w-4" />
             </button>
-            {confirmingDelete ? (
-              <button
-                onClick={() => onDelete(meta.id)}
-                title="Confirm delete"
-                className="w-7 h-7 flex items-center justify-center rounded-md text-white bg-red-600 hover:bg-red-700 cursor-pointer"
-                onBlur={() => setConfirmingDelete(false)}
-              >
-                <Check className="w-3.5 h-3.5" />
-              </button>
-            ) : (
-              <button
-                onClick={() => setConfirmingDelete(true)}
-                title="Delete"
-                className="w-7 h-7 flex items-center justify-center rounded-md text-stone-400 hover:text-red-600 hover:bg-red-50 cursor-pointer"
-              >
-                <Trash2 className="w-3.5 h-3.5" />
-              </button>
+
+            {menuOpen && (
+              <div className="absolute right-0 bottom-10 z-20 w-36 rounded-xl border border-stone-200 bg-white p-1.5">
+                <button
+                  type="button"
+                  onClick={() => { setEditing(true); setMenuOpen(false); }}
+                  className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-xs font-medium text-stone-600 hover:bg-stone-50 hover:text-stone-900"
+                >
+                  <Pencil className="h-3.5 w-3.5" />
+                  Rename
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setConfirmingDelete(true); setMenuOpen(false); }}
+                  className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-xs font-medium text-red-600 hover:bg-red-50"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                  Delete
+                </button>
+              </div>
             )}
           </div>
         )}
+        {confirmingDelete && (
+          <div className="absolute inset-x-3 bottom-[68px] z-20 flex items-center justify-between gap-2 rounded-xl border border-red-200 bg-white px-3 py-2 text-[11px] text-red-700">
+            <span>Delete this drawing?</span>
+            <div className="flex items-center gap-1">
+              <button
+                type="button"
+                onClick={() => setConfirmingDelete(false)}
+                className="rounded-lg px-2 py-1.5 font-medium text-stone-500 hover:bg-stone-100"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => onDelete(meta.id)}
+                className="rounded-lg bg-red-600 px-2.5 py-1.5 font-semibold text-white hover:bg-red-700"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        )}
       </div>
-    </div>
+    </article>
   );
 }
 
 export function DrawingsGallery() {
   const navigate = useNavigate();
-  const [drawings, setDrawings] = useState<DrawingMeta[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const entries = getDrawingRegistry().sort(
-      (a, b) => b.updatedAt - a.updatedAt,
-    );
-    const t = setTimeout(() => {
-      setDrawings(entries);
-      setLoading(false);
-    }, 250);
-    return () => clearTimeout(t);
-  }, []);
+  const [drawings, setDrawings] = useState<DrawingMeta[]>(() =>
+    getDrawingRegistry().sort((a, b) => b.updatedAt - a.updatedAt),
+  );
 
   const handleDelete = (id: string) => {
     deleteDrawing(id);
-    setDrawings((prev) => prev.filter((d) => d.id !== id));
+    setDrawings((prev) => prev.filter((drawing) => drawing.id !== id));
   };
 
   const handleRename = (id: string, name: string) => {
     renameDrawing(id, name);
-    setDrawings((prev) => prev.map((d) => (d.id === id ? { ...d, name } : d)));
+    setDrawings((prev) =>
+      prev.map((drawing) => (drawing.id === id ? { ...drawing, name, updatedAt: Date.now() } : drawing)),
+    );
   };
 
   const handleNew = () => {
@@ -185,99 +197,76 @@ export function DrawingsGallery() {
   };
 
   return (
-    <div className="min-h-screen bg-stone-50 font-body">
-      <header className="sticky top-0 z-10 bg-stone-50/90 backdrop-blur-md border-b border-stone-200">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between gap-3">
-          <div className="flex items-center gap-3 min-w-0">
+    <div className="min-h-screen bg-[#faf9f7] font-body text-stone-900">
+      <header className="sticky top-0 z-20 border-b border-stone-200/80 bg-[#faf9f7]/92 backdrop-blur-xl">
+        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-4 sm:px-6">
+          <div className="flex min-w-0 items-center gap-3">
             <button
+              type="button"
               onClick={() => navigate(-1)}
-              title="Back"
-              className="w-8 h-8 flex items-center justify-center rounded-lg text-stone-400 hover:text-stone-700 hover:bg-stone-100 transition-colors shrink-0 cursor-pointer"
+              aria-label="Go back"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-stone-400 hover:bg-stone-100 hover:text-stone-700"
             >
-              <ArrowLeft className="w-4 h-4" />
+              <ArrowLeft className="h-4 w-4" />
             </button>
-            <div className="flex items-center gap-2 min-w-0">
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                className="text-blue-500 shrink-0"
-              >
-                <path
-                  d="M12 2v6M12 16v6M2 12h6M16 12h6"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                />
-              </svg>
-              <h1 className="text-sm font-semibold text-stone-800 truncate">
-                My Drawings
-              </h1>
-              {!loading && drawings.length > 0 && (
-                <span className="text-[11px] text-stone-400 font-medium shrink-0">
+            <div className="min-w-0">
+              <div className="flex items-center gap-2">
+                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-stone-200 bg-white">
+                  <PenLine className="h-3.5 w-3.5 text-stone-600" />
+                </span>
+                <h1 className="truncate text-sm font-semibold text-stone-900">Drawings</h1>
+                <span className="rounded-full bg-stone-100 px-2 py-0.5 text-[10px] font-semibold tabular-nums text-stone-500">
                   {drawings.length}
                 </span>
-              )}
+              </div>
+              <p className="mt-1 pl-9 text-[11px] text-stone-400">Saved locally in this browser</p>
             </div>
           </div>
+
           <button
+            type="button"
             onClick={handleNew}
-            className="flex items-center gap-1.5 rounded-full bg-stone-900 text-white px-3.5 py-2 text-xs font-medium hover:bg-stone-800 transition-colors cursor-pointer shrink-0"
+            className="inline-flex shrink-0 items-center gap-1.5 rounded-xl bg-stone-900 px-3.5 py-2.5 text-xs font-semibold text-white transition-colors hover:bg-stone-800"
           >
-            <Plus className="w-3.5 h-3.5" />
-            New Drawing
+            <Plus className="h-3.5 w-3.5" />
+            New drawing
           </button>
         </div>
       </header>
 
-      <main className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
-        {loading ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
-            {Array.from({ length: 8 }).map((_, i) => (
-              <div
-                key={i}
-                className="rounded-2xl border border-stone-200 bg-white overflow-hidden animate-pulse"
-              >
-                <div className="aspect-[4/3] w-full bg-stone-100" />
-                <div className="p-3 space-y-2">
-                  <div className="h-3 w-2/3 rounded bg-stone-100" />
-                  <div className="h-2.5 w-1/3 rounded bg-stone-100" />
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : drawings.length === 0 ? (
-          <div className="flex flex-col items-center justify-center text-center py-12">
-            <div className="w-14 h-14 rounded-2xl bg-white border border-stone-200 flex items-center justify-center mb-4">
-              <PenLine className="w-6 h-6 text-stone-300" />
+      <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10">
+        {drawings.length === 0 ? (
+          <div className="mx-auto flex max-w-md flex-col items-center py-20 text-center">
+            <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-[20px] border border-stone-200 bg-white">
+              <PenLine className="h-7 w-7 text-stone-300" />
             </div>
-            <p className="text-sm font-medium text-stone-600 mb-1">
-              No drawings yet
-            </p>
-            <p className="text-xs text-stone-400 mb-5 max-w-xs">
-              Drawings you create are saved automatically in this browser. Start
-              one to see it here.
-            </p>
+            <h2 className="text-base font-semibold text-stone-800">Nothing here yet</h2>
+            <p className="mt-2 text-sm leading-6 text-stone-400">Your drawings are saved automatically on this device. Start a canvas and it will appear here.</p>
             <button
+              type="button"
               onClick={handleNew}
-              className="flex items-center gap-1.5 rounded-full bg-stone-900 text-white px-4 py-2.5 text-xs font-medium hover:bg-stone-800 transition-colors cursor-pointer"
+              className="mt-6 inline-flex items-center gap-1.5 rounded-xl bg-stone-900 px-4 py-2.5 text-xs font-semibold text-white hover:bg-stone-800"
             >
-              <Plus className="w-3.5 h-3.5" />
-              Start Drawing
+              <Plus className="h-3.5 w-3.5" />
+              Start drawing
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
-            {drawings.map((meta) => (
-              <DrawingCard
-                key={meta.id}
-                meta={meta}
-                onDelete={handleDelete}
-                onRename={handleRename}
-              />
-            ))}
-          </div>
+          <>
+            <div className="mb-5 flex items-end justify-between gap-4">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-stone-400">Your workspace</p>
+                <p className="mt-1 text-sm text-stone-500">Pick up where you left off.</p>
+              </div>
+              <span className="hidden text-[11px] text-stone-400 sm:inline">No cloud storage. No account.</span>
+            </div>
+
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {drawings.map((meta) => (
+                <DrawingCard key={meta.id} meta={meta} onDelete={handleDelete} onRename={handleRename} />
+              ))}
+            </div>
+          </>
         )}
       </main>
     </div>

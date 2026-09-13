@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { X, Download, Copy, Check, Printer } from 'lucide-react';
 import { Button } from '../ui/Button';
-import { themes, drawDotGrid, drawLineGrid } from '../../lib/canvas';
+import { themes, drawDotGrid, drawGrid } from '../../lib/canvas';
 import type { Stroke, CanvasTheme, GuideType } from '../../types';
 
 interface ExportModalProps {
@@ -80,8 +80,8 @@ export function ExportModal({
     (ctx: CanvasRenderingContext2D, w: number, h: number, color: string) => {
       if (guideType === 'dots') {
         drawDotGrid(ctx, w, h, color);
-      } else if (guideType === 'grid' || guideType === 'lines') {
-        drawLineGrid(ctx, w, h, 32, color);
+      } else if (guideType === 'grid') {
+        drawGrid(ctx, w, h, color);
       }
     },
     [guideType],

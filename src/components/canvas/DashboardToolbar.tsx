@@ -8,7 +8,6 @@ import {
   Eraser,
   Grid3X3,
   LayoutGrid,
-  Rows3,
   EyeOff,
   Undo2,
   Redo2,
@@ -21,7 +20,6 @@ import {
   FolderOpen,
   HelpCircle,
 } from "lucide-react";
-
 import { DockPopover } from "../ui/DockPopover";
 import { Tooltip } from "../ui/ToolTip";
 import { PenControls } from "../controls/PenControls";
@@ -77,8 +75,7 @@ const guideOptions: {
 }[] = [
   { type: "none", label: "No guide", icon: <EyeOff className="w-[17px] h-[17px]" /> },
   { type: "dots", label: "Dot grid", icon: <Grid3X3 className="w-[17px] h-[17px]" /> },
-  { type: "grid", label: "Line grid", icon: <LayoutGrid className="w-[17px] h-[17px]" /> },
-  { type: "lines", label: "Ruled lines", icon: <Rows3 className="w-[17px] h-[17px]" /> },
+  { type: "grid", label: "Grid", icon: <LayoutGrid className="w-[17px] h-[17px]" /> },
 ];
 
 type PopoverKey = "style" | "theme" | "more" | null;
@@ -269,7 +266,7 @@ export function DashboardToolbar({
                   className="w-4 h-4 rounded-full ring-1 ring-black/10 flex items-center justify-center"
                   style={{ backgroundColor: themeBg }}
                 >
-                  <SwatchBook className="w-2.5 h-2.5 text-stone-600 mix-blend-difference" />
+                  <SwatchBook className="w-3 h-3 text-stone-700 mix-blend-difference shrink-0" />
                 </span>
               </button>
             </Tooltip>

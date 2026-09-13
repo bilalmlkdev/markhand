@@ -19,9 +19,7 @@ export interface DrawingMeta {
   theme: CanvasTheme;
 }
 
-export type ExportFormat = 'png' | 'svg' | 'pdf';
-
-export type GuideType = 'none' | 'dots' | 'grid' | 'lines';
+export type GuideType = 'none' | 'dots' | 'grid';
 
 export type CanvasTheme = 'default' | 'white' | 'warm' | 'cool' | 'paper' | 'graphite' | 'dark';
 

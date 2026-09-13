@@ -24,7 +24,7 @@ const sections: {
 }[] = [
   {
     title: "Tools",
-    icon: <MousePointer2 className="w-3.5 h-3.5" />,
+    icon: <MousePointer2 className="w-3.5 h-3.5 shrink-0" />,
     rows: [
       { label: "Crosshair", keys: ["1"] },
       { label: "Pencil", keys: ["2"] },
@@ -36,12 +36,12 @@ const sections: {
   },
   {
     title: "Guides",
-    icon: <Grid3X3 className="w-3.5 h-3.5" />,
+    icon: <Grid3X3 className="w-3.5 h-3.5 shrink-0" />,
     rows: [{ label: "Cycle guide pattern", keys: ["G"] }],
   },
   {
     title: "History",
-    icon: <History className="w-3.5 h-3.5" />,
+    icon: <History className="w-3.5 h-3.5 shrink-0" />,
     rows: [
       { label: "Undo", keys: ["Ctrl", "Z"] },
       { label: "Redo", keys: ["Ctrl", "Shift", "Z"] },
@@ -92,8 +92,8 @@ export function InstructionsModal({ open, onClose }: InstructionsModalProps) {
         <div className="p-5 space-y-5 overflow-y-auto">
           {sections.map((section) => (
             <div key={section.title}>
-              <div className="flex items-center gap-1.5 mb-2.5">
-                <span className="text-stone-300">{section.icon}</span>
+              <div className="flex items-center gap-1.5 mb-2.5 leading-none">
+                <span className="text-stone-300 w-4 h-4 inline-flex items-center justify-center shrink-0 leading-none">{section.icon}</span>
                 <h3 className="text-[11px] font-semibold text-stone-400 uppercase tracking-wider">
                   {section.title}
                 </h3>
@@ -122,9 +122,9 @@ export function InstructionsModal({ open, onClose }: InstructionsModalProps) {
           ))}
 
           <div>
-            <div className="flex items-center gap-1.5 mb-2.5">
+            <div className="flex items-center gap-1.5 mb-2.5 leading-none">
               <span className="text-stone-300">
-                <Palette className="w-3.5 h-3.5" />
+                <Palette className="w-3.5 h-3.5 shrink-0" />
               </span>
               <h3 className="text-[11px] font-semibold text-stone-400 uppercase tracking-wider">
                 Style, theme &amp; sharing

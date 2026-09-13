@@ -1,4 +1,4 @@
-import { Pen, Droplet, Gauge } from "lucide-react";
+import { Pen, Droplet } from "lucide-react";
 import { ColorPicker } from "../ui/ColorPicker";
 import { LIGHT_BG_INK_COLORS, DARK_BG_INK_COLORS } from "../../lib/palette";
 
@@ -29,9 +29,9 @@ export function PenControls({
     <div className="w-full max-w-sm  p-2 select-none">
       {/*  SLIDER */}
       <div className="space-y-2">
-        <div className="flex items-center justify-between px-0.5">
+        <div className="flex items-center justify-between px-0.5 leading-none">
           <p className="flex items-center gap-1.5 text-[10px] font-bold text-stone-400 uppercase tracking-wider">
-            <Pen className="w-3 h-3 text-stone-500" />
+            <Pen className="w-3 h-3 text-stone-500 shrink-0" />
             Line Weight
           </p>
         </div>
@@ -87,27 +87,10 @@ export function PenControls({
 
       <hr className="border-stone-100" />
 
-      {/* PRESSURE SENSITIVITY (coming soon) */}
-      <div
-        title="Pressure sensitivity — coming soon"
-        aria-disabled="true"
-        className="w-full flex items-center justify-between gap-2 px-2 py-1.5 rounded-md text-xs text-stone-300 cursor-not-allowed"
-      >
-        <span className="flex items-center gap-2">
-          <Gauge className="w-3.5 h-3.5" />
-          Pressure sensitivity
-        </span>
-        <span className="px-[5px] py-px rounded-full bg-stone-100 text-stone-400 text-[9px] font-bold leading-none tracking-wide">
-          SOON
-        </span>
-      </div>
-
-      <hr className="border-stone-100" />
-
       {/* COLOR SELECTION */}
       <div className="space-y-2.5">
-        <p className="flex items-center gap-1.5 text-[10px] font-bold text-stone-400 uppercase tracking-wider px-0.5">
-          <Droplet className="w-3 h-3 text-stone-500" />
+        <p className="flex items-center gap-1.5 text-[10px] font-bold text-stone-400 uppercase tracking-wider px-0.5 leading-none">
+          <Droplet className="w-3 h-3 text-stone-500 shrink-0" />
           Palette
         </p>
         <div className="grid grid-cols-5 gap-2">

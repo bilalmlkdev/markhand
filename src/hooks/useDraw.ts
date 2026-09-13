@@ -16,7 +16,6 @@ export const CURSOR_DEFAULT_WIDTH: Record<CursorStyle, number> = {
 export interface UseDrawReturn {
   strokes: Stroke[];
   isEmpty: boolean;
-  isDrawing: boolean;
   currentColor: string;
   currentWidth: number;
   setCurrentColor: (color: string) => void;
@@ -28,7 +27,6 @@ export interface UseDrawReturn {
   undo: () => void;
   redo: () => void;
   clear: () => void;
-  fullRedraw: () => void;
   resizeCanvas: () => void;
   getCanvas: () => HTMLCanvasElement | null;
   hasDrawn: boolean;
@@ -36,7 +34,6 @@ export interface UseDrawReturn {
   canRedo: boolean;
   drawingId: string;
   recolorForBackground: (bgIsLight: boolean) => void;
-  isErasing: boolean;
   eraserRadius: number;
   startErasing: (e: React.PointerEvent<HTMLCanvasElement>) => void;
   erase: (e: React.PointerEvent<HTMLCanvasElement>) => void;
@@ -68,11 +65,17 @@ function getHasDrawnKey(drawingId: string): string {
 }
 
 function loadHasDrawn(drawingId: string): boolean {
-  return localStorage.getItem(getHasDrawnKey(drawingId)) === "true";
+  try {
+    return localStorage.getItem(getHasDrawnKey(drawingId)) === "true";
+  } catch {
+    return false;
+  }
 }
 
 function saveHasDrawn(drawingId: string, val: boolean) {
-  localStorage.setItem(getHasDrawnKey(drawingId), String(val));
+  try {
+    localStorage.setItem(getHasDrawnKey(drawingId), String(val));
+  } catch {}
 }
 
 // Global per‑user settings (not per drawing)
@@ -80,17 +83,30 @@ const COLOR_KEY = "markhand_color";
 const WIDTH_KEY = "markhand_width";
 
 function loadColor(): string {
-  return localStorage.getItem(COLOR_KEY) ?? "#1c1917";
+  try {
+    return localStorage.getItem(COLOR_KEY) ?? "#1c1917";
+  } catch {
+    return "#1c1917";
+  }
 }
 function saveColor(color: string) {
-  localStorage.setItem(COLOR_KEY, color);
+  try {
+    localStorage.setItem(COLOR_KEY, color);
+  } catch {}
 }
 function loadWidth(): number {
-  const w = localStorage.getItem(WIDTH_KEY);
-  return w ? Number(w) : 3;
+  try {
+    const w = localStorage.getItem(WIDTH_KEY);
+    const parsed = w ? Number(w) : 3;
+    return Number.isFinite(parsed) ? Math.min(12, Math.max(1, parsed)) : 3;
+  } catch {
+    return 3;
+  }
 }
 function saveWidth(width: number) {
-  localStorage.setItem(WIDTH_KEY, String(width));
+  try {
+    localStorage.setItem(WIDTH_KEY, String(width));
+  } catch {}
 }
 
 function distance(a: Point, b: Point): number {
@@ -247,17 +263,6 @@ export function useDraw(
     },
     [],
   );
-
-  const fullRedraw = useCallback(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    strokes.forEach((s) =>
-      drawStrokeOnContext(ctx, s.points, s.color, s.width),
-    );
-  }, [strokes, drawStrokeOnContext]);
 
   const resizeCanvas = useCallback(() => {
     const canvas = canvasRef.current;
@@ -458,7 +463,6 @@ export function useDraw(
   return {
     strokes,
     isEmpty,
-    isDrawing,
     currentColor,
     currentWidth,
     setCurrentColor,
@@ -470,7 +474,6 @@ export function useDraw(
     undo,
     redo,
     clear,
-    fullRedraw,
     resizeCanvas,
     getCanvas,
     hasDrawn,
@@ -478,7 +481,6 @@ export function useDraw(
     canRedo: redoStack.length > 0,
     drawingId,
     recolorForBackground,
-    isErasing,
     eraserRadius,
     startErasing,
     erase,

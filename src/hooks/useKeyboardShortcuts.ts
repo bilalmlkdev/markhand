@@ -106,4 +106,4 @@ export function useKeyboardShortcuts({
   ]);
 }
 
-export const GUIDE_ORDER: GuideType[] = ["none", "dots", "grid", "lines"];
+export const GUIDE_ORDER: GuideType[] = ["none", "dots", "grid"];

@@ -78,7 +78,7 @@ export function renameDrawing(id: string, name: string): void {
   const entries = getDrawingRegistry();
   const index = entries.findIndex((e) => e.id === id);
   if (index === -1) return;
-  entries[index] = { ...entries[index]!, name };
+  entries[index] = { ...entries[index]!, name, updatedAt: Date.now() };
   saveDrawingRegistry(entries);
 }
 

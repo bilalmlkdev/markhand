@@ -29,7 +29,7 @@ export function DrawingThumbnail({
     canvas.height = displayH * dpr;
     ctx.scale(dpr, dpr);
 
-    ctx.clearRect(0, 0, displayW, displayH);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.fillStyle = themeConfig.bg;
     ctx.fillRect(0, 0, displayW, displayH);
 
@@ -40,11 +40,13 @@ export function DrawingThumbnail({
       maxX = -Infinity,
       maxY = -Infinity;
     strokes.forEach((s) =>
-      s.points.forEach((p) => {
-        if (p.x < minX) minX = p.x;
-        if (p.y < minY) minY = p.y;
-        if (p.x > maxX) maxX = p.x;
-        if (p.y > maxY) maxY = p.y;
+      s.points.forEach((point) => {
+        const x = point.x;
+        const y = point.y;
+        if (x < minX) minX = x;
+        if (y < minY) minY = y;
+        if (x > maxX) maxX = x;
+        if (y > maxY) maxY = y;
       }),
     );
     if (!isFinite(minX)) return;

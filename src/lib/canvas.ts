@@ -1,88 +1,105 @@
-import type { CanvasTheme, ThemeConfig } from '../types';
+import type { CanvasTheme, ThemeConfig } from "../types";
 
-const DOT_SPACING = 14;
-const DOT_RADIUS = 1.6;
+const DOT_SPACING = 16;
+const DOT_RADIUS = 0.85;
+const GRID_SPACING = 32;
 
 export const themes: Record<CanvasTheme, ThemeConfig> = {
   white: {
-    name: 'Pure White',
-    bg: '#ffffff',
-    dot: '#dedad4',
-    surface: '#fafafa',
+    name: "Pure White",
+    bg: "#ffffff",
+    dot: "#e3dfd9",
+    surface: "#fafafa",
   },
   default: {
-    name: 'Default',
-    bg: '#f5f4f0',
-    dot: '#c7c3bd',
-    surface: '#ffffff',
+    name: "Default",
+    bg: "#f5f4f0",
+    dot: "#d0ccc5",
+    surface: "#ffffff",
   },
   warm: {
-    name: 'Warm',
-    bg: '#fef7ed',
-    dot: '#dcc298',
-    surface: '#fffcf5',
+    name: "Warm",
+    bg: "#fef7ed",
+    dot: "#decfb7",
+    surface: "#fffcf5",
   },
   cool: {
-    name: 'Cool',
-    bg: '#f0f4f8',
-    dot: '#aec3dc',
-    surface: '#f8fafc',
+    name: "Cool",
+    bg: "#f0f4f8",
+    dot: "#c0ccda",
+    surface: "#f8fafc",
   },
   paper: {
-    name: 'Paper',
-    bg: '#f7f3ea',
-    dot: '#c9bb9e',
-    surface: '#fdfbf5',
+    name: "Paper",
+    bg: "#f7f3ea",
+    dot: "#d0c4ab",
+    surface: "#fdfbf5",
   },
   graphite: {
-    name: 'Graphite',
-    bg: '#2a2a2c',
-    dot: '#5c5c61',
-    surface: '#343436',
+    name: "Graphite",
+    bg: "#2a2a2c",
+    dot: "#55575d",
+    surface: "#343436",
   },
   dark: {
-    name: 'Dark',
-    bg: '#1c1917',
-    dot: '#57524c',
-    surface: '#292524',
+    name: "Dark",
+    bg: "#1c1917",
+    dot: "#55504a",
+    surface: "#292524",
   },
 };
 
+/** Draws a subtle, evenly spaced dot guide in the canvas coordinate space. */
 export function drawDotGrid(
   ctx: CanvasRenderingContext2D,
   width: number,
   height: number,
-  color: string = '#d6d3d1',
+  color: string,
+  scale = 1,
 ) {
+  const spacing = DOT_SPACING * scale;
+  const radius = DOT_RADIUS * scale;
   ctx.fillStyle = color;
-  for (let x = DOT_SPACING; x < width; x += DOT_SPACING) {
-    for (let y = DOT_SPACING; y < height; y += DOT_SPACING) {
+
+  for (let x = spacing; x < width; x += spacing) {
+    for (let y = spacing; y < height; y += spacing) {
       ctx.beginPath();
-      ctx.arc(x, y, DOT_RADIUS, 0, Math.PI * 2);
+      ctx.arc(x, y, radius, 0, Math.PI * 2);
       ctx.fill();
     }
   }
 }
 
-export function drawLineGrid(
+/** Draws a crisp alignment grid using a one-device-pixel stroke. */
+export function drawGrid(
   ctx: CanvasRenderingContext2D,
   width: number,
   height: number,
-  spacing: number = 32,
-  color: string = '#e7e5e4',
+  color: string,
+  scale = 1,
 ) {
+  const spacing = GRID_SPACING * scale;
+  const lineWidth = Math.max(1, Math.round(scale));
+
+  ctx.save();
   ctx.strokeStyle = color;
-  ctx.lineWidth = 0.5;
+  ctx.lineWidth = lineWidth;
+
   for (let x = spacing; x < width; x += spacing) {
+    const crispX = Math.round(x) + 0.5;
     ctx.beginPath();
-    ctx.moveTo(x, 0);
-    ctx.lineTo(x, height);
+    ctx.moveTo(crispX, 0);
+    ctx.lineTo(crispX, height);
     ctx.stroke();
   }
+
   for (let y = spacing; y < height; y += spacing) {
+    const crispY = Math.round(y) + 0.5;
     ctx.beginPath();
-    ctx.moveTo(0, y);
-    ctx.lineTo(width, y);
+    ctx.moveTo(0, crispY);
+    ctx.lineTo(width, crispY);
     ctx.stroke();
   }
+
+  ctx.restore();
 }
