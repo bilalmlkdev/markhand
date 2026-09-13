@@ -18,6 +18,9 @@ const DrawingsGallery = lazy(() =>
 const Dashboard = lazy(() =>
   import("./pages/Dashboard").then((m) => ({ default: m.Dashboard })),
 );
+const NotFound = lazy(() =>
+  import("./pages/NotFound").then((m) => ({ default: m.NotFound })),
+);
 function DashboardRoute() {
   const { id } = useParams();
   return <Dashboard key={id ?? "new"} />;
@@ -30,6 +33,7 @@ function App() {
         <Route path="/" element={<LandingPage />} />
         <Route path="/drawings" element={<DrawingsGallery />} />
         <Route path="/dashboard/:id" element={<DashboardRoute />} />
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </Suspense>
   );
