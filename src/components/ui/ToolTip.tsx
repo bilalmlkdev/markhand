@@ -7,12 +7,8 @@ interface TooltipProps {
   shortcut?: string;
 }
 
-// Renders via a portal into document.body, positioned from the trigger's
-// own bounding box. Needed for the same reason DockPopover is portaled:
-// the dock uses overflow-x-auto (for horizontal scroll on narrow
-// screens), and per the CSS spec that forces overflow-y to auto as well,
-// which silently clipped this tooltip whenever it tried to float above
-// the dock as a normal child.
+// Portaled + positioned from the trigger box, since the dock's
+// overflow-x-auto clips normal children.
 export function Tooltip({ label, children, shortcut }: TooltipProps) {
   const [visible, setVisible] = useState(false);
   const [coords, setCoords] = useState<{ left: number; bottom: number } | null>(

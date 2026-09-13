@@ -1,7 +1,6 @@
 import type { Stroke } from "../types";
 
-// Paints a single stroke onto a canvas context. Single-point strokes dots
-// render as filled circles; multi-point strokes render as smoothed polylines.
+// Dots render as circles; strokes as smoothed polylines.
 export function paintStroke(
   ctx: CanvasRenderingContext2D,
   stroke: Stroke,
@@ -35,8 +34,7 @@ export function paintStroke(
   ctx.stroke();
 }
 
-// Builds the SVG geometry for one stroke. Single-point strokes dots are
-// emitted as circles, multi-point strokes as a single path.
+// Dot → circle, stroke → path.
 export function strokeSvgGeometry(stroke: Stroke): string {
   const points = stroke.points;
   if (points.length === 0) return "";

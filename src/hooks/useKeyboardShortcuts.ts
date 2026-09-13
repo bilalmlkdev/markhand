@@ -49,7 +49,6 @@ export function useKeyboardShortcuts({
 
       const mod = e.metaKey || e.ctrlKey;
 
-      // Undo / Redo
       if (mod && e.key.toLowerCase() === "z") {
         e.preventDefault();
         if (e.shiftKey) onRedo();
@@ -62,7 +61,6 @@ export function useKeyboardShortcuts({
         return;
       }
 
-      // Clear canvas
       if ((e.key === "Delete" || e.key === "Backspace") && !mod) {
         if (isEmpty) return;
         e.preventDefault();
@@ -70,14 +68,12 @@ export function useKeyboardShortcuts({
         return;
       }
 
-      // Eraser toggle
       if (e.key.toLowerCase() === "e" && !mod) {
         e.preventDefault();
         onToggleEraser();
         return;
       }
 
-      // Cursor tool shortcuts (1-5)
       const cursor = CURSOR_KEYS[e.key];
       if (cursor && !mod) {
         e.preventDefault();
@@ -85,7 +81,6 @@ export function useKeyboardShortcuts({
         return;
       }
 
-      // Cycle guide type
       if (e.key.toLowerCase() === "g" && !mod) {
         e.preventDefault();
         onCycleGuide();

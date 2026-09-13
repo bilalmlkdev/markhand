@@ -1,6 +1,6 @@
 const KEY = "markhand_avatar_seed";
 
-// Used only as an offline fallback when the DiceBear image can't load.
+// Offline fallback when the DiceBear image can't load.
 const FALLBACK_EMOJI = [
   "🦊",
   "🐻",
@@ -39,21 +39,20 @@ export interface AssignedAvatar {
   fallbackEmoji: string;
 }
 
-// Every browser gets one avatar seed, persisted in localStorage so the
-// same device keeps the same DiceBear avatar across sessions.
+// One persistent seed per browser so the DiceBear avatar stays stable.
 export function getAssignedAvatar(): AssignedAvatar {
   let seed = "";
   try {
     seed = localStorage.getItem(KEY) ?? "";
   } catch {
-    /* ignore */
+    void 0;
   }
   if (!seed) {
     seed = randomSeed();
     try {
       localStorage.setItem(KEY, seed);
     } catch {
-      /* ignore */
+      void 0;
     }
   }
   const url = `https://api.dicebear.com/7.x/notionists/svg?seed=${encodeURIComponent(

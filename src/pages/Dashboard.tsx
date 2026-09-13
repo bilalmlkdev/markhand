@@ -31,8 +31,6 @@ import {
 import { useExitGuard } from "../hooks/useExitGuard";
 import type { GuideType, CanvasTheme, CursorStyle } from "../types";
 
-// Generate a random ID (8 characters)
-
 export function Dashboard() {
   const { id } = useParams<{ id: string }>();
   const location = useLocation();
@@ -43,11 +41,7 @@ export function Dashboard() {
   const [sharedStrokes] = useState(() => getStrokesFromUrl());
   const drawHook = useDraw(id || generateId(), sharedStrokes);
 
-  // history.state (and therefore useLocation().state) survives a hard
-  // reload in most browsers, so relying on it alone would replay the
-  // loader every time the page is refreshed. Consume the flag once per
-  // navigation via sessionStorage so a reload of the same entry doesn't
-  // re-trigger it.
+  // history.state survives hard reloads, so gate the loader via sessionStorage.
   const [loading, setLoading] = useState(() => {
     if (!cameFromLanding) return false;
     const consumeKey = `markhand_loader_shown_${id}`;
@@ -78,17 +72,12 @@ export function Dashboard() {
   const [instructionsOpen, setInstructionsOpen] = useState(false);
   const [isErasing, setIsErasing] = useState(false);
 
-  // Actions that used to live in the top-right header pill. Moved here
-  // since the trigger buttons now live in the bottom dock, and Header is
-  // just the brand mark.
   const [exportOpen, setExportOpen] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
   const [resetConfirmOpen, setResetConfirmOpen] = useState(false);
   const [exitConfirmOpen, setExitConfirmOpen] = useState(false);
 
-  // Opts into the browser's native close confirmation whenever the canvas
-  // has content, so quitting a tab or the installed PWA can't silently
-  // lose work. The branded exit modal is triggered from the toolbar.
+  // Native close guard whenever the canvas has content.
   useExitGuard(!drawHook.isEmpty);
 
   useEffect(() => {
@@ -124,8 +113,6 @@ export function Dashboard() {
   const handleThemeChange = (t: CanvasTheme) => {
     setTheme(t);
     saveTheme(t);
-    // Previously handled inside StylePanel's own effect; moved here now
-    // that the theme picker lives in the unified toolbar instead.
     const themeConfig = themes[t];
     if (themeConfig)
       drawHook.recolorForBackground(isLightColor(themeConfig.bg));
@@ -181,9 +168,7 @@ export function Dashboard() {
   };
 
   const handleCloseWindow = () => {
-    // window.close() works for standalone PWA windows; in a regular tab it
-    // is silently ignored, so fall back to leaving the app to the landing
-    // page instead.
+    // window.close() works in PWA windows; fall back to the landing page.
     window.close();
     setTimeout(() => {
       if (!window.closed) navigate("/");

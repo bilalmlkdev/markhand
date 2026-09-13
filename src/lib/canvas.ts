@@ -43,7 +43,7 @@ export const themes: Record<CanvasTheme, ThemeConfig> = {
   },
 };
 
-/** Draws a subtle, evenly spaced dot guide in the canvas coordinate space. */
+// Subtle evenly spaced dot guide in canvas coordinates.
 export function drawDotGrid(
   ctx: CanvasRenderingContext2D,
   width: number,
@@ -64,7 +64,7 @@ export function drawDotGrid(
   }
 }
 
-/** Draws a crisp alignment grid using a one-device-pixel stroke. */
+// Crisp alignment grid using a one-device-pixel stroke.
 export function drawGrid(
   ctx: CanvasRenderingContext2D,
   width: number,

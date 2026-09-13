@@ -179,9 +179,7 @@ function decodeCompactDrawing(value: unknown): Stroke[] | null {
   return strokes;
 }
 
-// Compact, versioned, URL-safe stroke encoding.
-// Coordinates are quantized to 0.1px and stroke IDs are omitted because they
-// are implementation details, not part of a drawing's visual state.
+// Versioned URL-safe encoding; coords are quantized to 0.1px and IDs dropped.
 export function encodeStrokes(strokes: Stroke[]): string {
   try {
     const payload: CompactDrawing = {
@@ -206,8 +204,7 @@ export function encodeStrokes(strokes: Stroke[]): string {
   }
 }
 
-// Decode the current compact format and the older Markhand format for
-// backwards-compatible links.
+// Accepts the current compact format and the older format for old links.
 export function decodeStrokes(encoded: string): Stroke[] | null {
   if (!encoded || encoded.length > MAX_SHARED_URL_LENGTH) return null;
 

@@ -262,11 +262,7 @@ export function DashboardToolbar({
           </div>
         </div>
 
-        {/* Coming-soon tools: kept visually and spatially separate from
-            real, working tools above so they don't read as broken buttons
-            sitting among functional ones. Hidden below lg since the dock
-            is already tight on narrower viewports and these are previews,
-            not features anyone depends on. */}
+        {/* Coming-soon tools, visually separated from working ones. */}
         <div className="hidden lg:flex items-center gap-0.5 shrink-0 mx-0.5 pl-1.5 border-l border-dashed border-stone-200">
           <ToolButton
             label="Select (coming soon)"
@@ -324,7 +320,6 @@ export function DashboardToolbar({
               >
                 <span
                   className="w-[28px] h-[28px] rounded-full ring-1 ring-black/10  flex items-center justify-center"
-                  // style={{ backgroundColor: activeColor }}
                 >
                   <PenLine className="w-4 h-4 text-stone-400" />
                 </span>
@@ -383,7 +378,6 @@ export function DashboardToolbar({
               >
                 <span
                   className="w-[28px] h-[28px] rounded-full ring-1 ring-black/10 flex items-center justify-center"
-                  // style={{ backgroundColor: themeBg }}
                 >
                   <SwatchBook className="w-5 h-5 text-stone-400 mix-blend-difference shrink-0" />
                 </span>

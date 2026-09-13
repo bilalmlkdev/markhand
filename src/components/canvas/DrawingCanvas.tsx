@@ -21,12 +21,7 @@ export function DrawingCanvas({
   isErasing,
 }: DrawingCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  // Offscreen buffer holding just the base layer (background + guides +
-  // committed strokes). Redrawn only when strokes/guides/theme actually
-  // change, then blitted onto the visible canvas with a single drawImage
-  // per pointer move - far cheaper than replaying every stroke's path on
-  // every move, which is what made the live preview a good candidate for
-  // the same kind of lag the eraser had.
+  // Buffer with background + guides + strokes, blitted per move (cheap draw).
   const bufferRef = useRef<HTMLCanvasElement | null>(null);
   const {
     strokes,
@@ -54,9 +49,8 @@ export function DrawingCanvas({
     setCanvas(canvasRef.current);
   }, [setCanvas]);
 
-  // Renders the base layer into the offscreen buffer, sized to match the
-  // visible canvas. Takes the strokes explicitly so the erase fast path
-  // can repaint the buffer from a working copy without a React render.
+  // Base layer → offscreen buffer; strokes passed in so erase can repaint
+  // from a working copy without a React render.
   const renderBuffer = useCallback(
     (strokesToPaint: Stroke[]) => {
       const canvas = canvasRef.current;
@@ -83,8 +77,7 @@ export function DrawingCanvas({
     [guideType, themeConfig],
   );
 
-  // Blits the current buffer onto the visible canvas. Cheap - a single
-  // drawImage - so this is safe to call on every pointer move.
+  // Single drawImage blit of the buffer onto the visible canvas.
   const paintFromBuffer = useCallback(() => {
     const canvas = canvasRef.current;
     const buffer = bufferRef.current;
@@ -104,19 +97,13 @@ export function DrawingCanvas({
     renderWithGuides();
   }, [renderWithGuides]);
 
-  // Registered with useDraw so the live drawing preview can cheaply reset
-  // to the base layer (via the buffer, not a full stroke replay) before
-  // drawing the smoothed in-progress stroke on top of it, each pointer
-  // move.
+  // Lets useDraw reset to the buffer before painting the live preview.
   useEffect(() => {
     setRedrawBase(paintFromBuffer);
     return () => setRedrawBase(null);
   }, [setRedrawBase, paintFromBuffer]);
 
-  // Registered with useDraw so the eraser can repaint the committed
-  // strokes directly on each erase frame, bypassing React entirely - that
-  // bypass (vs. one re-render + full rebuild per pointer move) is what
-  // removes the erase lag on canvases with many strokes.
+  // Erase fast path: bypasses React entirely, removing per-move lag.
   useEffect(() => {
     setEraseRepaint((strokesToPaint: Stroke[]) => {
       renderBuffer(strokesToPaint);
@@ -142,26 +129,10 @@ export function DrawingCanvas({
       updateScale();
     };
 
-    // A one-time resizeCanvas() call on mount reads the parent's layout
-    // via getBoundingClientRect at the exact moment this effect runs. On
-    // a fresh client-side navigation into a lazy-loaded route, that can
-    // fire before the browser has finished settling layout for the
-    // newly-mounted tree (the Suspense fallback swap doesn't guarantee a
-    // completed layout pass the way a full page load does), so the
-    // canvas could get sized against a stale or zero rect - it only
-    // "worked after refresh" because a fresh load has no such race.
-    //
-    // ResizeObserver sidesteps the whole problem: it reports the actual
-    // box size whenever it's ready, including the very first callback,
-    // and fires again automatically if the container settles into a
-    // different size a moment later. No guessing about timing needed.
+    // ResizeObserver handles the lazy-route canvas sizing race; the window
+    // resize fallback covers DPR changes when moving across displays.
     const observer = new ResizeObserver(() => applySize());
     observer.observe(parent);
-
-    // Still handle real window resizes (ResizeObserver already covers
-    // most of these via the parent's box changing, but this remains a
-    // harmless belt-and-suspenders for edge cases like devicePixelRatio
-    // changes from moving across displays).
     window.addEventListener("resize", applySize);
 
     return () => {
@@ -170,8 +141,7 @@ export function DrawingCanvas({
     };
   }, [resizeCanvas, renderWithGuides]);
 
-  // devicePixelRatio-scaled radius, converted back to CSS px for the
-  // on-screen ring so it visually matches the actual erased area.
+  // Radius scaled by DPR, back to CSS px for a ring matching the erased area.
   const eraserRingRadius = eraserRadius * displayScale;
 
   const hideEraserRing = useCallback(() => {
@@ -197,8 +167,7 @@ export function DrawingCanvas({
   );
 
   const handleStart = (e: React.PointerEvent<HTMLCanvasElement>) => {
-    // Only the primary (left) button drives drawing/erasing; right or
-    // middle clicks must not start or alter a stroke.
+    // Only the primary (left) button drives drawing/erasing.
     if (e.button !== 0) return;
     if (isErasing) {
       updateEraserPos(e);
@@ -220,8 +189,7 @@ export function DrawingCanvas({
     else stopDrawing();
   };
 
-  // Keep the ring size in sync when the radius is changed from the toolbar
-  // popover mid-gesture.
+  // Keep ring size in sync when radius changes mid-gesture.
   useEffect(() => {
     const ring = eraserRingRef.current;
     if (!ring) return;
@@ -229,9 +197,7 @@ export function DrawingCanvas({
     ring.style.height = `${eraserRingRadius * 2}px`;
   }, [eraserRingRadius]);
 
-  // Guarantee the ring disappears the moment eraser mode is switched off
-  // (e.g. picking another tool from the toolbar), no matter where the
-  // pointer currently is.
+  // Ring disappears the moment eraser mode is switched off.
   useEffect(() => {
     if (!isErasing) hideEraserRing();
   }, [isErasing, hideEraserRing]);

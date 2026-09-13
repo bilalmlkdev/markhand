@@ -58,7 +58,6 @@ export function InstructionsModal({ open, onClose }: InstructionsModalProps) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      {/* Flat overlay */}
       <button
         type="button"
         aria-label="Close instructions"
@@ -72,7 +71,6 @@ export function InstructionsModal({ open, onClose }: InstructionsModalProps) {
         aria-labelledby="instructions-title"
         className="relative w-full max-w-[420px] rounded-xl border border-stone-200 bg-white p-6"
       >
-        {/* Header */}
         <div className="mb-4 flex items-start justify-between">
           <h2
             id="instructions-title"
@@ -89,14 +87,11 @@ export function InstructionsModal({ open, onClose }: InstructionsModalProps) {
           </button>
         </div>
 
-        {/* Intro Wording */}
         <p className="mb-6 text-[13px] leading-relaxed text-stone-600">
           Markhand is designed to keep you focused on the canvas. Instead of navigating menus, control your workflow instantly using the keyboard shortcuts below.
         </p>
 
-        {/* Content Grid */}
         <div className="mb-6 grid grid-cols-2 gap-x-8">
-          {/* Tools List */}
           <div>
             <h3 className="mb-3 text-[10px] font-medium uppercase tracking-widest text-stone-400">
               Tools
@@ -114,7 +109,6 @@ export function InstructionsModal({ open, onClose }: InstructionsModalProps) {
             </ul>
           </div>
 
-          {/* Actions List */}
           <div>
             <h3 className="mb-3 text-[10px] font-medium uppercase tracking-widest text-stone-400">
               Actions
@@ -133,7 +127,6 @@ export function InstructionsModal({ open, onClose }: InstructionsModalProps) {
           </div>
         </div>
 
-        {/* Footer Wording */}
         <div className="border-t border-stone-100 pt-4">
           <p className="text-[12px] leading-relaxed text-stone-500">
             Future updates will introduce shapes, typography, and highlighters. Press <span className="font-mono text-[10px] bg-stone-100 px-1 py-0.5 rounded">ESC</span> to close.

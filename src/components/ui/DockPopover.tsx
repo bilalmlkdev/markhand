@@ -15,13 +15,7 @@ interface DockPopoverProps {
   width?: string;
 }
 
-// Renders via a portal straight into document.body and positions itself
-// with fixed coordinates computed from the trigger button's own bounding
-// box. This is necessary because the dock uses `overflow-x-auto` (so it
-// can scroll horizontally on narrow screens) — per the CSS spec, setting
-// one overflow axis to anything but `visible` forces the other axis to
-// compute as `auto` too, which was silently clipping this popover
-// whenever it tried to render above the dock as a normal child.
+// Portaled + fixed coords from the trigger box; overflow-x-auto clips normal children.
 export function DockPopover({
   open,
   onClose,

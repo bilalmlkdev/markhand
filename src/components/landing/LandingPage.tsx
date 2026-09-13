@@ -9,14 +9,7 @@ import { generateId } from "../../lib/id";
 export function LandingPage() {
   const navigate = useNavigate();
   const [hasDrawings] = useState(() => getDrawingRegistry().length > 0);
-  // A click generates a new random URL and navigates immediately, but the
-  // Dashboard route is lazy-loaded - there's a real gap between the URL
-  // changing and anything actually rendering. Without a guard, clicking
-  // again during that gap (because nothing visible happened yet) fired
-  // openEditor again, generating a *different* random ID and navigating
-  // to a *different* URL each time - the address bar kept changing while
-  // the page never seemed to "open." isNavigating makes the first click
-  // the only one that can ever assign a URL.
+  // Guards the lazy-route gap so a double-click can't fire a second URL.
   const [isNavigating, setIsNavigating] = useState(false);
 
   const openEditor = () => {

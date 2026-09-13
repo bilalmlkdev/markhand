@@ -1,10 +1,4 @@
-// crypto.randomUUID() requires a secure context and is only available in
-// fairly modern browsers (Safari 15.4+, Chrome 92+, Firefox 95+). Every
-// call site in this app used it directly with no fallback, so anyone on
-// an older browser - or any context where `crypto` isn't fully available
-// - would hit a hard crash generating a drawing, a stroke, or a share
-// link. These IDs are just local identifiers, not security tokens, so a
-// non-cryptographic fallback is perfectly fine quality-wise.
+// randomUUID needs a secure context, so fall back on older/insecure browsers.
 export function generateId(): string {
   if (
     typeof crypto !== "undefined" &&
@@ -13,7 +7,7 @@ export function generateId(): string {
     try {
       return crypto.randomUUID();
     } catch {
-      // fall through to the next strategy
+      // fall through
     }
   }
 
@@ -34,12 +28,11 @@ export function generateId(): string {
         hex.slice(10, 16).join(""),
       ].join("-");
     } catch {
-      // fall through to the last-resort strategy
+      // fall through
     }
   }
 
-  // Last resort: Math.random-based. Not cryptographically strong, but
-  // more than sufficient for a locally-scoped drawing/stroke ID.
+  // Last resort: random hex, fine for local IDs.
   return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
     const r = (Math.random() * 16) | 0;
     const v = c === "x" ? r : (r & 0x3) | 0x8;

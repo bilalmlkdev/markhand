@@ -1,11 +1,6 @@
 import type { CursorStyle } from "../types";
 
-/**
- * Returns the CSS `cursor` value for the given cursor style and color.
- * @param style - The cursor style.
- * @param color - The fill color (hex string) to use for SVG cursors.
- * @returns The CSS `cursor` property value.
- */
+// CSS cursor value for a style+color — SVG pens rendered as inline data URLs.
 export function getCursorCss(
   style: CursorStyle,
   color: string = "#1c1917",

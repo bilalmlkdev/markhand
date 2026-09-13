@@ -2,9 +2,7 @@ import { lazy, Suspense } from "react";
 import { Routes, Route, useParams } from "react-router-dom";
 import { RouteLoader } from "./components/layout/RouteLayout";
 
-// Each route is its own chunk now. The landing page (what most first-time
-// visitors see) no longer has to download the canvas engine, the WebGL
-// shader background, or react-joyride's tour library before it can render.
+// Lazy routes keep the landing chunk free of the canvas engine + tour libs.
 const LandingPage = lazy(() =>
   import("./components/landing/LandingPage").then((m) => ({
     default: m.LandingPage,

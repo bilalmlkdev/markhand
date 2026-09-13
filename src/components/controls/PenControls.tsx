@@ -27,7 +27,6 @@ export function PenControls({
 
   return (
     <div className="w-full max-w-sm  p-2 select-none">
-      {/*  SLIDER */}
       <div className="space-y-2">
         <div className="flex items-center justify-between px-0.5 leading-none">
           <p className="flex items-center gap-1.5 text-[10px] font-bold text-stone-400 uppercase tracking-wider">
@@ -36,9 +35,7 @@ export function PenControls({
           </p>
         </div>
 
-        {/* Precision Tapered Slider Track */}
         <div className="relative h-8 flex items-center group/slider">
-          {/* Tapered Track Visual */}
           <div className="absolute inset-x-0 h-3 bg-stone-50 border border-stone-100 rounded-lg overflow-hidden pointer-events-none">
             <svg
               className="w-full h-full"
@@ -54,7 +51,6 @@ export function PenControls({
             </svg>
           </div>
 
-          {/* Invisible Native Range Input */}
           <input
             type="range"
             min={minWidth}
@@ -65,7 +61,6 @@ export function PenControls({
             className="absolute inset-x-0 w-full h-full opacity-0 cursor-ew-resize z-20"
           />
 
-          {/* Floating Handle Indicator */}
           <div
             className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 pointer-events-none z-10 will-change-transform"
             style={{ left: `${percent}%` }}
@@ -87,7 +82,6 @@ export function PenControls({
 
       <hr className="border-stone-100" />
 
-      {/* COLOR SELECTION */}
       <div className="space-y-2.5">
         <p className="flex items-center gap-1.5 text-[10px] font-bold text-stone-400 uppercase tracking-wider px-0.5 leading-none">
           <Droplet className="w-3 h-3 text-stone-500 shrink-0" />
@@ -124,7 +118,6 @@ export function PenControls({
             );
           })}
 
-          {/* Custom Color Picker Container */}
           <div className="w-full aspect-square rounded-xl border border-dashed border-stone-200 bg-stone-50/30 overflow-hidden hover:border-stone-400 transition-colors [&>*]:w-full [&>*]:h-full">
             <ColorPicker color={activeColor} onChange={onColorChange} />
           </div>

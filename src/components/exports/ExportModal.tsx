@@ -114,15 +114,12 @@ export function ExportModal({
 
     ctx.scale(dpr, dpr);
 
-    // Background
     if (background !== 'transparent') {
       ctx.fillStyle = bgHex;
       ctx.fillRect(0, 0, previewW, previewH);
     }
 
-    // Guides and strokes share a single transform (translate to bounds origin, then
-    // scale to preview size) so the grid spacing and stroke widths shrink together
-    // instead of the grid staying full-size while strokes are scaled independently.
+    // One shared transform scales guides + stroke widths together.
     ctx.save();
     ctx.translate(-bounds.x * scale, -bounds.y * scale);
     ctx.scale(scale, scale);
@@ -176,7 +173,6 @@ export function ExportModal({
       ctx.fillRect(0, 0, width, height);
     }
 
-    // Draw guides if enabled
     if (showGuides && background !== 'transparent') {
       drawGuidesOnContext(ctx, width, height, themeConfig.dot);
     }
@@ -223,7 +219,7 @@ export function ExportModal({
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
       } catch {
-        // Fallback
+        void 0;
       }
     }, 'image/png');
   };
@@ -275,7 +271,6 @@ export function ExportModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="absolute inset-0 bg-black/20 backdrop-blur-sm" onClick={onClose} />
       <div className="relative bg-white rounded-xl shadow-2xl border border-stone-200 w-full sm:w-[400px] max-w-[95vw] max-h-[90vh] overflow-y-auto mx-2">
-        {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-stone-100">
           <h2 className="text-sm font-semibold text-stone-800">Export Drawing</h2>
           <button
@@ -286,7 +281,6 @@ export function ExportModal({
           </button>
         </div>
 
-        {/* Preview */}
         <div className="p-4 flex justify-center bg-stone-50 border-b border-stone-100 min-h-[180px] items-center">
           <div
             className="rounded-lg overflow-hidden border border-stone-200 flex items-center justify-center"
@@ -307,7 +301,6 @@ export function ExportModal({
           </div>
         </div>
 
-        {/* Options */}
         <div className="p-4 space-y-3">
           <div>
             <p className="text-[10px] font-semibold text-stone-400 uppercase tracking-widest mb-2">
@@ -351,7 +344,6 @@ export function ExportModal({
             </div>
           </div>
 
-          {/* Guides toggle */}
           <div className="flex items-center justify-between">
             <p className="text-[10px] font-semibold text-stone-400 uppercase tracking-widest">
               Show Guides
@@ -371,7 +363,6 @@ export function ExportModal({
           </div>
         </div>
 
-        {/* Actions */}
         <div className="px-4 pb-4 flex gap-2">
           <Button variant="default" className="flex-1" onClick={handleDownload}>
             <Download className="w-4 h-4" />

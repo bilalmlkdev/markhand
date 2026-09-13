@@ -14,7 +14,7 @@ interface ShareModalProps {
   theme: CanvasTheme;
 }
 
-// A very long URL can be silently truncated by some platforms/browsers.
+// Very long URLs can be silently truncated by some platforms/browsers.
 const LONG_URL_WARNING_THRESHOLD = 8000;
 
 export function ShareModal({
@@ -37,7 +37,7 @@ export function ShareModal({
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      // fallback
+      void 0;
     }
   };
 
@@ -94,7 +94,6 @@ export function ShareModal({
           </div>
         ) : (
           <>
-            {/* Drawing preview */}
             <div className="aspect-[16/9] w-full border-b border-stone-100">
               <DrawingThumbnail
                 strokes={strokes}
@@ -114,7 +113,6 @@ export function ShareModal({
                 </p>
               </div>
 
-              {/* Link row */}
               <div className="flex items-center gap-2 p-1 pl-3 rounded-xl bg-stone-50 border border-stone-200/80">
                 <Link2 className="w-3.5 h-3.5 text-stone-300 shrink-0" />
                 <input
@@ -141,7 +139,6 @@ export function ShareModal({
                 </button>
               </div>
 
-              {/* Quick share */}
               <button
                 onClick={handleTwitterShare}
                 className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-stone-900 hover:bg-black text-white transition-colors cursor-pointer"

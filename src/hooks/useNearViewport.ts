@@ -1,9 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 
-// Returns a ref to attach to an element and a boolean that flips to true
-// once the element is within the given distance of the viewport. Used to
-// defer expensive work (e.g. decoding a drawing's strokes) until the card
-// is actually about to be seen, instead of doing it for every card at once.
+// Defers expensive work (e.g. decoding strokes) until the element nears view.
 export function useNearViewport<T extends HTMLElement>(
   rootMargin = "600px",
 ): [React.RefObject<T | null>, boolean] {

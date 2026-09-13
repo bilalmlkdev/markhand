@@ -1,8 +1,4 @@
-// Ink colors offered in the pen picker, paired index-for-index between the
-// light-background and dark-background variants. When the canvas theme
-// changes from light to dark (or back), any stroke or pen color matching
-// one side of a pair is remapped to the other side, so drawings stay
-// visible instead of vanishing against a background of similar value.
+// Light/dark ink pairs, indexed so colors remap 1:1 on theme change.
 export const LIGHT_BG_INK_COLORS = [
   "#1c1917",
   "#e03131",
@@ -25,7 +21,7 @@ export const DARK_BG_INK_COLORS = [
   "#ff8787",
 ] as const;
 
-// Robust isLight that handles #rgb, #rrggbb, and #rrggbbaa.
+// Handles #rgb, #rrggbb, and #rrggbbaa.
 export function isLightColor(hex: string): boolean {
   let r = 0,
     g = 0,
@@ -43,9 +39,7 @@ export function isLightColor(hex: string): boolean {
   return (r * 299 + g * 587 + b * 114) / 1000 > 150;
 }
 
-// Given a color and the background it's about to be shown on, return the
-// color it should become to stay visible (or the same color if it's
-// already a fine fit, or not one of the recognized palette entries).
+// Remap to the opposite palette side, unless already suited to the background.
 export function remapInkColorForBackground(
   color: string,
   bgIsLight: boolean,
@@ -58,8 +52,7 @@ export function remapInkColorForBackground(
   );
 
   if (bgIsLight) {
-    // Background is light: a dark-palette color is already fine; a
-    // light-palette color (meant for dark backgrounds) needs remapping.
+    // Light-palette color meant for dark backgrounds needs remapping.
     if (darkIndex !== -1) return LIGHT_BG_INK_COLORS[darkIndex]!;
     return color;
   } else {

@@ -9,8 +9,7 @@ function getDrawingStorageKey(id: string): string {
   return `markhand_drawing_${id}`;
 }
 
-// Read-only access to a drawing's strokes, for gallery thumbnails.
-// The canonical read/write path used while actively drawing is useDraw.ts.
+// Read-only path for gallery thumbnails; the drawing hook owns writes.
 export function loadDrawingStrokes(id: string): Stroke[] {
   try {
     const raw = localStorage.getItem(getDrawingStorageKey(id));
@@ -20,11 +19,7 @@ export function loadDrawingStrokes(id: string): Stroke[] {
   }
 }
 
-// --- Drawing registry (My Drawings gallery) -------------------------------
-// Strokes for a drawing are stored separately under `markhand_drawing_{id}`
-// (see useDraw.ts). This registry only tracks lightweight metadata so the
-// gallery can list drawings without loading every stroke into memory.
-
+// Registry tracks lightweight metadata only; strokes live under `detail` keys.
 export function getDrawingRegistry(): DrawingMeta[] {
   try {
     const raw = localStorage.getItem(REGISTRY_KEY);
@@ -40,12 +35,10 @@ function saveDrawingRegistry(entries: DrawingMeta[]): void {
   try {
     localStorage.setItem(REGISTRY_KEY, JSON.stringify(entries));
   } catch {
-    /* ignore */
+    void 0;
   }
 }
 
-// Create or update this drawing's registry entry. Called whenever a
-// drawing's strokes or theme change and it has at least one stroke.
 export function upsertDrawingMeta(
   id: string,
   patch: { strokeCount: number; theme: CanvasTheme; name?: string },
@@ -102,25 +95,21 @@ export function deleteAllDrawings(): void {
   saveDrawingRegistry([]);
 }
 
-// Purge a drawing's strokes and hasDrawn flag from localStorage. Used by
-// reset/delete/empty flows so cleared drawings stop leaving orphaned keys
-// behind.
+// Purge strokes + hasDrawn flag so cleared drawings leave no orphaned keys.
 export function removeDrawingData(id: string): void {
   try {
     localStorage.removeItem(getDrawingStorageKey(id));
     localStorage.removeItem(`markhand_hasDrawn_${id}`);
   } catch {
-    /* ignore */
+    void 0;
   }
 }
-
-// --- Global preferences ----------------------------------------------------
 
 export function saveTheme(theme: string): void {
   try {
     localStorage.setItem(THEME_KEY, theme);
   } catch {
-    /* ignore */
+    void 0;
   }
 }
 
@@ -136,7 +125,7 @@ export function saveGuide(guide: string): void {
   try {
     localStorage.setItem(GUIDE_KEY, guide);
   } catch {
-    /* ignore */
+    void 0;
   }
 }
 
@@ -152,7 +141,7 @@ export function saveCursor(cursor: string): void {
   try {
     localStorage.setItem(CURSOR_KEY, cursor);
   } catch {
-    /* ignore */
+    void 0;
   }
 }
 

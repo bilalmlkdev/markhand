@@ -45,7 +45,6 @@ export default function GrainyShader({
           }}
         />
       )}
-      {/* Content sits above the shader */}
       <div style={{ position: "relative", zIndex: 1 }}>{children}</div>
     </div>
   );

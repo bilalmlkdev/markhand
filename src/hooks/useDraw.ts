@@ -4,8 +4,7 @@ import { smoothPoints } from "../lib/ink";
 import { remapInkColorForBackground } from "../lib/palette";
 import { generateId } from "../lib/id";
 
-// Real-tool-like default line weight per cursor, applied when the user
-// switches tools — mirrors how Procreate/Photoshop brush presets work.
+// Per-tool default line weight, applied when the cursor style changes.
 export const CURSOR_DEFAULT_WIDTH: Record<CursorStyle, number> = {
   crosshair: 2,
   pencil: 3,
@@ -71,7 +70,6 @@ function saveStrokes(drawingId: string, strokes: Stroke[]): boolean {
   }
 }
 
-// Per‑drawing hasDrawn flag
 function getHasDrawnKey(drawingId: string): string {
   return `markhand_hasDrawn_${drawingId}`;
 }
@@ -88,11 +86,11 @@ function saveHasDrawn(drawingId: string, val: boolean) {
   try {
     localStorage.setItem(getHasDrawnKey(drawingId), String(val));
   } catch {
-    /* ignore */
+    void 0;
   }
 }
 
-// Global per‑user settings (not per drawing)
+// Per-user settings (not per drawing).
 const COLOR_KEY = "markhand_color";
 const WIDTH_KEY = "markhand_width";
 
@@ -107,7 +105,7 @@ function saveColor(color: string) {
   try {
     localStorage.setItem(COLOR_KEY, color);
   } catch {
-    /* ignore */
+    void 0;
   }
 }
 function loadWidth(): number {
@@ -123,7 +121,7 @@ function saveWidth(width: number) {
   try {
     localStorage.setItem(WIDTH_KEY, String(width));
   } catch {
-    /* ignore */
+    void 0;
   }
 }
 
@@ -147,7 +145,7 @@ function saveEraserRadius(radius: number) {
   try {
     localStorage.setItem(ERASER_RADIUS_KEY, String(radius));
   } catch {
-    /* ignore */
+    void 0;
   }
 }
 
@@ -175,18 +173,13 @@ function distanceToSegment(point: Point, start: Point, end: Point): number {
   });
 }
 
-// Remove points touched by the eraser and also detect long segments that
-// cross the eraser circle between sampled points. Dense pointer sampling
-// handles normal strokes well, while the segment test prevents obvious
-// "eraser passed through the line but nothing happened" gaps.
+// Erases sampled points and segments crossing the eraser circle between them.
 function eraseFromStroke(
   stroke: Stroke,
   eraserPoint: Point,
   radius: number,
 ): Stroke[] {
-  // Single-point strokes (dots/taps) are erased when the eraser center is
-  // within the radius, without the segment logic that only applies to
-  // multi-point strokes.
+  // Single-point dots/taps when the eraser center is within radius.
   if (stroke.points.length < 2) {
     if (
       stroke.points.length === 1 &&
@@ -255,10 +248,7 @@ export function useDraw(
   const [isErasing, setIsErasing] = useState(false);
   const eraseStrokeSnapshotRef = useRef<Stroke[] | null>(null);
   const eraseChangedRef = useRef(false);
-  // Working copy of strokes mutated in place during an erase gesture so
-  // React doesn't re-render (and replay every stroke) on each pointer move.
-  // The canvas is repainted directly via eraseRepaintRef, and the result is
-  // committed back to state once on pointer up.
+  // Mutable copy avoids a React rerender per pointer move; committed on release.
   const eraseStrokesRef = useRef<Stroke[]>([]);
   const eraseRepaintRef = useRef<((strokes: Stroke[]) => void) | null>(null);
   const setEraseRepaint = useCallback(
@@ -267,8 +257,7 @@ export function useDraw(
     },
     [],
   );
-  // Eraser size is independently adjustable (not tied to pen width) and
-  // persisted across sessions like color/width.
+  // Eraser size is independent of pen width and persisted.
   const [eraserRadius, setEraserRadiusState] = useState(loadEraserRadius);
   const setEraserRadius = useCallback((radius: number) => {
     const clamped = Math.min(
@@ -278,18 +267,12 @@ export function useDraw(
     setEraserRadiusState(clamped);
     saveEraserRadius(clamped);
   }, []);
-  // Pending erase point + rAF handle, so a burst of pointermove events
-  // during a fast drag collapses into at most one erase + one React
-  // commit per animation frame instead of one per pointer sample (which
-  // is what caused the visible lag when moving the eraser quickly).
+  // Pointermove bursts coalesce into one erase per animation frame (lag fix).
   const pendingErasePointRef = useRef<Point | null>(null);
   const eraseRafRef = useRef<number | null>(null);
 
-  // Save strokes and hasDrawn whenever they change
   useEffect(() => {
     if (!hasDrawn) return;
-    // Empty canvases are never persisted (and get cleaned up by the
-    // Dashboard), so skipping here isn't a failure - don't warn about it.
     if (strokes.length === 0) return;
     const ok = saveStrokes(drawingId, strokes);
     saveHasDrawn(drawingId, true);
@@ -380,14 +363,7 @@ export function useDraw(
 
       if (prev.length < 2) return;
 
-      // Live preview now uses the same Catmull-Rom smoothing as the
-      // committed stroke (see stopDrawing below), so the line doesn't
-      // visibly "snap" into a different shape the instant the pointer
-      // lifts. Redraw the base layer (background/guides/committed
-      // strokes) first, then paint the smoothed in-progress stroke on
-      // top - repainting only the current stroke's own pixels would
-      // leave a seam between the smoothed tail and the raw segments
-      // drawn on previous frames underneath it.
+      // Redraw base layer first so the smoothed preview matches the committed stroke.
       redrawBaseRef.current?.();
       const previewPoints = prev.length >= 4 ? smoothPoints(prev, 0.3) : prev;
       ctx.beginPath();
@@ -412,9 +388,7 @@ export function useDraw(
     if (points.length > 0) {
       setUndoStack((prev) => [...prev, strokes]);
       setRedoStack([]);
-      // Smooth the committed stroke (Catmull-Rom curve) so it reads as
-      // natural ink rather than a raw jagged polyline of mouse samples.
-      // Very short strokes (dots/taps) are left untouched.
+      // Catmull-Rom smoothing; dots/taps (short) stay unsmoothed.
       const finalPoints =
         points.length >= 4 ? smoothPoints(points, 0.3) : [...points];
       const newStroke: Stroke = {
@@ -429,11 +403,7 @@ export function useDraw(
     currentPointsRef.current = [];
   }, [isDrawing, currentColor, currentWidth, strokes, hasDrawn]);
 
-  // Eraser: snapshot strokes once at gesture start (for undo), then
-  // progressively remove touched points as the user drags, splitting
-  // strokes around the gap. Erase work for pointermove is coalesced onto
-  // a single requestAnimationFrame so fast drags don't queue up more
-  // erase passes + re-renders than the screen can actually paint.
+  // Erase gesture: snapshot for undo, split strokes around the eraser.
   const runErase = useCallback(
     (point: Point) => {
       const working = eraseStrokesRef.current;
@@ -446,8 +416,7 @@ export function useDraw(
       if (!changed) return;
       eraseChangedRef.current = true;
       eraseStrokesRef.current = next;
-      // Paint straight to the canvas, skipping a React render + full buffer
-      // rebuild per pointer move - that's what caused the erase lag.
+      // Paint directly to canvas, skipping a full rerender per move.
       eraseRepaintRef.current?.(next);
     },
     [eraserRadius],
@@ -485,8 +454,7 @@ export function useDraw(
     if (!isErasing) return;
     setIsErasing(false);
 
-    // Flush any erase point still waiting on a queued animation frame so
-    // the last point of a fast drag isn't dropped when the pointer lifts.
+    // Flush any erase point still queued on an animation frame.
     if (eraseRafRef.current !== null) {
       cancelAnimationFrame(eraseRafRef.current);
       eraseRafRef.current = null;
@@ -505,8 +473,7 @@ export function useDraw(
     eraseChangedRef.current = false;
 
     if (changed && before) {
-      // Commit the gesture result back to state so saves, undo and the
-      // registry meta all stay in sync with what's on canvas.
+      // Commit gesture result so saves, undo and gallery meta stay in sync.
       setStrokes(final);
       eraseRepaintRef.current?.(final);
       setUndoStack((prev) => [...prev, before]);
@@ -515,7 +482,6 @@ export function useDraw(
     }
   }, [isErasing, hasDrawn, runErase]);
 
-  // Cancel any in-flight erase frame on unmount.
   useEffect(() => {
     return () => {
       if (eraseRafRef.current !== null) cancelAnimationFrame(eraseRafRef.current);
@@ -559,10 +525,7 @@ export function useDraw(
     }
   }, [strokes, hasDrawn]);
 
-  // Remap stroke and pen colors when the canvas background changes from
-  // light to dark or vice versa, so existing drawings stay visible instead
-  // of blending into the new background. This is a display correction, not
-  // a drawing action, so it intentionally does not push to the undo stack.
+  // Remap ink on light/dark theme switch so strokes stay visible; not undoable.
   const recolorForBackground = useCallback(
     (bgIsLight: boolean) => {
       setStrokes((prev) =>

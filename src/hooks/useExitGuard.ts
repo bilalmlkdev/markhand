@@ -1,8 +1,6 @@
 import { useEffect } from "react";
 
-// Browsers only allow their own dialog when a tab/window is closed, so a
-// custom modal can't block it. This opts in to that native confirmation
-// whenever it's enabled; the branded "Exit" flow lives in ExitConfirmModal.
+// Native dialog only; custom modals can't block a real tab/window close.
 export function useExitGuard(enabled: boolean) {
   useEffect(() => {
     if (!enabled) return;

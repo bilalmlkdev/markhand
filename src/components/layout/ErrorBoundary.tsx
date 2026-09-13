@@ -9,11 +9,7 @@ interface ErrorBoundaryState {
   hasError: boolean;
 }
 
-// Class components are the only way to catch render errors in React (no
-// hook equivalent exists), so this stays a class while everything else in
-// the app is functional. Catches anything that throws during render in a
-// descendant - a corrupted localStorage payload, a bad shared-drawing URL,
-// etc. - and shows a recovery screen instead of a blank white page.
+// Class components are the only way to catch render errors in React.
 export class ErrorBoundary extends Component<
   ErrorBoundaryProps,
   ErrorBoundaryState
