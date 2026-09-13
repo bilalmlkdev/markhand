@@ -8,28 +8,63 @@ const steps: Step[] = [
     target: '[data-tour="canvas"]',
     title: "A clean place to draw",
     content:
-      "Draw with a mouse, trackpad, stylus, or touch. Markhand keeps the canvas quiet so your work stays the focus.",
+      "Welcome to Markhand - a distraction-free canvas for drawing, signing, and sketching. Draw with a mouse, trackpad, stylus, or touch.",
     placement: "center",
   },
   {
     target: '[data-tour="toolbar"]',
-    title: "Your drawing dock",
+    title: "Everything in one bar",
     content:
-      "Pick a cursor style, erase, switch guides, undo, redo, clear, change your ink, and change the canvas theme.",
+      "Every tool lives in this single dock: pens, eraser, guides, undo/redo/clear, ink styling, export, the gallery, and more - nothing hides your work.",
     placement: "top",
   },
   {
     target: '[data-tour="style-button"]',
     title: "Tune the ink",
     content:
-      "Change line weight and pick a color from the compact style panel without leaving the canvas.",
+      "The ink panel lets you pick a color and a line weight, keeping the style controls compact so the canvas stays clear.",
     placement: "top",
   },
   {
-    target: '[data-tour="header-actions"]',
-    title: "Finish and export",
+    target: '[aria-label="Eraser"]',
+    title: "Erase by dragging",
     content:
-      "Share the drawing with a link, export it as an image, or keep less-used actions inside More.",
+      "Tap the eraser to arm it, then hold the left button and drag over any line - it removes just what you cover, and its size matches the ring.",
+    placement: "top",
+  },
+  {
+    target: '[aria-label="Dot grid"]',
+    title: "Guides for even strokes",
+    content:
+      "Switch to a dot grid or a full grid to keep lines and text aligned. Press G to cycle guides quickly, or turn them off.",
+    placement: "top",
+  },
+  {
+    target: '[aria-label="Undo"]',
+    title: "Fix mistakes instantly",
+    content:
+      "Undo, redo, or clear the whole canvas with one click - or the keyboard shortcuts ⌘/Ctrl+Z, ⌘/Ctrl+Shift+Z, and Delete.",
+    placement: "top",
+  },
+  {
+    target: '[aria-label="Export drawing"]',
+    title: "Save your work",
+    content:
+      "Export the canvas as a PNG or SVG image, or share it with a link that encodes the drawing - no upload needed.",
+    placement: "top",
+  },
+  {
+    target: '[aria-label="My drawings"]',
+    title: "Everything stays saved",
+    content:
+      "Every stroke is stored locally in this browser. Open your gallery to revisit, rename, or delete any drawing anytime.",
+    placement: "top",
+  },
+  {
+    target: '[aria-label="More options"]',
+    title: "Extras live in your avatar",
+    content:
+      "Your avatar is per browser - tap it for options like resetting the canvas or closing Markhand. That's it - get drawing!",
     placement: "top",
   },
 ];

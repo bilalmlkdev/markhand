@@ -1,4 +1,4 @@
-import { AlertTriangle, RefreshCw, X } from "lucide-react";
+import { X } from "lucide-react";
 import { Button } from "../ui/Button";
 
 interface ResetConfirmModalProps {
@@ -22,12 +22,9 @@ export function ResetConfirmModal({
       />
       <div className="relative bg-white rounded-xl shadow-2xl border border-stone-200 w-full sm:w-[360px] max-w-[95vw] overflow-hidden pointer-events-auto">
         <div className="flex items-center justify-between px-4 py-3 border-b border-stone-100">
-          <div className="flex items-center gap-2">
-            <AlertTriangle className="w-4 h-4 text-red-500" />
-            <h2 className="text-sm font-semibold text-stone-800">
-              Reset canvas
-            </h2>
-          </div>
+          <h2 className="text-sm font-semibold text-stone-800">
+            Reset canvas
+          </h2>
           <button
             onClick={onClose}
             className="w-7 h-7 flex items-center justify-center rounded-md hover:bg-stone-100 transition-colors cursor-pointer"
@@ -50,7 +47,6 @@ export function ResetConfirmModal({
             className="flex-1 text-white bg-red-600 hover:bg-red-700"
             onClick={onConfirm}
           >
-            <RefreshCw className="w-4 h-4" />
             Reset canvas
           </Button>
         </div>

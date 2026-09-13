@@ -18,6 +18,7 @@ export const ERASER_RADIUS_RANGE = { min: 6, max: 60 } as const;
 export interface UseDrawReturn {
   strokes: Stroke[];
   isEmpty: boolean;
+  isDrawing: boolean;
   storageWarning: string | null;
   currentColor: string;
   currentWidth: number;
@@ -581,6 +582,7 @@ export function useDraw(
   return {
     strokes,
     isEmpty,
+    isDrawing,
     storageWarning,
     currentColor,
     currentWidth,

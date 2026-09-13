@@ -6,7 +6,6 @@ import {
   Brush,
   Pen,
   Eraser,
-  LogOut,
   Grid3X3,
   LayoutGrid,
   EyeOff,
@@ -16,9 +15,7 @@ import {
   PenLine,
   SwatchBook,
   Share2,
-  RefreshCw,
   FolderOpen,
-  HelpCircle,
   MousePointerClick,
   Square,
   Type,
@@ -510,6 +507,7 @@ export function DashboardToolbar({
           <Tooltip label="Export drawing">
             <button
               type="button"
+              aria-label="Export drawing"
               onClick={onExport}
               disabled={isEmpty}
               className="h-8 px-4 rounded-lg bg-stone-900 text-white text-[13px] font-semibold hover:bg-black disabled:opacity-30 disabled:hover:bg-stone-900 disabled:cursor-not-allowed transition-all"
@@ -589,9 +587,8 @@ export function DashboardToolbar({
                     setOpenPopover(null);
                     onToggleInstructions();
                   }}
-                  className="w-full flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-xs font-medium text-stone-700 hover:bg-stone-100"
+                  className="w-full rounded-xl px-3 py-2.5 text-left text-xs font-medium text-stone-700 hover:bg-stone-100"
                 >
-                  <HelpCircle className="w-4 h-4 text-stone-400" />
                   How to use
                 </button>
                 <div className="my-1 border-t border-stone-100" />
@@ -601,9 +598,8 @@ export function DashboardToolbar({
                     setOpenPopover(null);
                     onExit();
                   }}
-                  className="w-full flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-xs font-medium text-stone-700 hover:bg-stone-100"
+                  className="w-full rounded-xl px-3 py-2.5 text-left text-xs font-medium text-stone-700 hover:bg-stone-100"
                 >
-                  <LogOut className="w-4 h-4 text-stone-400" />
                   Close Markhand
                 </button>
                 <button
@@ -612,9 +608,8 @@ export function DashboardToolbar({
                     setOpenPopover(null);
                     onReset();
                   }}
-                  className="mt-1 w-full flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-xs font-medium text-red-600 hover:bg-red-50"
+                  className="mt-1 w-full rounded-xl px-3 py-2.5 text-left text-xs font-medium text-red-600 hover:bg-red-50"
                 >
-                  <RefreshCw className="w-4 h-4" />
                   Reset canvas
                 </button>
               </div>

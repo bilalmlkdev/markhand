@@ -30,6 +30,7 @@ export function DrawingCanvas({
   const bufferRef = useRef<HTMLCanvasElement | null>(null);
   const {
     strokes,
+    isDrawing,
     setCanvas,
     setRedrawBase,
     startDrawing,
@@ -253,7 +254,7 @@ export function DrawingCanvas({
         }}
       />
 
-      {strokes.length === 0 && (
+      {strokes.length === 0 && !isDrawing && !isErasing && (
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
           <p className={`text-sm select-none ${placeholderColor}`}>
             Start drawing your mark

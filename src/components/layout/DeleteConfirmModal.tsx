@@ -1,4 +1,4 @@
-import { Trash2, X } from "lucide-react";
+import { X } from "lucide-react";
 import { Button } from "../ui/Button";
 
 interface DeleteConfirmModalProps {
@@ -28,10 +28,7 @@ export function DeleteConfirmModal({
       />
       <div className="relative bg-white rounded-xl shadow-2xl border border-stone-200 w-full sm:w-[380px] max-w-[95vw] overflow-hidden pointer-events-auto">
         <div className="flex items-center justify-between px-4 py-3 border-b border-stone-100">
-          <div className="flex items-center gap-2">
-            <Trash2 className="w-4 h-4 text-red-500" />
-            <h2 className="text-sm font-semibold text-stone-800">{title}</h2>
-          </div>
+          <h2 className="text-sm font-semibold text-stone-800">{title}</h2>
           <button
             onClick={onClose}
             aria-label="Cancel"
@@ -52,7 +49,6 @@ export function DeleteConfirmModal({
             className="flex-1 bg-red-600 hover:bg-red-700"
             onClick={onConfirm}
           >
-            <Trash2 className="w-4 h-4" />
             {confirmLabel}
           </Button>
         </div>

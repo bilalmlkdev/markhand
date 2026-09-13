@@ -4,7 +4,6 @@ import {
   ArrowLeft,
   Check,
   MoreHorizontal,
-  Pencil,
   PenLine,
   Plus,
   Trash2,
@@ -174,9 +173,8 @@ function DrawingRow({
                   setEditing(true);
                   setMenuOpen(false);
                 }}
-                className="flex w-full items-center gap-2 px-2.5 py-1.5 text-xs font-medium text-stone-600 hover:bg-stone-50 hover:text-stone-900"
+                className="w-full px-2.5 py-1.5 text-left text-xs font-medium text-stone-600 hover:bg-stone-50 hover:text-stone-900"
               >
-                <Pencil className="h-3.5 w-3.5" />
                 Rename
               </button>
               <button
@@ -185,9 +183,8 @@ function DrawingRow({
                   setMenuOpen(false);
                   onRequestDelete(meta.id);
                 }}
-                className="flex w-full items-center gap-2 px-2.5 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50"
+                className="w-full px-2.5 py-1.5 text-left text-xs font-medium text-red-600 hover:bg-red-50"
               >
-                <Trash2 className="h-3.5 w-3.5" />
                 Delete
               </button>
             </div>
