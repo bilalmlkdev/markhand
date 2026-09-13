@@ -4,17 +4,26 @@ import GrainyShader from "../background/GrainyShader";
 import { MdOutlineKeyboardArrowRight } from "react-icons/md";
 import { LuGithub } from "react-icons/lu";
 import { getDrawingRegistry } from "../../lib/storage";
-
-function generateId(): string {
-  return crypto.randomUUID();
-}
+import { generateId } from "../../lib/id";
 
 export function LandingPage() {
   const navigate = useNavigate();
   const [hasDrawings] = useState(() => getDrawingRegistry().length > 0);
+  // A click generates a new random URL and navigates immediately, but the
+  // Dashboard route is lazy-loaded - there's a real gap between the URL
+  // changing and anything actually rendering. Without a guard, clicking
+  // again during that gap (because nothing visible happened yet) fired
+  // openEditor again, generating a *different* random ID and navigating
+  // to a *different* URL each time - the address bar kept changing while
+  // the page never seemed to "open." isNavigating makes the first click
+  // the only one that can ever assign a URL.
+  const [isNavigating, setIsNavigating] = useState(false);
 
-  const openEditor = () =>
+  const openEditor = () => {
+    if (isNavigating) return;
+    setIsNavigating(true);
     navigate(`/dashboard/${generateId()}`, { state: { fromLanding: true } });
+  };
 
   return (
     <GrainyShader className="min-h-screen">
@@ -50,9 +59,10 @@ export function LandingPage() {
             )}
             <button
               onClick={openEditor}
-              className="text-xs font-medium bg-white/90 hover:bg-white text-black rounded-lg px-2.5 py-[5px] active:scale-99"
+              disabled={isNavigating}
+              className="text-xs font-medium bg-white/90 hover:bg-white text-black rounded-lg px-2.5 py-[5px] active:scale-99 disabled:opacity-60 disabled:cursor-wait"
             >
-              Open Canvas
+              {isNavigating ? "Opening..." : "Open Canvas"}
             </button>
           </div>
         </header>
@@ -74,17 +84,18 @@ export function LandingPage() {
             </div>
 
             <p className="lg:text-base text-sm text-black max-w-lg leading-relaxed">
-              A distraction‑free studio to draw freely and keep the canvas distraction-free. Pick
-              a pen that feels right, switch canvas themes to match your style,
-              and export a clean PNG or SVG, all privately, right in your
-              browser.
+              A distraction‑free studio to draw freely and keep the canvas
+              distraction-free. Pick a pen that feels right, switch canvas
+              themes to match your style, and export a clean PNG or SVG, all
+              privately, right in your browser.
             </p>
             <div className="flex flex-wrap items-center gap-3 pt-2">
               <button
                 onClick={openEditor}
-                className="group inline-flex items-center justify-center gap-1.5 rounded-lg bg-black/95 px-3 py-1.5 text-xs font-medium text-white hover:bg-black active:scale-99"
+                disabled={isNavigating}
+                className="group inline-flex items-center justify-center gap-1.5 rounded-lg bg-black/95 px-3 py-1.5 text-xs font-medium text-white hover:bg-black active:scale-99 disabled:opacity-60 disabled:cursor-wait"
               >
-                Start Drawing
+                {isNavigating ? "Opening..." : "Start Drawing"}
                 <MdOutlineKeyboardArrowRight
                   size={18}
                   className="transition-transform duration-200 group-hover:translate-x-1"

@@ -1,9 +1,6 @@
 import { useNavigate, Link } from "react-router-dom";
 import GrainyShader from "../components/background/GrainyShader";
-
-function generateId(): string {
-  return crypto.randomUUID();
-}
+import { generateId } from "../lib/id";
 
 export function NotFound() {
   const navigate = useNavigate();

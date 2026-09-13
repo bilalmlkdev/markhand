@@ -8,13 +8,12 @@ import { ResetConfirmModal } from "../components/layout/ResetconfirmModal";
 import { ExitConfirmModal } from "../components/layout/ExitConfirmModal";
 import { InstructionsModal } from "../components/layout/InstructionsModal";
 import { useDraw, CURSOR_DEFAULT_WIDTH } from "../hooks/useDraw";
+import { generateId } from "../lib/id";
 import {
   useKeyboardShortcuts,
   GUIDE_ORDER,
 } from "../hooks/useKeyboardShortcuts";
-import { ProductTour } from "../components/layout/ProductTour";
 import { DashboardLoader } from "../components/layout/DashboardLoader";
-import { hasSeenTour } from "../lib/tour";
 import { getStrokesFromUrl, cleanUrl } from "../lib/share";
 import { themes } from "../lib/canvas";
 import { isLightColor } from "../lib/palette";
@@ -33,9 +32,6 @@ import { useExitGuard } from "../hooks/useExitGuard";
 import type { GuideType, CanvasTheme, CursorStyle } from "../types";
 
 // Generate a random ID (8 characters)
-function generateId(): string {
-  return crypto.randomUUID();
-}
 
 export function Dashboard() {
   const { id } = useParams<{ id: string }>();
@@ -67,7 +63,9 @@ export function Dashboard() {
 
   const [guideType, setGuideType] = useState<GuideType>(() => {
     const g = loadGuide();
-    return g && (GUIDE_ORDER as string[]).includes(g) ? (g as GuideType) : "dots";
+    return g && (GUIDE_ORDER as string[]).includes(g)
+      ? (g as GuideType)
+      : "dots";
   });
   const [theme, setTheme] = useState<CanvasTheme>(() => {
     const t = loadTheme();
@@ -78,7 +76,6 @@ export function Dashboard() {
     return c && c in CURSOR_DEFAULT_WIDTH ? (c as CursorStyle) : "pencil";
   });
   const [instructionsOpen, setInstructionsOpen] = useState(false);
-  const [tourRun, setTourRun] = useState(false);
   const [isErasing, setIsErasing] = useState(false);
 
   // Actions that used to live in the top-right header pill. Moved here
@@ -93,15 +90,6 @@ export function Dashboard() {
   // has content, so quitting a tab or the installed PWA can't silently
   // lose work. The branded exit modal is triggered from the toolbar.
   useExitGuard(!drawHook.isEmpty);
-
-  useEffect(() => {
-    if (loading) return;
-    if (!hasSeenTour()) {
-      // Let the canvas and floating UI mount before spotlighting them.
-      const t = setTimeout(() => setTourRun(true), 400);
-      return () => clearTimeout(t);
-    }
-  }, [loading]);
 
   useEffect(() => {
     drawHook.setCurrentWidth(CURSOR_DEFAULT_WIDTH[cursorStyle]);
@@ -170,7 +158,6 @@ export function Dashboard() {
     isEmpty: drawHook.isEmpty,
     enabled:
       !instructionsOpen &&
-      !tourRun &&
       !loading &&
       !exportOpen &&
       !shareOpen &&
@@ -209,7 +196,7 @@ export function Dashboard() {
 
   return (
     <div className="h-screen flex flex-col text-stone-900 overflow-hidden relative font-body">
-      <div data-tour="canvas" className="flex-1 relative overflow-hidden">
+      <div className="flex-1 relative overflow-hidden">
         <DrawingCanvas
           drawHook={drawHook}
           guideType={guideType}
@@ -279,7 +266,6 @@ export function Dashboard() {
         onConfirm={handleCloseWindow}
       />
 
-      <ProductTour run={tourRun} onFinish={() => setTourRun(false)} />
       {drawHook.storageWarning && (
         <div className="absolute bottom-20 left-1/2 z-40 -translate-x-1/2 rounded-xl border border-red-200 bg-red-50/95 px-4 py-2 text-xs font-medium text-red-700 shadow-lg backdrop-blur-sm">
           {drawHook.storageWarning}

@@ -207,10 +207,7 @@ export function DashboardToolbar({
   const [avatar] = useState(getAssignedAvatar);
 
   return (
-    <div
-      data-tour="toolbar"
-      className="absolute bottom-4 left-1/2 -translate-x-1/2 z-40 max-w-[calc(100vw-1rem)]"
-    >
+    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-40 max-w-[calc(100vw-1rem)]">
       <div className="flex items-center gap-1 max-w-[calc(100vw-1rem)] overflow-x-auto overscroll-x-contain no-scrollbar rounded-[20px] border border-black/[0.07] bg-white/88 backdrop-blur-2xl backdrop-saturate-150 px-1.5 py-1.5 shadow-[0_2px_6px_rgba(28,25,23,0.05),0_14px_34px_rgba(28,25,23,0.12)] ring-1 ring-inset ring-white/80">
         <div className="flex items-center gap-0.5 shrink-0">
           {cursorOptions.map((cursor) => (
@@ -313,7 +310,6 @@ export function DashboardToolbar({
               <button
                 ref={styleButtonRef}
                 type="button"
-                data-tour="style-button"
                 onClick={() => {
                   onCancelEraser();
                   setOpenPopover((p) => (p === "style" ? null : "style"));
@@ -489,10 +485,7 @@ export function DashboardToolbar({
 
         <Divider />
 
-        <div
-          data-tour="header-actions"
-          className="flex items-center gap-1.5 shrink-0"
-        >
+        <div className="flex items-center gap-1.5 shrink-0">
           <Tooltip label="Share drawing">
             <button
               type="button"

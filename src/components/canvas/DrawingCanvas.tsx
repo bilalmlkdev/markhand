@@ -126,22 +126,48 @@ export function DrawingCanvas({
   }, [setEraseRepaint, renderBuffer, paintFromBuffer]);
 
   useEffect(() => {
+    const canvas = canvasRef.current;
+    const parent = canvas?.parentElement;
+    if (!canvas || !parent) return;
+
     const updateScale = () => {
-      const canvas = canvasRef.current;
-      if (canvas && canvas.width > 0) {
+      if (canvas.width > 0) {
         setDisplayScale(canvas.clientWidth / canvas.width);
       }
     };
-    resizeCanvas();
-    renderWithGuides();
-    updateScale();
-    const handleResize = () => {
+
+    const applySize = () => {
       resizeCanvas();
       renderWithGuides();
       updateScale();
     };
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
+
+    // A one-time resizeCanvas() call on mount reads the parent's layout
+    // via getBoundingClientRect at the exact moment this effect runs. On
+    // a fresh client-side navigation into a lazy-loaded route, that can
+    // fire before the browser has finished settling layout for the
+    // newly-mounted tree (the Suspense fallback swap doesn't guarantee a
+    // completed layout pass the way a full page load does), so the
+    // canvas could get sized against a stale or zero rect - it only
+    // "worked after refresh" because a fresh load has no such race.
+    //
+    // ResizeObserver sidesteps the whole problem: it reports the actual
+    // box size whenever it's ready, including the very first callback,
+    // and fires again automatically if the container settles into a
+    // different size a moment later. No guessing about timing needed.
+    const observer = new ResizeObserver(() => applySize());
+    observer.observe(parent);
+
+    // Still handle real window resizes (ResizeObserver already covers
+    // most of these via the parent's box changing, but this remains a
+    // harmless belt-and-suspenders for edge cases like devicePixelRatio
+    // changes from moving across displays).
+    window.addEventListener("resize", applySize);
+
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("resize", applySize);
+    };
   }, [resizeCanvas, renderWithGuides]);
 
   // devicePixelRatio-scaled radius, converted back to CSS px for the

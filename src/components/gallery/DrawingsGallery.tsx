@@ -21,10 +21,7 @@ import { useNearViewport } from "../../hooks/useNearViewport";
 import { DrawingThumbnail } from "./DrawingThumbnail";
 import { DeleteConfirmModal } from "../layout/DeleteConfirmModal";
 import type { DrawingMeta } from "../../types";
-
-function generateId(): string {
-  return crypto.randomUUID();
-}
+import { generateId } from "../../lib/id";
 
 function formatDate(ts: number): string {
   const date = new Date(ts);
@@ -218,7 +215,9 @@ export function DrawingsGallery() {
     renameDrawing(id, name);
     setDrawings((prev) =>
       prev.map((drawing) =>
-        drawing.id === id ? { ...drawing, name, updatedAt: Date.now() } : drawing,
+        drawing.id === id
+          ? { ...drawing, name, updatedAt: Date.now() }
+          : drawing,
       ),
     );
   };

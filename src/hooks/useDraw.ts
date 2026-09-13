@@ -2,6 +2,7 @@ import { useState, useCallback, useRef, useEffect } from "react";
 import type { CursorStyle, Point, Stroke } from "../types";
 import { smoothPoints } from "../lib/ink";
 import { remapInkColorForBackground } from "../lib/palette";
+import { generateId } from "../lib/id";
 
 // Real-tool-like default line weight per cursor, applied when the user
 // switches tools — mirrors how Procreate/Photoshop brush presets work.
@@ -222,7 +223,7 @@ function eraseFromStroke(
   if (!changed) return [stroke];
 
   return segments.map((points) => ({
-    id: crypto.randomUUID(),
+    id: generateId(),
     points,
     color: stroke.color,
     width: stroke.width,
@@ -417,7 +418,7 @@ export function useDraw(
       const finalPoints =
         points.length >= 4 ? smoothPoints(points, 0.3) : [...points];
       const newStroke: Stroke = {
-        id: crypto.randomUUID(),
+        id: generateId(),
         points: finalPoints,
         color: currentColor,
         width: currentWidth,

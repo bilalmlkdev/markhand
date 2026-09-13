@@ -1,4 +1,5 @@
 import type { Stroke } from "../types";
+import { generateId } from "./id";
 
 const MAX_SHARED_STROKES = 5000;
 const MAX_SHARED_POINTS = 100_000;
@@ -61,10 +62,7 @@ function isFinitePoint(value: unknown): value is [number, number] {
 }
 
 function isValidColor(color: unknown): color is string {
-  return (
-    typeof color === "string" &&
-    /^#[0-9a-fA-F]{3,8}$/.test(color)
-  );
+  return typeof color === "string" && /^#[0-9a-fA-F]{3,8}$/.test(color);
 }
 
 function isSafeStroke(stroke: unknown): stroke is Stroke {
@@ -82,7 +80,8 @@ function isSafeStroke(stroke: unknown): stroke is Stroke {
     return false;
   }
 
-  return candidate.points.length <= MAX_SHARED_POINTS &&
+  return (
+    candidate.points.length <= MAX_SHARED_POINTS &&
     candidate.points.every(
       (point) =>
         point &&
@@ -93,7 +92,8 @@ function isSafeStroke(stroke: unknown): stroke is Stroke {
         Number.isFinite(point.y) &&
         Math.abs(point.x) <= 100_000 &&
         Math.abs(point.y) <= 100_000,
-    );
+    )
+  );
 }
 
 function validateStrokes(value: unknown): Stroke[] | null {
@@ -110,7 +110,7 @@ function validateStrokes(value: unknown): Stroke[] | null {
       id:
         typeof (item as Partial<Stroke>).id === "string"
           ? (item as Partial<Stroke>).id!
-          : crypto.randomUUID(),
+          : generateId(),
       points: item.points.map((point) => ({ x: point.x, y: point.y })),
       color: item.color,
       width: item.width,
@@ -186,16 +186,18 @@ export function encodeStrokes(strokes: Stroke[]): string {
   try {
     const payload: CompactDrawing = {
       v: 2,
-      s: strokes.slice(0, MAX_SHARED_STROKES).map((stroke) => [
-        stroke.color,
-        stroke.width,
-        stroke.points
-          .slice(0, MAX_SHARED_POINTS)
-          .map((point) => [
-            Math.round(point.x * 10),
-            Math.round(point.y * 10),
-          ]),
-      ]),
+      s: strokes
+        .slice(0, MAX_SHARED_STROKES)
+        .map((stroke) => [
+          stroke.color,
+          stroke.width,
+          stroke.points
+            .slice(0, MAX_SHARED_POINTS)
+            .map((point) => [
+              Math.round(point.x * 10),
+              Math.round(point.y * 10),
+            ]),
+        ]),
     };
 
     return encodePayload(payload);
