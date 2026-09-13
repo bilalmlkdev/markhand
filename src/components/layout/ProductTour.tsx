@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Joyride, STATUS, ACTIONS, EVENTS } from "react-joyride";
 import type { Step, EventData } from "react-joyride";
 import { markTourSeen } from "../../lib/tour";
@@ -43,7 +43,7 @@ const steps: Step[] = [
     target: '[aria-label="Undo"]',
     title: "Fix mistakes instantly",
     content:
-      "Undo, redo, or clear the whole canvas with one click - or the keyboard shortcuts ⌘/Ctrl+Z, ⌘/Ctrl+Shift+Z, and Delete.",
+      "Undo, redo, or clear the whole canvas with one click - or the keyboard shortcuts \u2318/Ctrl+Z, \u2318/Ctrl+Shift+Z, and Delete.",
     placement: "top",
   },
   {
@@ -74,12 +74,25 @@ interface ProductTourProps {
   onFinish: () => void;
 }
 
+// Forcibly cleans up side effects react-joyride leaves behind if it gets
+// unmounted mid-teardown instead of finishing its own internal lifecycle.
+// This is a known issue with the library (it locks body scroll and
+// portals an overlay node outside React's tree); reloading the page
+// "fixed" it before only because a reload wipes DOM state React never
+// owned in the first place.
+function forceCleanupJoyrideArtifacts() {
+  document.body.style.overflow = "";
+  document.body.style.removeProperty("overflow");
+  document
+    .querySelectorAll(
+      ".react-joyride__overlay, .react-joyride__spotlight, #react-joyride-portal",
+    )
+    .forEach((node) => node.remove());
+}
+
 export function ProductTour({ run, onFinish }: ProductTourProps) {
   const [stepIndex, setStepIndex] = useState(0);
-
-  const restoreScroll = useCallback(() => {
-    requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: "auto" }));
-  }, []);
+  const cleanupTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const handleEvent = useCallback(
     (data: EventData) => {
@@ -98,15 +111,28 @@ export function ProductTour({ run, onFinish }: ProductTourProps) {
         action === ACTIONS.CLOSE
       ) {
         markTourSeen();
-        restoreScroll();
         onFinish();
+        // Let Joyride's own callback finish running and attempt its own
+        // teardown first, then sweep up anything it left behind. The
+        // delay matters: cleaning up synchronously in this same tick is
+        // exactly the race that caused the stuck overlay before.
+        cleanupTimerRef.current = setTimeout(forceCleanupJoyrideArtifacts, 50);
       }
     },
-    [onFinish, restoreScroll],
+    [onFinish],
   );
 
-  // Fully unmount Joyride (including its full-screen overlay and beacon)
-  // when the tour isn't running, so no mask is left over the canvas.
+  // Belt-and-suspenders: also run the sweep whenever `run` flips to
+  // false from the parent, and on unmount, regardless of how that
+  // happened.
+  useEffect(() => {
+    if (!run) forceCleanupJoyrideArtifacts();
+    return () => {
+      if (cleanupTimerRef.current) clearTimeout(cleanupTimerRef.current);
+      forceCleanupJoyrideArtifacts();
+    };
+  }, [run]);
+
   if (!run) return null;
 
   return (
