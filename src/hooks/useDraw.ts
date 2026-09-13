@@ -40,6 +40,7 @@ export interface UseDrawReturn {
   recolorForBackground: (bgIsLight: boolean) => void;
   eraserRadius: number;
   setEraserRadius: (radius: number) => void;
+  setEraseRepaint: (fn: ((strokes: Stroke[]) => void) | null) => void;
   startErasing: (e: React.PointerEvent<HTMLCanvasElement>) => void;
   erase: (e: React.PointerEvent<HTMLCanvasElement>) => void;
   stopErasing: () => void;
@@ -252,6 +253,18 @@ export function useDraw(
   const [isErasing, setIsErasing] = useState(false);
   const eraseStrokeSnapshotRef = useRef<Stroke[] | null>(null);
   const eraseChangedRef = useRef(false);
+  // Working copy of strokes mutated in place during an erase gesture so
+  // React doesn't re-render (and replay every stroke) on each pointer move.
+  // The canvas is repainted directly via eraseRepaintRef, and the result is
+  // committed back to state once on pointer up.
+  const eraseStrokesRef = useRef<Stroke[]>([]);
+  const eraseRepaintRef = useRef<((strokes: Stroke[]) => void) | null>(null);
+  const setEraseRepaint = useCallback(
+    (fn: ((strokes: Stroke[]) => void) | null) => {
+      eraseRepaintRef.current = fn;
+    },
+    [],
+  );
   // Eraser size is independently adjustable (not tied to pen width) and
   // persisted across sessions like color/width.
   const [eraserRadius, setEraserRadiusState] = useState(loadEraserRadius);
@@ -273,6 +286,9 @@ export function useDraw(
   // Save strokes and hasDrawn whenever they change
   useEffect(() => {
     if (!hasDrawn) return;
+    // Empty canvases are never persisted (and get cleaned up by the
+    // Dashboard), so skipping here isn't a failure - don't warn about it.
+    if (strokes.length === 0) return;
     const ok = saveStrokes(drawingId, strokes);
     saveHasDrawn(drawingId, true);
     if (ok !== saveOkRef.current) {
@@ -418,18 +434,19 @@ export function useDraw(
   // erase passes + re-renders than the screen can actually paint.
   const runErase = useCallback(
     (point: Point) => {
-      setStrokes((prev) => {
-        const next = prev.flatMap((s) =>
-          eraseFromStroke(s, point, eraserRadius),
-        );
-        if (
-          next.length !== prev.length ||
-          next.some((s, i) => s !== prev[i])
-        ) {
-          eraseChangedRef.current = true;
-        }
-        return next;
-      });
+      const working = eraseStrokesRef.current;
+      const next = working.flatMap((s) =>
+        eraseFromStroke(s, point, eraserRadius),
+      );
+      const changed =
+        next.length !== working.length ||
+        next.some((s, i) => s !== working[i]);
+      if (!changed) return;
+      eraseChangedRef.current = true;
+      eraseStrokesRef.current = next;
+      // Paint straight to the canvas, skipping a React render + full buffer
+      // rebuild per pointer move - that's what caused the erase lag.
+      eraseRepaintRef.current?.(next);
     },
     [eraserRadius],
   );
@@ -438,6 +455,7 @@ export function useDraw(
     (e: React.PointerEvent<HTMLCanvasElement>) => {
       e.preventDefault();
       eraseStrokeSnapshotRef.current = strokes;
+      eraseStrokesRef.current = strokes;
       eraseChangedRef.current = false;
       setIsErasing(true);
       runErase(getPoint(e));
@@ -478,11 +496,17 @@ export function useDraw(
 
     const before = eraseStrokeSnapshotRef.current;
     const changed = eraseChangedRef.current;
+    const final = eraseStrokesRef.current;
 
     eraseStrokeSnapshotRef.current = null;
+    eraseStrokesRef.current = [];
     eraseChangedRef.current = false;
 
-    if (before !== null && changed) {
+    if (changed && before) {
+      // Commit the gesture result back to state so saves, undo and the
+      // registry meta all stay in sync with what's on canvas.
+      setStrokes(final);
+      eraseRepaintRef.current?.(final);
       setUndoStack((prev) => [...prev, before]);
       setRedoStack([]);
       if (!hasDrawn) setHasDrawn(true);
@@ -579,6 +603,7 @@ export function useDraw(
     recolorForBackground,
     eraserRadius,
     setEraserRadius,
+    setEraseRepaint,
     startErasing,
     erase,
     stopErasing,

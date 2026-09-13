@@ -1,4 +1,4 @@
-import { useEffect, useCallback, useState } from "react";
+import { useCallback, useState } from "react";
 import { Joyride, STATUS, ACTIONS, EVENTS } from "react-joyride";
 import type { Step, EventData } from "react-joyride";
 import { markTourSeen } from "../../lib/tour";
@@ -42,13 +42,6 @@ interface ProductTourProps {
 export function ProductTour({ run, onFinish }: ProductTourProps) {
   const [stepIndex, setStepIndex] = useState(0);
 
-  useEffect(() => {
-    if (run) {
-      const id = requestAnimationFrame(() => setStepIndex(0));
-      return () => cancelAnimationFrame(id);
-    }
-  }, [run]);
-
   const restoreScroll = useCallback(() => {
     requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: "auto" }));
   }, []);
@@ -76,6 +69,10 @@ export function ProductTour({ run, onFinish }: ProductTourProps) {
     },
     [onFinish, restoreScroll],
   );
+
+  // Fully unmount Joyride (including its full-screen overlay and beacon)
+  // when the tour isn't running, so no mask is left over the canvas.
+  if (!run) return null;
 
   return (
     <Joyride

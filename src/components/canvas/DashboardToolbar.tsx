@@ -6,6 +6,7 @@ import {
   Brush,
   Pen,
   Eraser,
+  LogOut,
   Grid3X3,
   LayoutGrid,
   EyeOff,
@@ -16,7 +17,6 @@ import {
   SwatchBook,
   Share2,
   RefreshCw,
-  MoreHorizontal,
   FolderOpen,
   HelpCircle,
   MousePointerClick,
@@ -31,6 +31,7 @@ import { PenControls } from "../controls/PenControls";
 import { ThemeControls } from "../controls/ThemeControls";
 import { themes } from "../../lib/canvas";
 import { isLightColor } from "../../lib/palette";
+import { getAssignedAvatar } from "../../lib/avatar";
 import { Link } from "react-router-dom";
 import { ERASER_RADIUS_RANGE } from "../../hooks/useDraw";
 import type { CursorStyle, GuideType, CanvasTheme } from "../../types";
@@ -61,6 +62,8 @@ interface DashboardToolbarProps {
   onExport: () => void;
   onReset: () => void;
   onToggleInstructions: () => void;
+  onExit: () => void;
+  onCancelEraser: () => void;
 }
 
 const cursorOptions: {
@@ -195,6 +198,8 @@ export function DashboardToolbar({
   onExport,
   onReset,
   onToggleInstructions,
+  onExit,
+  onCancelEraser,
 }: DashboardToolbarProps) {
   const [openPopover, setOpenPopover] = useState<PopoverKey>(null);
   const styleButtonRef = useRef<HTMLButtonElement>(null);
@@ -202,6 +207,7 @@ export function DashboardToolbar({
   const moreButtonRef = useRef<HTMLButtonElement>(null);
   const eraserButtonRef = useRef<HTMLButtonElement>(null);
   const themeBg = themes[activeTheme]?.bg ?? themes.default.bg;
+  const [avatar] = useState(getAssignedAvatar);
 
   return (
     <div
@@ -221,64 +227,45 @@ export function DashboardToolbar({
               {cursor.icon}
             </ToolButton>
           ))}
-          <ToolButton
-            label="Eraser"
-            shortcut="E"
-            active={isErasing}
-            onClick={onToggleEraser}
-          >
-            <Eraser className="w-[17px] h-[17px]" />
-          </ToolButton>
-
-          {isErasing && (
-            <div className="relative">
-              <Tooltip label="Eraser size">
-                <button
-                  type="button"
-                  ref={eraserButtonRef}
-                  onClick={() =>
-                    setOpenPopover((p) => (p === "eraser" ? null : "eraser"))
-                  }
-                  aria-label="Adjust eraser size"
-                  aria-expanded={openPopover === "eraser"}
-                  className={`flex items-center gap-1.5 h-9 px-2 rounded-[13px] transition-all duration-150 ${
-                    openPopover === "eraser"
-                      ? "bg-stone-100 ring-1 ring-stone-300 text-stone-900"
-                      : "text-stone-500 hover:text-stone-900 hover:bg-stone-100"
-                  }`}
-                >
-                  <span
-                    className="rounded-full border-2 border-current shrink-0"
-                    style={{
-                      width: Math.max(6, Math.min(18, eraserRadius / 2)),
-                      height: Math.max(6, Math.min(18, eraserRadius / 2)),
-                    }}
-                  />
-                  <span className="text-[11px] font-medium tabular-nums">
-                    {eraserRadius}
-                  </span>
-                </button>
-              </Tooltip>
-
-              <DockPopover
-                open={openPopover === "eraser"}
-                onClose={() => setOpenPopover(null)}
-                anchorRef={eraserButtonRef}
-                width="200px"
+          <div className="relative">
+            <Tooltip label="Eraser" shortcut="E">
+              <button
+                type="button"
+                ref={eraserButtonRef}
+                onClick={() => {
+                  onToggleEraser();
+                  setOpenPopover(isErasing ? null : "eraser");
+                }}
+                aria-label="Eraser"
+                aria-expanded={openPopover === "eraser"}
+                className={`w-9 h-9 flex items-center justify-center rounded-[13px] transition-all duration-150 shrink-0 ${
+                  isErasing
+                    ? "bg-stone-900 text-white shadow-[0_2px_6px_rgba(28,25,23,0.16)]"
+                    : "text-stone-500 hover:text-stone-900 hover:bg-stone-100"
+                }`}
               >
-                <div className="p-3.5">
-                  <Slider
-                    label="Eraser size"
-                    min={ERASER_RADIUS_RANGE.min}
-                    max={ERASER_RADIUS_RANGE.max}
-                    step={1}
-                    value={eraserRadius}
-                    onChange={onEraserRadiusChange}
-                  />
-                </div>
-              </DockPopover>
-            </div>
-          )}
+                <Eraser className="w-[17px] h-[17px]" />
+              </button>
+            </Tooltip>
+
+            <DockPopover
+              open={openPopover === "eraser"}
+              onClose={() => setOpenPopover(null)}
+              anchorRef={eraserButtonRef}
+              width="200px"
+            >
+              <div className="p-3.5">
+                <Slider
+                  label="Eraser size"
+                  min={ERASER_RADIUS_RANGE.min}
+                  max={ERASER_RADIUS_RANGE.max}
+                  step={1}
+                  value={eraserRadius}
+                  onChange={onEraserRadiusChange}
+                />
+              </div>
+            </DockPopover>
+          </div>
         </div>
 
         {/* Coming-soon tools: kept visually and spatially separate from
@@ -330,9 +317,10 @@ export function DashboardToolbar({
                 ref={styleButtonRef}
                 type="button"
                 data-tour="style-button"
-                onClick={() =>
-                  setOpenPopover((p) => (p === "style" ? null : "style"))
-                }
+                onClick={() => {
+                  onCancelEraser();
+                  setOpenPopover((p) => (p === "style" ? null : "style"));
+                }}
                 aria-label="Ink style"
                 aria-expanded={openPopover === "style"}
                 className={`w-9 h-9 flex items-center justify-center rounded-[13px] transition-all duration-150 ${
@@ -388,9 +376,10 @@ export function DashboardToolbar({
               <button
                 ref={themeButtonRef}
                 type="button"
-                onClick={() =>
-                  setOpenPopover((p) => (p === "theme" ? null : "theme"))
-                }
+                onClick={() => {
+                  onCancelEraser();
+                  setOpenPopover((p) => (p === "theme" ? null : "theme"));
+                }}
                 aria-label="Canvas theme"
                 aria-expanded={openPopover === "theme"}
                 className={`w-9 h-9 flex items-center justify-center rounded-[13px] transition-all duration-150 ${
@@ -530,23 +519,60 @@ export function DashboardToolbar({
             </button>
           </Tooltip>
 
+          <Tooltip label="My drawings">
+            <Link
+              to="/drawings"
+              aria-label="My drawings"
+              className="w-9 h-9 flex items-center justify-center rounded-[13px] text-stone-500 hover:text-stone-900 hover:bg-stone-100 transition-all duration-150 shrink-0"
+            >
+              <FolderOpen className="w-[17px] h-[17px]" />
+            </Link>
+          </Tooltip>
+
+          <Tooltip label="View source">
+            <a
+              href="https://github.com/bilalmlkdev/markhand"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="View source on GitHub"
+              className="w-9 h-9 flex items-center justify-center rounded-[13px] text-stone-500 hover:text-stone-900 hover:bg-stone-100 transition-all duration-150 shrink-0"
+            >
+              <LuGithub className="w-[17px] h-[17px]" />
+            </a>
+          </Tooltip>
+
           <div className="relative">
-            <Tooltip label="More">
+            <Tooltip label="More options">
               <button
                 type="button"
                 ref={moreButtonRef}
-                onClick={() =>
-                  setOpenPopover((p) => (p === "more" ? null : "more"))
-                }
+                onClick={() => {
+                  onCancelEraser();
+                  setOpenPopover((p) => (p === "more" ? null : "more"));
+                }}
                 aria-label="More options"
                 aria-expanded={openPopover === "more"}
                 className={`w-9 h-9 flex items-center justify-center rounded-[13px] transition-all duration-150 ${
                   openPopover === "more"
-                    ? "bg-stone-100 ring-1 ring-stone-300 text-stone-900"
-                    : "text-stone-500 hover:text-stone-900 hover:bg-stone-100"
+                    ? "ring-2 ring-stone-300 bg-stone-100"
+                    : "hover:bg-stone-100"
                 }`}
               >
-                <MoreHorizontal className="w-[17px] h-[17px]" />
+                <span className="relative flex h-7 w-7 items-center justify-center rounded-[10px] bg-stone-100 text-[15px] leading-none select-none ring-1 ring-inset ring-white/50">
+                  <span className="absolute inset-0 flex items-center justify-center">
+                    {avatar.fallbackEmoji}
+                  </span>
+                  <img
+                    src={avatar.url}
+                    alt="Your avatar"
+                    width={28}
+                    height={28}
+                    className="absolute inset-0 h-full w-full rounded-[10px] object-cover"
+                    onError={(e) => {
+                      e.currentTarget.style.display = "none";
+                    }}
+                  />
+                </span>
               </button>
             </Tooltip>
 
@@ -557,24 +583,6 @@ export function DashboardToolbar({
               width="214px"
             >
               <div className="p-1.5">
-                <Link
-                  to="/drawings"
-                  onClick={() => setOpenPopover(null)}
-                  className="flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-xs font-medium text-stone-700 hover:bg-stone-100"
-                >
-                  <FolderOpen className="w-4 h-4 text-stone-400" />
-                  My drawings
-                </Link>
-                <a
-                  href="https://github.com/bilalmlkdev/markhand"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={() => setOpenPopover(null)}
-                  className="flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-xs font-medium text-stone-700 hover:bg-stone-100"
-                >
-                  <LuGithub className="w-4 h-4 text-stone-400" />
-                  View source
-                </a>
                 <button
                   type="button"
                   onClick={() => {
@@ -591,9 +599,20 @@ export function DashboardToolbar({
                   type="button"
                   onClick={() => {
                     setOpenPopover(null);
+                    onExit();
+                  }}
+                  className="w-full flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-xs font-medium text-stone-700 hover:bg-stone-100"
+                >
+                  <LogOut className="w-4 h-4 text-stone-400" />
+                  Close Markhand
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setOpenPopover(null);
                     onReset();
                   }}
-                  className="w-full flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-xs font-medium text-red-600 hover:bg-red-50"
+                  className="mt-1 w-full flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-xs font-medium text-red-600 hover:bg-red-50"
                 >
                   <RefreshCw className="w-4 h-4" />
                   Reset canvas

@@ -5,6 +5,7 @@ import { DashboardToolbar } from "../components/canvas/DashboardToolbar";
 import { ExportModal } from "../components/exports/ExportModal";
 import { ShareModal } from "../components/layout/ShareModal";
 import { ResetConfirmModal } from "../components/layout/ResetconfirmModal";
+import { ExitConfirmModal } from "../components/layout/ExitConfirmModal";
 import { InstructionsModal } from "../components/layout/InstructionsModal";
 import { useDraw, CURSOR_DEFAULT_WIDTH } from "../hooks/useDraw";
 import {
@@ -28,6 +29,7 @@ import {
   removeDrawingMeta,
   removeDrawingData,
 } from "../lib/storage";
+import { useExitGuard } from "../hooks/useExitGuard";
 import type { GuideType, CanvasTheme, CursorStyle } from "../types";
 
 // Generate a random ID (8 characters)
@@ -85,6 +87,12 @@ export function Dashboard() {
   const [exportOpen, setExportOpen] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
   const [resetConfirmOpen, setResetConfirmOpen] = useState(false);
+  const [exitConfirmOpen, setExitConfirmOpen] = useState(false);
+
+  // Opts into the browser's native close confirmation whenever the canvas
+  // has content, so quitting a tab or the installed PWA can't silently
+  // lose work. The branded exit modal is triggered from the toolbar.
+  useExitGuard(!drawHook.isEmpty);
 
   useEffect(() => {
     if (loading) return;
@@ -166,7 +174,8 @@ export function Dashboard() {
       !loading &&
       !exportOpen &&
       !shareOpen &&
-      !resetConfirmOpen,
+      !resetConfirmOpen &&
+      !exitConfirmOpen,
   });
 
   const handleToggleInstructions = () => {
@@ -182,6 +191,16 @@ export function Dashboard() {
     const newId = generateId();
     navigate(`/dashboard/${newId}`);
     setResetConfirmOpen(false);
+  };
+
+  const handleCloseWindow = () => {
+    // window.close() works for standalone PWA windows; in a regular tab it
+    // is silently ignored, so fall back to leaving the app to the landing
+    // page instead.
+    window.close();
+    setTimeout(() => {
+      if (!window.closed) navigate("/");
+    }, 200);
   };
 
   const canvas = drawHook.getCanvas();
@@ -223,6 +242,8 @@ export function Dashboard() {
           onExport={() => setExportOpen(true)}
           onReset={() => setResetConfirmOpen(true)}
           onToggleInstructions={handleToggleInstructions}
+          onExit={() => setExitConfirmOpen(true)}
+          onCancelEraser={() => setIsErasing(false)}
         />
       </div>
 
@@ -251,6 +272,11 @@ export function Dashboard() {
       <InstructionsModal
         open={instructionsOpen}
         onClose={() => setInstructionsOpen(false)}
+      />
+      <ExitConfirmModal
+        open={exitConfirmOpen}
+        onClose={() => setExitConfirmOpen(false)}
+        onConfirm={handleCloseWindow}
       />
 
       <ProductTour run={tourRun} onFinish={() => setTourRun(false)} />

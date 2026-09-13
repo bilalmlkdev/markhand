@@ -2,7 +2,7 @@ import { useRef, useEffect, useCallback, useState } from "react";
 import { drawDotGrid, drawGrid, themes } from "../../lib/canvas";
 import { paintStroke } from "../../lib/render";
 import { getCursorCss } from "../../lib/cursors";
-import type { GuideType, CanvasTheme, CursorStyle } from "../../types";
+import type { GuideType, CanvasTheme, CursorStyle, Stroke } from "../../types";
 import type { UseDrawReturn } from "../../hooks/useDraw";
 
 interface DrawingCanvasProps {
@@ -38,6 +38,7 @@ export function DrawingCanvas({
     startErasing,
     erase,
     stopErasing,
+    setEraseRepaint,
     eraserRadius,
     resizeCanvas,
   } = drawHook;
@@ -45,9 +46,7 @@ export function DrawingCanvas({
   const cursorColor = "#1c1917";
   const cursorCss = getCursorCss(cursorStyle, cursorColor);
   const placeholderColor = "text-stone-300";
-  const [eraserPos, setEraserPos] = useState<{ x: number; y: number } | null>(
-    null,
-  );
+  const eraserRingRef = useRef<HTMLDivElement>(null);
   const [displayScale, setDisplayScale] = useState(1);
 
   useEffect(() => {
@@ -55,29 +54,33 @@ export function DrawingCanvas({
   }, [setCanvas]);
 
   // Renders the base layer into the offscreen buffer, sized to match the
-  // visible canvas.
-  const renderBuffer = useCallback(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    if (!bufferRef.current) bufferRef.current = document.createElement("canvas");
-    const buffer = bufferRef.current;
-    if (buffer.width !== canvas.width || buffer.height !== canvas.height) {
-      buffer.width = canvas.width;
-      buffer.height = canvas.height;
-    }
-    const ctx = buffer.getContext("2d");
-    if (!ctx) return;
-    const { width, height } = buffer;
-    ctx.clearRect(0, 0, width, height);
-    ctx.fillStyle = themeConfig.bg;
-    ctx.fillRect(0, 0, width, height);
-    const dpr = window.devicePixelRatio || 1;
-    if (guideType === "dots") drawDotGrid(ctx, width, height, themeConfig.dot, dpr);
-    else if (guideType === "grid") drawGrid(ctx, width, height, themeConfig.dot, dpr);
-    strokes.forEach((s) => {
-      paintStroke(ctx, s);
-    });
-  }, [strokes, guideType, themeConfig]);
+  // visible canvas. Takes the strokes explicitly so the erase fast path
+  // can repaint the buffer from a working copy without a React render.
+  const renderBuffer = useCallback(
+    (strokesToPaint: Stroke[]) => {
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+      if (!bufferRef.current) bufferRef.current = document.createElement("canvas");
+      const buffer = bufferRef.current;
+      if (buffer.width !== canvas.width || buffer.height !== canvas.height) {
+        buffer.width = canvas.width;
+        buffer.height = canvas.height;
+      }
+      const ctx = buffer.getContext("2d");
+      if (!ctx) return;
+      const { width, height } = buffer;
+      ctx.clearRect(0, 0, width, height);
+      ctx.fillStyle = themeConfig.bg;
+      ctx.fillRect(0, 0, width, height);
+      const dpr = window.devicePixelRatio || 1;
+      if (guideType === "dots") drawDotGrid(ctx, width, height, themeConfig.dot, dpr);
+      else if (guideType === "grid") drawGrid(ctx, width, height, themeConfig.dot, dpr);
+      strokesToPaint.forEach((s) => {
+        paintStroke(ctx, s);
+      });
+    },
+    [guideType, themeConfig],
+  );
 
   // Blits the current buffer onto the visible canvas. Cheap - a single
   // drawImage - so this is safe to call on every pointer move.
@@ -92,9 +95,9 @@ export function DrawingCanvas({
   }, []);
 
   const renderWithGuides = useCallback(() => {
-    renderBuffer();
+    renderBuffer(strokes);
     paintFromBuffer();
-  }, [renderBuffer, paintFromBuffer]);
+  }, [renderBuffer, paintFromBuffer, strokes]);
 
   useEffect(() => {
     renderWithGuides();
@@ -108,6 +111,18 @@ export function DrawingCanvas({
     setRedrawBase(paintFromBuffer);
     return () => setRedrawBase(null);
   }, [setRedrawBase, paintFromBuffer]);
+
+  // Registered with useDraw so the eraser can repaint the committed
+  // strokes directly on each erase frame, bypassing React entirely - that
+  // bypass (vs. one re-render + full rebuild per pointer move) is what
+  // removes the erase lag on canvases with many strokes.
+  useEffect(() => {
+    setEraseRepaint((strokesToPaint: Stroke[]) => {
+      renderBuffer(strokesToPaint);
+      paintFromBuffer();
+    });
+    return () => setEraseRepaint(null);
+  }, [setEraseRepaint, renderBuffer, paintFromBuffer]);
 
   useEffect(() => {
     const updateScale = () => {
@@ -128,20 +143,36 @@ export function DrawingCanvas({
     return () => window.removeEventListener("resize", handleResize);
   }, [resizeCanvas, renderWithGuides]);
 
+  // devicePixelRatio-scaled radius, converted back to CSS px for the
+  // on-screen ring so it visually matches the actual erased area.
+  const eraserRingRadius = eraserRadius * displayScale;
+
+  const hideEraserRing = useCallback(() => {
+    const ring = eraserRingRef.current;
+    if (ring) ring.style.visibility = "hidden";
+  }, []);
+
   const updateEraserPos = useCallback(
     (e: React.PointerEvent<HTMLCanvasElement>) => {
       const canvas = canvasRef.current;
       if (!canvas) return;
       const rect = canvas.getBoundingClientRect();
-      setEraserPos({
-        x: e.clientX - rect.left,
-        y: e.clientY - rect.top,
-      });
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      const ring = eraserRingRef.current;
+      if (ring) {
+        ring.style.visibility = "visible";
+        ring.style.left = `${x - eraserRingRadius}px`;
+        ring.style.top = `${y - eraserRingRadius}px`;
+      }
     },
-    [],
+    [eraserRingRadius],
   );
 
   const handleStart = (e: React.PointerEvent<HTMLCanvasElement>) => {
+    // Only the primary (left) button drives drawing/erasing; right or
+    // middle clicks must not start or alter a stroke.
+    if (e.button !== 0) return;
     if (isErasing) {
       updateEraserPos(e);
       startErasing(e);
@@ -162,9 +193,21 @@ export function DrawingCanvas({
     else stopDrawing();
   };
 
-  // devicePixelRatio-scaled radius, converted back to CSS px for the
-  // on-screen ring so it visually matches the actual erased area.
-  const eraserRingRadius = eraserRadius * displayScale;
+  // Keep the ring size in sync when the radius is changed from the toolbar
+  // popover mid-gesture.
+  useEffect(() => {
+    const ring = eraserRingRef.current;
+    if (!ring) return;
+    ring.style.width = `${eraserRingRadius * 2}px`;
+    ring.style.height = `${eraserRingRadius * 2}px`;
+  }, [eraserRingRadius]);
+
+  // Guarantee the ring disappears the moment eraser mode is switched off
+  // (e.g. picking another tool from the toolbar), no matter where the
+  // pointer currently is.
+  useEffect(() => {
+    if (!isErasing) hideEraserRing();
+  }, [isErasing, hideEraserRing]);
 
   return (
     <div
@@ -187,7 +230,7 @@ export function DrawingCanvas({
         onPointerUp={(e) => {
           if (!e.isPrimary) return;
           handleEnd();
-          setEraserPos(null);
+          hideEraserRing();
           if (e.currentTarget.hasPointerCapture(e.pointerId)) {
             e.currentTarget.releasePointerCapture(e.pointerId);
           }
@@ -195,26 +238,20 @@ export function DrawingCanvas({
         onPointerCancel={(e) => {
           if (!e.isPrimary) return;
           handleEnd();
-          setEraserPos(null);
+          hideEraserRing();
         }}
-        onPointerEnter={updateEraserPos}
-        onPointerLeave={() => {
-          if (!isErasing) return;
-          setEraserPos(null);
-        }}
+        onContextMenu={(e) => e.preventDefault()}
       />
 
-      {isErasing && eraserPos && (
-        <div
-          className="absolute rounded-full border-2 border-stone-500 bg-stone-500/10 pointer-events-none"
-          style={{
-            left: eraserPos.x - eraserRingRadius,
-            top: eraserPos.y - eraserRingRadius,
-            width: eraserRingRadius * 2,
-            height: eraserRingRadius * 2,
-          }}
-        />
-      )}
+      <div
+        ref={eraserRingRef}
+        className="absolute rounded-full border-2 border-stone-500 bg-stone-500/10 pointer-events-none"
+        style={{
+          width: eraserRingRadius * 2,
+          height: eraserRingRadius * 2,
+          visibility: "hidden",
+        }}
+      />
 
       {strokes.length === 0 && (
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">

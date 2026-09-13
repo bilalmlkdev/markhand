@@ -71,9 +71,9 @@ export function DockPopover({
       }
     }
     function handleKey(e: KeyboardEvent) {
-      if (e.key === "Escape") onClose();
+      if (e.key === "Escape" || e.key === "Enter") onClose();
     }
-    document.addEventListener("mousedown", handleClick);
+    document.addEventListener("pointerdown", handleClick);
     document.addEventListener("keydown", handleKey);
 
     return () => {

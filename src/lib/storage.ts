@@ -95,6 +95,13 @@ export function deleteDrawing(id: string): void {
   removeDrawingData(id);
 }
 
+export function deleteAllDrawings(): void {
+  for (const entry of getDrawingRegistry()) {
+    removeDrawingData(entry.id);
+  }
+  saveDrawingRegistry([]);
+}
+
 // Purge a drawing's strokes and hasDrawn flag from localStorage. Used by
 // reset/delete/empty flows so cleared drawings stop leaving orphaned keys
 // behind.
