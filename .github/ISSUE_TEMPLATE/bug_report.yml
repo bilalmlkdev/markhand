@@ -1,0 +1,68 @@
+name: Bug report
+description: Report something that is broken in Markhand
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug. The more detail you give, the faster it can be fixed.
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: Clear description of the bug.
+      placeholder: The eraser leaves a thin line of the original stroke behind on the Sky theme.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Exact steps so someone else can hit the same bug.
+      placeholder: |
+        1. Open /dashboard and pick the Pen tool
+        2. Draw a few strokes
+        3. Switch to the Sky theme
+        4. Erase across a stroke
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect to happen?
+    validations:
+      required: true
+  - type: dropdown
+    id: input
+    attributes:
+      label: Input device
+      description: How were you drawing when the bug happened?
+      options:
+        - Mouse
+        - Touch (phone or tablet)
+        - Pen / stylus
+        - Keyboard only
+    validations:
+      required: true
+  - type: input
+    id: browser
+    attributes:
+      label: Browser
+      placeholder: Firefox 142, Chrome 140, Safari 18
+    validations:
+      required: true
+  - type: input
+    id: device
+    attributes:
+      label: Device and OS (if not a desktop browser)
+      placeholder: Pixel 8 / Android 15, iPad / iPadOS 18
+    validations:
+      required: false
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots or additional context
+      description: Drag and drop any screenshots or extra logs here.
+    validations:
+      required: false

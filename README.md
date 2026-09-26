@@ -11,6 +11,7 @@
 [![Live Demo](https://img.shields.io/badge/Live_Demo-Visit_Site-black?style=for-the-badge)](https://markhand.vercel.app)
 [![GitHub Stars](https://img.shields.io/github/stars/bilalmlkdev/markhand?style=for-the-badge&logo=github&color=yellow)](https://github.com/bilalmlkdev/markhand.git)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](./LICENSE)
+[![CI](https://github.com/bilalmlkdev/markhand/actions/workflows/ci.yml/badge.svg)](https://github.com/bilalmlkdev/markhand/actions/workflows/ci.yml)
 
 </div>
 
@@ -25,7 +26,7 @@
 
 # About Markhand
 
-Markhand is an open-source open-source drawing studio for sketching, practicing, annotating, and exporting hand-drawn work with precision and a deliberately quiet interface. It combines a fluid drawing canvas, customizable tools, and a per-drawing URL system, all wrapped in a clean, responsive interface.
+Markhand is an open-source drawing studio for sketching, practicing, annotating, and exporting hand-drawn work with precision and a deliberately quiet interface. It combines a fluid drawing canvas, customizable tools, and a per-drawing URL system, all wrapped in a clean, responsive interface.
 
 Unlike many online drawing tools that rely on servers or require accounts, Markhand runs entirely inside your browser. Every stroke is saved locally using `localStorage`, and every drawing gets its own dedicated URL. Clear the canvas, and you're instantly given a fresh, shareable link while previous drawings remain accessible through the My Drawings gallery.
 
@@ -156,6 +157,8 @@ export const themes: Record<CanvasTheme, ThemeConfig> = {
 ### 2. That's It
 
 Once registered, the new theme automatically appears in the theme picker, and the theme-aware ink recoloring described above will correctly treat it as light or dark based on its `bg` value - no additional configuration is required.
+
+Full setup and pull request guidelines live in [CONTRIBUTING.md](./CONTRIBUTING.md). Please read the [Code of Conduct](./CODE_OF_CONDUCT.md) before contributing, and report security issues privately as described in [SECURITY.md](./SECURITY.md). Release history is tracked in [CHANGELOG.md](./CHANGELOG.md).
 
 # License (MIT)
 

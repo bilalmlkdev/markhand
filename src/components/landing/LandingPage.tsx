@@ -37,7 +37,7 @@ export function LandingPage() {
                 strokeLinecap="round"
               />
             </svg>{" "}
-            <span className="bg-gradient-to-b from-white to-white/70 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-b from-white to-white/50 bg-clip-text text-transparent">
               Markhand
             </span>
           </div>
@@ -68,10 +68,10 @@ export function LandingPage() {
             </span>
 
             <div className="space-y-1.5 relative right-2">
-              <h1 className="font-instrument text-5xl sm:text-6xl md:text-7xl lg:text-8xl bg-gradient-to-b from-white to-white/70 bg-clip-text text-transparent">
+              <h1 className="font-instrument text-5xl sm:text-6xl md:text-7xl lg:text-8xl bg-gradient-to-b from-white to-white/50 bg-clip-text text-transparent">
                 Draw a mark
               </h1>
-              <h2 className="font-instrument text-5xl sm:text-6xl md:text-7xl lg:text-8xl bg-gradient-to-b from-white to-white/70 bg-clip-text text-transparent pb-2">
+              <h2 className="font-instrument text-5xl sm:text-6xl md:text-7xl lg:text-8xl bg-gradient-to-b from-white to-white/50 bg-clip-text text-transparent pb-2">
                 Worth Keeping
               </h2>
             </div>
