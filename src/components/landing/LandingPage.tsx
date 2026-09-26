@@ -19,7 +19,7 @@ export function LandingPage() {
   };
 
   return (
-    <GrainyShader className="min-h-screen">
+    <GrainyShader className="min-h-screen bg-zinc-950">
       <div className="min-h-screen max-w-5xl mx-auto flex flex-col">
         <header className="flex items-center justify-between px-6 h-14">
           <div className="flex items-center gap-1 shrink-0">
@@ -37,7 +37,7 @@ export function LandingPage() {
                 strokeLinecap="round"
               />
             </svg>{" "}
-            <span className="bg-gradient-to-b from-black to-white/70 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-b from-white to-black/30 bg-clip-text text-transparent">
               Markhand
             </span>
           </div>
@@ -45,7 +45,7 @@ export function LandingPage() {
             {hasDrawings && (
               <Link
                 to="/drawings"
-                className="text-xs font-medium bg-white/90 hover:bg-white text-black rounded-lg px-2.5 py-[5px] active:scale-99"
+                className="text-xs font-medium bg-white/10 hover:bg-white/15 text-white rounded-lg px-2.5 py-[5px] active:scale-99"
               >
                 My Drawings
               </Link>
@@ -53,7 +53,7 @@ export function LandingPage() {
             <button
               onClick={openEditor}
               disabled={isNavigating}
-              className="text-xs font-medium bg-white/90 hover:bg-white text-black rounded-lg px-2.5 py-[5px] active:scale-99 disabled:opacity-60 disabled:cursor-wait"
+              className="text-xs font-medium bg-white/10 hover:bg-white/15 text-white rounded-lg px-2.5 py-[5px] active:scale-99 disabled:opacity-60 disabled:cursor-wait"
             >
               {isNavigating ? "Opening..." : "Open Canvas"}
             </button>
@@ -62,21 +62,21 @@ export function LandingPage() {
 
         <main className="flex-1 flex flex-col justify-center px-6 py-16 sm:py-24">
           <div className="max-w-4xl space-y-6 sm:space-y-8">
-            <span className="inline-flex items-center gap-1 rounded-md border border-black/10 bg-black/5 px-1.5 text-[10px] font-medium text-black/80">
+            <span className="inline-flex items-center gap-1 rounded-md border border-white/10 bg-white/5 px-1.5 text-[10px] font-medium text-white/80">
               Open Source{" "}
               <span className="hidden md:inline">| Free Forever</span>
             </span>
 
             <div className="space-y-1.5 relative right-2">
-              <h1 className="font-instrument text-5xl sm:text-6xl md:text-7xl lg:text-8xl bg-gradient-to-b from-black to-white/70 bg-clip-text text-transparent">
+              <h1 className="font-instrument text-5xl sm:text-6xl md:text-7xl lg:text-8xl bg-gradient-to-b from-white to-black/30 bg-clip-text text-transparent">
                 Draw a mark
               </h1>
-              <h2 className="font-instrument text-5xl sm:text-6xl md:text-7xl lg:text-8xl bg-gradient-to-b from-black to-white/70 bg-clip-text text-transparent pb-2">
+              <h2 className="font-instrument text-5xl sm:text-6xl md:text-7xl lg:text-8xl bg-gradient-to-b from-white to-black/30 bg-clip-text text-transparent pb-2">
                 Worth Keeping
               </h2>
             </div>
 
-            <p className="lg:text-base text-sm text-black max-w-lg leading-relaxed">
+            <p className="lg:text-base text-sm text-zinc-300 max-w-lg leading-relaxed">
               A distraction‑free studio to draw freely and keep the canvas
               distraction-free. Pick a pen that feels right, switch canvas
               themes to match your style, and export a clean PNG or SVG, all
@@ -86,7 +86,7 @@ export function LandingPage() {
               <button
                 onClick={openEditor}
                 disabled={isNavigating}
-                className="group inline-flex items-center justify-center gap-1.5 rounded-lg bg-black/95 px-3 py-1.5 text-xs font-medium text-white hover:bg-black active:scale-99 disabled:opacity-60 disabled:cursor-wait"
+                className="group inline-flex items-center justify-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-xs font-medium text-black hover:bg-white/90 active:scale-99 disabled:opacity-60 disabled:cursor-wait"
               >
                 {isNavigating ? "Opening..." : "Start Drawing"}
                 <MdOutlineKeyboardArrowRight
@@ -99,7 +99,7 @@ export function LandingPage() {
                 href="https://github.com/bilalmlkdev/markhand"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group inline-flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-xs font-medium text-black bg-zinc-200/50 active:scale-99"
+                className="group inline-flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-xs font-medium text-white bg-white/10 hover:bg-white/15 active:scale-99"
               >
                 <LuGithub
                   size={16}
@@ -110,9 +110,9 @@ export function LandingPage() {
             </div>
           </div>
 
-          <div className="mt-16 flex flex-col sm:flex-row items-start sm:items-center gap-4 text-xs text-black/70">
+          <div className="mt-16 flex flex-col sm:flex-row items-start sm:items-center gap-4 text-xs text-zinc-400">
             <span>No sign-up. No watermarks. No catch.</span>
-            <span className="hidden sm:inline text-white/20">·</span>
+            <span className="hidden sm:inline text-white/25">·</span>
             <span>Your strokes stay on your device.</span>
           </div>
         </main>
